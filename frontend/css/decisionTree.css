@@ -1,0 +1,964 @@
+/* =====================================
+   DECISION TREE HOLOGRAM
+   LEFT VISUAL AREA
+===================================== */
+
+
+.decision-tree-hologram{
+
+    position:absolute;
+
+    left:200px;
+    top:30%;
+
+    transform:
+    translateY(-50%);
+
+    width:280px;
+    height:220px;
+
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+
+    background:transparent;
+
+
+    pointer-events:auto;
+
+
+    cursor:pointer;
+
+
+    z-index:5;
+
+
+}
+
+
+/* =====================================
+   SVG CONTAINER
+===================================== */
+
+
+.dt-tree-svg{
+
+    width:100%;
+    height:100%;
+
+    overflow:visible;
+
+    transform-origin:center;
+
+    animation:
+    dtBreathe 6s ease-in-out infinite;
+
+}
+
+
+
+@keyframes dtBreathe{
+
+
+    0%,100%{
+
+        opacity:.8;
+
+        transform:
+        scale(.95);
+
+    }
+
+
+    50%{
+
+        opacity:1;
+
+        transform:
+        scale(1);
+
+    }
+
+}
+
+
+
+
+/* =====================================
+   TREE BRANCH LINES
+===================================== */
+
+
+.dt-branch{
+
+    stroke:#64748b;
+
+    stroke-width:1.5;
+
+    opacity:.5;
+
+}
+
+
+
+/* Untaken branches stay neutral/inactive by default - only the
+   branch actually taken (marked .active during traversal) should
+   stand out, regardless of whether it was YES or NO. */
+
+.dt-branch.active{
+
+
+    stroke:#22c55e;
+
+    stroke-width:2;
+
+
+    opacity:1;
+
+
+    filter:
+    drop-shadow(
+        0 0 6px #22c55e
+    );
+
+
+}
+
+
+
+
+
+/* =====================================
+   TREE NODES
+===================================== */
+
+
+/* =====================================
+   DEFAULT NODE
+   inactive / not visited
+===================================== */
+
+.dt-node{
+
+    fill:#0f172a;
+
+    stroke:#475569;
+
+    stroke-width:1.5;
+
+    r:5;
+
+    filter:
+    drop-shadow(
+        0 0 4px rgba(71,85,105,.5)
+    );
+
+    transition:.3s ease;
+
+}
+
+
+
+/* =====================================
+   QUESTION NODES
+   Root + decision questions
+===================================== */
+
+.dt-question{
+
+
+    fill:#9333ea;
+
+    stroke:#e9d5ff;
+
+    stroke-width:2;
+
+
+    filter:
+    drop-shadow(
+        0 0 8px #9333ea
+    );
+
+
+}
+
+
+
+/* =====================================
+   VISITED DECISION PATH
+   YES / NO nodes entered
+===================================== */
+
+.dt-node.active{
+
+
+    fill:#22c55e;
+
+    stroke:white;
+
+    stroke-width:2;
+
+
+    filter:
+    drop-shadow(
+        0 0 10px #22c55e
+    );
+
+
+    animation:
+    nodeGlow 2s ease-in-out infinite;
+
+
+}
+
+
+
+
+
+@keyframes nodeGlow{
+
+
+    0%,100%{
+
+        r:5;
+
+        opacity:.85;
+
+    }
+
+
+    50%{
+
+        r:7;
+
+        opacity:1;
+
+    }
+
+}
+
+
+
+
+/* =====================================
+   FINAL CLASSIFICATION RESULT
+===================================== */
+
+
+/* =====================================
+   FINAL CLASSIFICATION RESULT ONLY
+===================================== */
+
+.dt-node--leaf{
+
+    fill:#0f172a;
+
+    stroke:#475569;
+
+    stroke-width:1.5;
+
+    r:6;
+
+}
+
+.dt-result{
+
+    fill:#facc15;
+
+    stroke:white;
+
+    stroke-width:2;
+
+    r:7;
+
+    filter:
+    drop-shadow(
+        0 0 12px #facc15
+    );
+
+}
+
+
+
+/* optional: different final labels */
+
+
+.dt-node[data-result="DICTIONARY"]{
+
+    fill:#facc15;
+
+}
+
+
+
+.dt-node[data-result="RULE-BASED"]{
+
+    fill:#facc15;
+
+}
+
+
+
+.dt-node[data-result="BRUTE-FORCE"]{
+
+    fill:#facc15;
+
+}
+
+
+
+.dt-node[data-result="BRUTE-FORCE"]{
+
+
+    fill:#ef4444;
+
+
+    filter:
+    drop-shadow(
+        0 0 8px #ef4444
+    );
+
+
+}
+
+
+
+
+
+/* =====================================
+   TRAVELING PARTICLE
+   (SVG animateMotion dot)
+===================================== */
+
+
+.dt-particle{
+
+
+    fill:#ffffff;
+
+
+    r:2.5;
+
+
+    filter:
+    drop-shadow(
+        0 0 8px #38bdf8
+    );
+
+
+}
+
+
+
+
+/* =====================================
+   LABELS
+===================================== */
+
+
+.dt-label{
+
+
+    fill:white;
+
+
+    font-size:7px;
+
+
+    font-family:
+    "Segoe UI",
+    sans-serif;
+
+
+    opacity:.75;
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+/* YES/NO branch labels - the text replacement for the old
+   wrapper-object circles. Dim/neutral until that branch is the
+   one actually taken during traversal. */
+
+.dt-branch-label{
+
+    fill:#94a3b8;
+
+    opacity:.6;
+
+}
+
+
+.dt-branch-label.active{
+
+    fill:#22c55e;
+
+    opacity:1;
+
+}
+
+
+
+
+
+/* =====================================
+   HOLOGRAM GRID EFFECT
+===================================== */
+
+
+.decision-tree-hologram::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    inset:-20px;
+
+
+    background:
+
+    radial-gradient(
+        circle,
+        rgba(56,189,248,.15),
+        transparent 65%
+    );
+
+
+    filter:blur(12px);
+
+
+    animation:
+    holoGlow 4s infinite;
+
+
+}
+
+
+
+
+@keyframes holoGlow{
+
+
+    0%,100%{
+
+        opacity:.4;
+
+    }
+
+
+    50%{
+
+        opacity:.8;
+
+    }
+
+}
+
+
+/* =====================================
+   ROOT NODE
+===================================== */
+
+.dt-root{
+
+    fill:#a855f7;
+
+    stroke:#ffffff;
+
+    stroke-width:2;
+
+    filter:
+    drop-shadow(
+        0 0 10px #a855f7
+    );
+
+}
+
+
+
+
+/* =====================================
+   QUESTION NODES
+===================================== */
+
+
+
+
+
+
+/* =====================================
+   RESULT NODE
+===================================== */
+
+.dt-result{
+
+    stroke:white;
+
+    stroke-width:2;
+
+}
+
+
+
+
+/* =====================================
+   TRAVERSAL ACTIVE
+===================================== */
+
+
+
+.dt-root.active{
+
+    fill:#a855f7;
+
+}
+
+
+
+/* Question nodes are entered as part of every traversal, but
+   per spec they should stay purple, never turn green. */
+.dt-question.active{
+
+    fill:#9333ea;
+
+    stroke:#e9d5ff;
+
+}
+
+
+
+/* The reached leaf gets both .active (from the normal path
+   animation) and .dt-result (added by highlightResult()) - make
+   sure yellow wins over the generic green "visited" color. */
+.dt-result.active{
+
+    fill:#facc15;
+
+    stroke:white;
+
+    animation:
+    resultPulse 1.5s infinite;
+
+}
+
+
+
+
+@keyframes resultPulse{
+
+
+    0%,100%{
+
+        r:6;
+
+    }
+
+
+    50%{
+
+        r:9;
+
+    }
+
+}
+
+/* =====================================
+   DECISION TREE EXPLANATION PANEL
+===================================== */
+
+.decision-explanation{
+
+    position:absolute;
+
+    right:25px;
+    top:5px;
+
+    width:40%;
+    height:340px;
+
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    padding-right:10px;
+
+}
+
+
+
+/* =====================================
+   PANEL TITLE
+===================================== */
+
+.decision-explanation h3{
+
+    margin:10;
+
+    color:#e0f2fe;
+
+    font-size:18px;
+
+    font-weight:800;
+
+    letter-spacing:2px;
+
+    text-transform:uppercase;
+
+    text-shadow:
+    0 0 8px rgba(56,189,248,.45);
+
+}
+
+
+
+.decision-info-box{
+
+    position:relative;
+
+    padding:18px;
+
+    background:
+    linear-gradient(
+        90deg,
+        rgba(15,23,42,.72),
+        rgba(15,23,42,.22)
+    );
+
+    border-left:2px solid rgba(56,189,248,.45);
+
+    backdrop-filter:blur(6px);
+
+    overflow:visible;
+
+    flex-shrink:0;
+
+    transition:
+        transform .35s ease,
+        border-color .35s ease,
+        box-shadow .35s ease,
+        background .35s ease;
+
+}
+
+
+
+/* =====================================
+   TOP ENERGY LINE
+===================================== */
+
+.decision-info-box::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    top:0;
+
+    width:100%;
+    height:1px;
+
+    background:
+    linear-gradient(
+        90deg,
+        transparent,
+        #38bdf8,
+        transparent
+    );
+
+    opacity:.45;
+
+}
+
+
+
+/* =====================================
+   ENERGY SCANNER
+===================================== */
+
+.decision-info-box::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:-120%;
+    top:0;
+
+    width:60%;
+    height:100%;
+
+    background:
+    linear-gradient(
+        120deg,
+        transparent,
+        rgba(56,189,248,.35),
+        transparent
+    );
+
+    transition:left .9s ease;
+
+}
+
+
+
+/* =====================================
+   DRAWER HOVER
+===================================== */
+
+.decision-info-box:hover{
+
+    transform:translateX(8px);
+
+    border-left:3px solid #38bdf8;
+
+    background:
+    linear-gradient(
+        90deg,
+        rgba(56,189,248,.12),
+        rgba(15,23,42,.28)
+    );
+
+    box-shadow:
+    -12px 0 35px rgba(56,189,248,.18);
+
+}
+
+
+
+.decision-info-box:hover::after{
+
+    left:130%;
+
+}
+
+
+
+/* =====================================
+   DRAWER TITLES
+===================================== */
+
+.decision-info-box h4{
+
+    margin:0 0 10px 0;
+
+    color:#38bdf8;
+
+    font-size:13px;
+
+    font-weight:800;
+
+    letter-spacing:1.4px;
+
+    text-transform:uppercase;
+
+}
+
+
+
+/* =====================================
+   DRAWER TEXT
+===================================== */
+
+.decision-info-box p{
+
+    margin:0;
+
+    color:#cbd5e1;
+
+    font-size:14px;
+
+    line-height:1.7;
+
+}
+
+
+
+/* =====================================
+   CLICK HINT
+===================================== */
+
+.decision-click-hint{
+
+    position:absolute;
+
+    right:677px;
+
+    top:3px;      /* just below the 340px explanation panel */
+
+    width:40%;      /* match the explanation panel */
+
+    text-align:right;
+
+    color:#64748b;
+
+    font-size:12px;
+
+    font-style:italic;
+
+    letter-spacing:.8px;
+
+    animation:hintPulse 3s infinite;
+
+    pointer-events:none;
+
+}
+
+
+
+@keyframes hintPulse{
+
+    0%,100%{
+
+        opacity:.45;
+
+    }
+
+    50%{
+
+        opacity:1;
+
+    }
+
+}
+
+/* =====================================
+   HOLOGRAM PANEL SCROLLBAR
+===================================== */
+
+.decision-explanation{
+
+    scrollbar-width:thin;
+
+    scrollbar-color:#38bdf8 rgba(15,23,42,.35);
+
+}
+
+
+
+/* width */
+
+.decision-explanation::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+
+
+/* track */
+
+.decision-explanation::-webkit-scrollbar-track{
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(15,23,42,.90),
+        rgba(30,41,59,.45)
+    );
+
+    border-radius:999px;
+
+}
+
+
+
+/* thumb */
+
+.decision-explanation::-webkit-scrollbar-thumb{
+
+    background:
+    linear-gradient(
+        180deg,
+        #7dd3fc 0%,
+        #38bdf8 35%,
+        #2563eb 100%
+    );
+
+    border-radius:999px;
+
+    border:2px solid rgba(15,23,42,.75);
+
+    box-shadow:
+        0 0 6px rgba(56,189,248,.7),
+        0 0 14px rgba(56,189,248,.45);
+
+    transition:
+        background .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+
+}
+
+
+
+/* hover */
+
+.decision-explanation::-webkit-scrollbar-thumb:hover{
+
+    background:
+    linear-gradient(
+        180deg,
+        #bae6fd,
+        #38bdf8,
+        #1d4ed8
+    );
+
+    box-shadow:
+        0 0 10px #38bdf8,
+        0 0 24px rgba(56,189,248,.8);
+
+}
+
+
+
+/* click */
+
+.decision-explanation::-webkit-scrollbar-thumb:active{
+
+    background:#38bdf8;
+
+    box-shadow:
+        0 0 14px #38bdf8;
+
+}
+
+
+
+/* top & bottom buttons */
+
+.decision-explanation::-webkit-scrollbar-button{
+
+    display:none;
+
+}
+
+
+
+/* corner */
+
+.decision-explanation::-webkit-scrollbar-corner{
+
+    background:transparent;
+
+}
+
+/* =====================================
+   DECISION TRAVERSAL CARD
+   Moved out of this file - the card is an independent Result
+   page component now, not part of the Decision Tree component.
+   See: frontend/css/decisionTraversalCard.css
+===================================== */

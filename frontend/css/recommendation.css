@@ -1,0 +1,971 @@
+/* =====================================
+   REMOVE TITLE SYSTEM
+===================================== */
+
+.recommendation-label{
+
+    display:none;
+
+}
+
+
+
+
+
+/* =====================================
+   RECOMMENDATION PAGE
+===================================== */
+
+
+.recommendation-page{
+
+    width:100%;
+
+    height:100%;
+
+    overflow-y:auto;
+
+    overflow-x:hidden;
+
+    padding:0 0 80px 0;
+
+    margin:0;
+
+    box-sizing:border-box;
+
+    position:relative;
+
+}
+
+
+
+
+
+
+/* =====================================
+   ENERGY SCROLLBAR SYSTEM
+===================================== */
+
+
+.recommendation-page{
+
+    scrollbar-width:thin;
+
+    scrollbar-color:
+    #38bdf8
+    rgba(15,23,42,.35);
+
+}
+
+
+
+.recommendation-page::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+
+
+.recommendation-page::-webkit-scrollbar-track{
+
+
+    background:
+
+    linear-gradient(
+
+        180deg,
+
+        rgba(15,23,42,.85),
+
+        rgba(30,41,59,.55)
+
+    );
+
+
+    border-radius:20px;
+
+
+    box-shadow:
+
+    inset 0 0 10px rgba(56,189,248,.15);
+
+}
+
+
+
+
+
+.recommendation-page::-webkit-scrollbar-thumb{
+
+
+    background:
+
+
+    linear-gradient(
+
+        180deg,
+
+        #38bdf8,
+
+        #60a5fa,
+
+        #38bdf8
+
+    );
+
+
+    border-radius:20px;
+
+
+    box-shadow:
+
+
+    0 0 8px #38bdf8,
+
+    0 0 25px rgba(56,189,248,.8),
+
+    inset 0 0 6px rgba(255,255,255,.4);
+
+
+    animation:
+
+    scrollbarEnergy 3s linear infinite;
+
+}
+
+
+
+
+
+.recommendation-page::-webkit-scrollbar-thumb:hover{
+
+
+    background:
+
+
+    linear-gradient(
+
+        180deg,
+
+        #7dd3fc,
+
+        #38bdf8,
+
+        #2563eb
+
+    );
+
+
+    box-shadow:
+
+
+    0 0 18px #38bdf8,
+
+    0 0 40px rgba(56,189,248,1);
+
+}
+
+
+
+
+
+@keyframes scrollbarEnergy{
+
+
+0%{
+
+    filter:brightness(1);
+
+}
+
+
+50%{
+
+    filter:brightness(1.5);
+
+}
+
+
+100%{
+
+    filter:brightness(1);
+
+}
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   HEADER
+===================================== */
+
+
+.recommendation-header{
+
+    width:88%;
+
+    margin-left:auto;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.recommendation-header h1{
+
+
+    color:#f8fafc;
+
+    font-size:24px;
+
+    margin:0 0 10px 0;
+
+}
+
+
+
+.recommendation-header p{
+
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+    line-height:1.7;
+
+}
+
+
+
+
+
+/* =====================================
+   MAIN SECTION
+===================================== */
+
+
+.recommendation-section{
+
+
+    width:88%;
+
+
+    margin-left:auto;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:18px;
+
+
+    height:auto;
+
+
+    min-height:100%;
+
+
+}
+
+
+
+
+
+
+/* =====================================
+   SECTION TITLE
+===================================== */
+
+
+.section-title h2{
+
+
+    color:#e2e8f0;
+
+
+    font-size:18px;
+
+
+    margin:0 0 10px 0;
+
+
+}
+
+
+
+
+
+
+/* =====================================
+   RECOMMENDATION CARD
+===================================== */
+
+
+.recommendation-card{
+
+
+    position:relative;
+
+
+    padding-left:25px;
+
+
+    background:none;
+
+
+    border:none;
+
+
+}
+
+
+
+
+
+
+/* Timeline glow */
+
+
+.recommendation-card::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    left:5px;
+
+
+    top:0;
+
+
+    width:2px;
+
+
+    height:100%;
+
+
+    background:
+
+
+    linear-gradient(
+
+        180deg,
+
+        transparent,
+
+        #38bdf8,
+
+        transparent
+
+    );
+
+
+    opacity:.45;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   LIST
+===================================== */
+
+
+.recommendation-card ul{
+
+
+    list-style:none;
+
+
+    padding:0;
+
+
+    margin:0;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   SECURITY ENTRY
+===================================== */
+
+
+.recommendation-card li{
+
+
+    position:relative;
+
+
+    padding:16px 20px;
+
+
+    margin-bottom:12px;
+
+
+    color:#cbd5e1;
+
+
+    font-size:14px;
+
+
+    line-height:1.8;
+
+
+    background:
+
+
+    linear-gradient(
+
+        90deg,
+
+        rgba(15,23,42,.55),
+
+        rgba(15,23,42,.15)
+
+    );
+
+
+    border-left:
+
+    2px solid rgba(56,189,248,.35);
+
+
+    transition:.35s ease;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   NODE
+===================================== */
+
+
+.recommendation-card li::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    left:-29px;
+
+
+    top:50%;
+
+
+    transform:translateY(-50%);
+
+
+    width:8px;
+
+
+    height:8px;
+
+
+    border-radius:50%;
+
+
+    background:#38bdf8;
+
+
+    box-shadow:
+
+
+    0 0 10px #38bdf8,
+
+
+    0 0 25px #38bdf8;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   HOVER EFFECT
+===================================== */
+
+
+.recommendation-card li:hover{
+
+
+    transform:
+
+    translateX(10px);
+
+
+    color:#f8fafc;
+
+
+    background:
+
+
+    linear-gradient(
+
+        90deg,
+
+        rgba(56,189,248,.16),
+
+        transparent
+
+    );
+
+
+    border-left:
+
+    3px solid #38bdf8;
+
+
+    box-shadow:
+
+
+    -15px 0 35px rgba(56,189,248,.2);
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   SCANNER LIGHT
+===================================== */
+
+
+.recommendation-card li::after{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    top:0;
+
+
+    left:-120%;
+
+
+    width:75%;
+
+
+    height:100%;
+
+
+    background:
+
+
+    linear-gradient(
+
+        120deg,
+
+        transparent,
+
+        rgba(56,189,248,.35),
+
+        transparent
+
+    );
+
+
+    transition:.8s ease;
+
+
+}
+
+
+
+
+
+.recommendation-card li:hover::after{
+
+
+    left:130%;
+
+
+}
+
+
+/* =====================================
+   POSITIVE COMPARISON RESULTS GREEN
+===================================== */
+
+
+.comparison-message[data-status="PREVIOUS_PREFERRED"],
+.comparison-message[data-status="CURRENT_PREFERRED"],
+.comparison-message[data-status="IDENTICAL"]{
+
+
+    color:#22c55e;
+
+
+    border-left:
+
+    2px solid rgba(34,197,94,.5);
+
+
+}
+
+
+
+
+
+.comparison-message[data-status="PREVIOUS_PREFERRED"]::before,
+.comparison-message[data-status="CURRENT_PREFERRED"]::before,
+.comparison-message[data-status="IDENTICAL"]::before{
+
+
+    background:#22c55e;
+
+
+    box-shadow:
+
+
+    0 0 10px #22c55e,
+
+
+    0 0 25px #22c55e;
+
+
+}
+
+
+
+
+
+.comparison-message[data-status="PREVIOUS_PREFERRED"]:hover,
+.comparison-message[data-status="CURRENT_PREFERRED"]:hover,
+.comparison-message[data-status="IDENTICAL"]:hover{
+
+
+    color:#f8fafc;
+
+
+    border-left:
+
+    3px solid #22c55e;
+
+
+    box-shadow:
+
+
+    -15px 0 35px rgba(34,197,94,.2);
+
+
+}
+
+/* =====================================
+   SIMILAR PASSWORD RESULT GREEN
+===================================== */
+
+
+.comparison-message[data-status="SIMILAR"],
+.comparison-message[data-status="SIMILARITY"],
+.comparison-message[data-status="SIMILAR_PASSWORD"]{
+
+
+    color:#22c55e;
+
+
+    border-left:
+
+    2px solid rgba(34,197,94,.5);
+
+
+}
+
+
+
+.comparison-message[data-status="SIMILAR"]::before,
+.comparison-message[data-status="SIMILARITY"]::before,
+.comparison-message[data-status="SIMILAR_PASSWORD"]::before{
+
+
+    background:#22c55e;
+
+
+    box-shadow:
+
+
+    0 0 10px #22c55e,
+
+
+    0 0 25px #22c55e;
+
+
+}
+/* =====================================
+   PASSWORD HIDDEN STYLE
+===================================== */
+
+
+.hidden-password{
+
+
+    color:#38bdf8;
+
+
+    cursor:pointer;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   AMBIENT LIGHT
+===================================== */
+
+
+.recommendation-page::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    right:-120px;
+
+
+    top:15%;
+
+
+    width:300px;
+
+
+    height:300px;
+
+
+    background:
+
+
+    radial-gradient(
+
+        circle,
+
+        rgba(56,189,248,.18),
+
+        transparent 70%
+
+    );
+
+
+    filter:blur(45px);
+
+
+    animation:
+
+    hudPulse 8s infinite;
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+
+
+
+
+@keyframes hudPulse{
+
+
+0%,100%{
+
+
+    transform:scale(1);
+
+
+    opacity:.35;
+
+
+}
+
+
+
+50%{
+
+
+    transform:scale(1.35);
+
+
+    opacity:.8;
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   RESULT PANEL ALIGNMENT
+===================================== */
+
+
+.result-panel{
+
+
+    height:415px !important;
+
+
+    overflow:hidden !important;
+
+
+}
+
+
+
+
+#panelBody,
+.result-section{
+
+
+    height:100% !important;
+
+
+    min-height:0 !important;
+
+
+    overflow:hidden !important;
+
+
+}
+
+
+
+
+
+.recommendation-page{
+
+
+    height:100% !important;
+
+
+    max-height:100% !important;
+
+
+    overflow-y:auto !important;
+
+
+    overflow-x:hidden !important;
+
+
+    padding-bottom:80px !important;
+
+
+}
+
+
+
+
+
+.recommendation-section{
+
+
+    height:auto !important;
+
+
+    min-height:100% !important;
+
+
+    overflow:visible !important;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+}
+
+
+
+
+
+.recommendation-card{
+
+
+    height:auto !important;
+
+
+    min-height:0 !important;
+
+
+    flex-shrink:0 !important;
+
+
+}
+
+
+
+
+
+.recommendation-card li{
+
+
+    flex-shrink:0 !important;
+
+
+}

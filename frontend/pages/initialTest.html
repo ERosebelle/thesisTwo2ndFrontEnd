@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="../assets/images/logo.png">
+
+
+<title>
+Password Vulnerability and Cracking Method Classification System
+</title>
+
+
+<link rel="stylesheet" href="../css/initialTest.css">
+
+</head>
+
+
+
+<body>
+
+
+<div class="scene">
+
+
+
+
+
+<!-- =========================
+     MAIN TEST AREA
+========================= -->
+
+
+<div class="test-container">
+
+
+
+    <div class="header">
+
+            <!-- =========================
+         SYSTEM LOGO
+    ========================= -->
+
+ <div class="system-logo">
+    <img src="../assets/images/logo.png">
+</div>
+
+        <h1>
+            Password Vulnerability and Cracking Method Classification System
+        </h1>
+
+    </div>
+
+
+
+
+
+
+    <div class="assessment-card">
+
+
+
+        <div class="input-area">
+
+
+
+            <div class="input-header">
+
+
+                <label>
+                    Enter Password
+                </label>
+
+
+
+
+                <button
+                id="infoButton"
+                class="info-btn"
+                type="button">
+
+                    i
+
+                </button>
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="password-wrapper">
+
+
+                <input
+
+                id="passwordInput"
+
+                type="password"
+
+                placeholder="Waiting for your password input..."
+
+                >
+
+
+
+
+
+
+                <button
+
+                type="button"
+
+                id="togglePassword"
+
+                class="eye-btn"
+
+                >
+
+
+
+
+
+                    <svg
+                    id="eyeOpen"
+                    class="eye-svg"
+                    viewBox="0 0 24 24"
+                    fill="none">
+
+
+                        <path
+
+                        d="M2 12C4.5 7.5 8 5 12 5C16 5 19.5 7.5 22 12C19.5 16.5 16 19 12 19C8 19 4.5 16.5 2 12Z"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+                        <circle
+
+                        cx="12"
+
+                        cy="12"
+
+                        r="3"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+                    </svg>
+
+
+
+
+
+
+
+                    <svg
+
+                    id="eyeClosed"
+
+                    class="eye-svg hidden"
+
+                    viewBox="0 0 24 24"
+
+                    fill="none">
+
+
+
+                        <path
+
+                        d="M3 3L21 21"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+
+
+                        <path
+
+                        d="M2 12C4.5 7.5 8 5 12 5C16 5 19.5 7.5 22 12"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+
+
+                        <path
+
+                        d="M6 16C7.8 17.9 9.8 19 12 19C16 19 19.5 16.5 22 12"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+
+                    </svg>
+
+
+
+
+                </button>
+
+
+
+            </div>
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+<button
+
+id="scanButton"
+
+class="scan-btn"
+
+type="button">
+
+    ANALYZE PASSWORD
+
+</button>
+
+
+
+    </div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     INFORMATION MENU
+========================= -->
+
+
+<div class="info-menu">
+
+
+    <button
+
+    class="info-option active"
+
+    data-section="about">
+
+
+        About System
+
+
+    </button>
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="process">
+
+
+        How It Works
+
+
+    </button>
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="analysis">
+
+
+        Password Analysis
+
+
+    </button>
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="methods">
+
+
+        Cracking Methods
+
+
+    </button>
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="decision">
+
+
+        Decision Tree
+
+
+    </button>
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="tutorial">
+
+
+        Tutorial
+
+
+    </button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     INFORMATION PANEL
+========================= -->
+
+
+<div class="info-panel">
+
+
+
+
+
+    <div class="info-header">
+
+
+        <h2 id="infoTitle">
+
+            About System
+
+        </h2>
+
+
+
+
+
+        <button
+
+        id="closeInfo"
+
+        class="close-info"
+
+        type="button">
+
+
+            ×
+
+
+        </button>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <!--
+        ALL DYNAMIC INFORMATION
+        WILL APPEAR HERE
+
+        SCROLL IS CONTROLLED BY CSS
+    -->
+
+
+    <div
+
+    class="info-content"
+
+    id="infoContent">
+
+
+
+
+
+        <h3>
+            Password Vulnerability Assessment
+        </h3>
+
+
+
+
+
+        <p>
+
+            This system evaluates user-generated passwords
+            and identifies possible vulnerabilities against
+            common password cracking strategies.
+
+        </p>
+
+
+
+
+
+
+        <p>
+
+            Instead of only providing a password strength score,
+            the system analyzes password characteristics and
+            determines the possible attack method that may affect
+            the password.
+
+        </p>
+
+
+
+
+
+        <p>
+
+            The original password is not stored.
+            After feature extraction, the password is removed
+            and only the generated representation is processed.
+
+        </p>
+
+
+
+
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<script src="../js/initialTest.js"></script>
+
+
+</body>
+
+
+</html>

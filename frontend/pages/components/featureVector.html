@@ -1,0 +1,138 @@
+<!-- FEATURE VECTOR COMPONENT -->
+
+<div class="feature-page">
+
+    <div class="feature-vector-section">
+
+        <!-- HEADER -->
+        <div class="feature-vector-header">
+
+          
+
+            <p class="feature-vector-description">
+                The following structural characteristics were extracted from your
+                password and transformed into a feature vector. These values are
+                used as the input variables for the Decision Tree (CART) model to
+                determine which password attack strategy your password is most
+                vulnerable to.
+            </p>
+
+            <div class="feature-vector-divider"></div>
+
+        </div>
+
+
+        <!-- TABLES -->
+        <div class="feature-table-container">
+
+
+            <!-- PASSWORD CHARACTERISTICS -->
+            <div class="feature-table-card">
+
+                <h3>Password Characteristics</h3>
+
+                <table class="feature-table">
+
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>Password Length</td>
+                            <td id="fvLength">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Lowercase Letters</td>
+                            <td id="fvLowercase">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Uppercase Letters</td>
+                            <td id="fvUppercase">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Numbers</td>
+                            <td id="fvDigits">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Symbols</td>
+                            <td id="fvSymbols">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Character Classes</td>
+                            <td id="fvClasses">-</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- VULNERABILITY PATTERNS -->
+            <div class="feature-table-card">
+
+                <h3>Vulnerability Pattern Detection</h3>
+
+                <table class="feature-table">
+
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>Dictionary Word</td>
+                            <td id="fvDictionary">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Leetspeak</td>
+                            <td id="fvLeetspeak">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Numeric Suffix</td>
+                            <td id="fvSuffix">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Sequential Pattern</td>
+                            <td id="fvSequence">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Repeated Pattern</td>
+                            <td id="fvRepetition">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Rule-Based Pattern</td>
+                            <td id="fvRulePattern">-</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

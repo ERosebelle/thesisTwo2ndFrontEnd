@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>
+Password Vulnerability Classification System
+</title>
+
+
+<!-- SYSTEM LOGO / TAB ICON -->
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+
+
+</head>
+
+
+<body>
+
+
+
+<script>
+
+
+// =====================================
+// ENTRY CONTROLLER
+// =====================================
+
+
+// Check if user already accepted consent
+
+const consent =
+sessionStorage.getItem("privacyConsentGranted");
+
+
+
+
+// First visit
+
+if(consent !== "true"){
+
+
+    window.location.href =
+    "pages/consent.html";
+
+
+}
+
+
+
+
+// Already accepted
+
+else{
+
+
+    window.location.href =
+    "pages/initialTest.html";
+
+
+}
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

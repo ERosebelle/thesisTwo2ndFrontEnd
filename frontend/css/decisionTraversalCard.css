@@ -1,0 +1,797 @@
+/* =====================================
+   DECISION TREE EXPLORER
+   Interactive Traversal Card
+===================================== */
+
+/* =====================================
+   OVERLAY
+===================================== */
+
+.decision-traversal-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    background:rgba(3,8,18,.75);
+
+    backdrop-filter:blur(3px);
+
+
+    opacity:0;
+
+    visibility:hidden;
+
+    pointer-events:none;
+
+
+    z-index:9999;
+
+}
+
+
+.decision-traversal-overlay.active{
+
+    opacity:1;
+
+    visibility:visible;
+
+    pointer-events:auto;
+
+}
+
+
+
+/* =====================================
+   CARD
+===================================== */
+
+.decision-traversal-card{
+
+    width:1080px;
+
+    max-width:94vw;
+
+
+    height:680px;
+
+    max-height:90vh;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+
+    overflow:hidden;
+
+
+    border-radius:14px;
+
+
+    border:
+
+    1px solid rgba(56,189,248,.35);
+
+
+    background:#0f172a;
+
+}
+
+
+
+/* =====================================
+   HEADER
+===================================== */
+
+.decision-traversal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+
+    padding:16px 20px;
+
+
+    border-bottom:
+
+    1px solid rgba(56,189,248,.25);
+
+
+    flex-shrink:0;
+
+}
+
+
+.decision-traversal-header h2{
+
+    margin:0;
+
+
+    color:white;
+
+
+    font-size:18px;
+
+
+    letter-spacing:1px;
+
+}
+
+
+
+.decision-traversal-close{
+
+    width:36px;
+
+    height:36px;
+
+
+    border:none;
+
+
+    cursor:pointer;
+
+
+    background:#1e293b;
+
+
+    color:white;
+
+
+    font-size:22px;
+
+}
+
+.decision-traversal-body{
+
+    flex:1;
+
+    min-height:0;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    scrollbar-width:thin;
+    scrollbar-color:
+        rgba(56,189,248,.45)
+        transparent;
+
+}
+
+/* =====================================
+   DECISION TREE SCROLLBAR
+===================================== */
+
+.decision-traversal-body::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+.decision-traversal-body::-webkit-scrollbar-track{
+
+    background:transparent;
+
+}
+
+.decision-traversal-body::-webkit-scrollbar-thumb{
+
+    background:
+        rgba(56,189,248,.35);
+
+    border-radius:999px;
+
+    border:2px solid transparent;
+
+    background-clip:padding-box;
+
+    transition:.25s;
+
+}
+
+.decision-traversal-body::-webkit-scrollbar-thumb:hover{
+
+    background:
+        rgba(56,189,248,.7);
+
+}
+
+
+
+/* =====================================
+   PLACEHOLDER
+===================================== */
+
+.decision-traversal-placeholder{
+
+    width:100%;
+
+    height:100%;
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    color:#64748b;
+
+}
+
+
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
+.decision-traversal-content{
+
+    width:100%;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+
+    padding:22px 0 40px;
+
+}
+
+
+
+.dtc-intro{
+
+    max-width:560px;
+
+
+    margin:0 0 22px;
+
+    padding:0 20px;
+
+
+    color:#94a3b8;
+
+    font-size:13px;
+
+    line-height:1.6;
+
+    text-align:center;
+
+}
+
+
+
+/* =====================================
+   TREE AREA
+   Side padding = reserved space for info
+   cards. The tree itself has a fixed max
+   width; it never spreads wider than that,
+   it only grows taller.
+===================================== */
+
+.dtc-tree-wrap{
+
+    position:relative;
+
+
+    width:100%;
+
+
+    display:flex;
+
+    justify-content:center;
+
+
+    padding:0 240px;
+
+
+    box-sizing:border-box;
+
+}
+
+
+
+.dtc-tree-svg{
+
+    display:block;
+
+    overflow:visible;
+
+}
+
+
+
+/* =====================================
+   TREE NODES (rendered via foreignObject
+   so the question / result text can wrap
+   inside a proper square panel)
+===================================== */
+
+.dtc-node-box{
+
+    width:100%;
+
+    height:100%;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+
+    box-sizing:border-box;
+
+    padding:6px 8px;
+
+
+    text-align:center;
+
+
+    font-size:11px;
+
+    font-weight:600;
+
+    line-height:1.25;
+
+    color:#f8fafc;
+
+
+    border-radius:4px;
+
+
+    cursor:pointer;
+
+
+    transition:
+
+    transform .2s ease,
+
+    box-shadow .2s ease;
+
+}
+
+
+.dtc-node-box:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+
+/* QUESTION NODE - purple square */
+
+.dtc-question-box{
+
+    background:
+
+    linear-gradient(
+
+        160deg,
+
+        #8b5cf6,
+
+        #6d28d9
+
+    );
+
+
+    border:1px solid #a78bfa;
+
+
+    box-shadow:
+
+    0 0 10px rgba(167,139,250,.6);
+
+}
+
+
+.dtc-question-box:hover{
+
+    box-shadow:
+
+    0 0 18px rgba(167,139,250,.95);
+
+}
+
+
+
+/* RESULT NODE - yellow square */
+
+.dtc-result-box{
+
+    background:
+
+    linear-gradient(
+
+        160deg,
+
+        #facc15,
+
+        #b45309
+
+    );
+
+
+    border:1px solid #facc15;
+
+
+    color:#1c1207;
+
+
+    text-transform:uppercase;
+
+    letter-spacing:.5px;
+
+
+    box-shadow:
+
+    0 0 10px rgba(250,204,21,.6);
+
+}
+
+
+.dtc-result-box:hover{
+
+    box-shadow:
+
+    0 0 18px rgba(250,204,21,.95);
+
+}
+
+
+
+/* Off-path result: same shape, visibly muted -
+   this outcome was not the one reached */
+
+.dtc-off-path{
+
+    opacity:.45;
+
+    filter:saturate(.6);
+
+}
+
+
+
+/* Node currently showing its info card */
+
+.dtc-node-active{
+
+    transform:scale(1.08);
+
+    box-shadow:
+
+    0 0 22px rgba(56,189,248,.9) !important;
+
+}
+
+
+
+/* =====================================
+   BRANCH CONNECTORS (YES / NO)
+===================================== */
+
+.dtc-branch-group{
+
+    cursor:pointer;
+
+}
+
+
+.dtc-branch-line{
+
+    stroke:#22c55e;
+
+    stroke-width:2;
+
+
+    filter:
+
+    drop-shadow(0 0 4px rgba(34,197,94,.85));
+
+
+    transition:stroke-width .15s ease;
+
+}
+
+
+.dtc-branch-line.dtc-off-path{
+
+    stroke:#475569;
+
+    opacity:.55;
+
+    filter:none;
+
+}
+
+
+/* wide, invisible line stacked on top for a
+   comfortable click / tap target */
+
+.dtc-branch-hit{
+
+    stroke:transparent;
+
+    stroke-width:18;
+
+}
+
+
+.dtc-branch-group:hover .dtc-branch-line{
+
+    stroke-width:3.5;
+
+}
+
+
+.dtc-branch-group.dtc-branch-active .dtc-branch-line{
+
+    stroke-width:3.5;
+
+    stroke:#7dd3fc;
+
+    filter:
+
+    drop-shadow(0 0 6px rgba(125,211,252,.9));
+
+}
+
+
+.dtc-branch-label{
+
+    fill:#94a3b8;
+
+    font-size:10px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
+    text-anchor:middle;
+
+    pointer-events:none;
+
+}
+
+
+
+/* =====================================
+   FLOATING INFO CARD
+   Positioned via JS (fixed to the viewport),
+   but always clamped to stay fully inside
+   .decision-traversal-card's own bounds -
+   see positionInfoCard() in the JS file.
+===================================== */
+
+.dtc-info-card{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+
+    width:210px;
+
+
+    display:none;
+
+    flex-direction:column;
+
+
+    border-radius:10px;
+
+
+    border:
+
+    1px solid rgba(56,189,248,.4);
+
+
+    background:#0b1220;
+
+
+    box-shadow:
+
+    0 0 20px rgba(56,189,248,.35);
+
+
+    z-index:10000;
+
+}
+
+
+.dtc-info-card.active{
+
+    display:flex;
+
+}
+
+
+.dtc-info-card-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:8px;
+
+
+    padding:10px 12px;
+
+
+    border-bottom:
+
+    1px solid rgba(56,189,248,.2);
+
+
+    color:#38bdf8;
+
+
+    font-size:11px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.5px;
+
+    line-height:1.4;
+
+}
+
+
+.dtc-info-card-close{
+
+    flex-shrink:0;
+
+
+    width:20px;
+
+    height:20px;
+
+
+    border:none;
+
+    background:transparent;
+
+
+    color:#94a3b8;
+
+    font-size:16px;
+
+    line-height:1;
+
+
+    cursor:pointer;
+
+}
+
+
+
+.dtc-info-card-body{
+
+    padding:12px;
+
+
+    max-height:260px;
+
+    overflow-y:auto;
+
+
+    color:#dbeafe;
+
+    font-size:12.5px;
+
+    line-height:1.6;
+
+}
+
+
+.dtc-info-card-body p{
+
+    margin:0 0 10px;
+
+}
+
+
+.dtc-info-card-body p:last-child{
+
+    margin-bottom:0;
+
+}
+
+
+.dtc-info-card-body .dtc-info-section-label{
+
+    display:block;
+
+
+    margin-bottom:3px;
+
+
+    color:#facc15;
+
+
+    font-size:10px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.5px;
+
+}
+
+
+
+.dtc-info-card-body,
+.dtc-tree-wrap{
+
+    scrollbar-width:none;
+
+    -ms-overflow-style:none;
+
+}
+
+
+.dtc-info-card-body::-webkit-scrollbar{
+
+    display:none;
+
+}
+
+
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media(max-width:1100px){
+
+
+    .decision-traversal-card{
+
+        width:95vw;
+
+        height:90vh;
+
+    }
+
+
+    .dtc-tree-wrap{
+
+        padding:0 20px;
+
+    }
+
+
+    .dtc-info-card{
+
+        width:180px;
+
+    }
+
+}

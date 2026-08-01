@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="../assets/images/logo.png">
+
+
+<title>
+Password Vulnerability Comparison Test
+</title>
+
+
+<link rel="stylesheet" href="../css/comparisonTest.css">
+
+</head>
+
+
+
+<body>
+
+
+<div class="scene">
+
+
+
+
+
+<!-- =========================
+     MAIN COMPARISON AREA
+========================= -->
+
+
+<div class="test-container">
+
+
+
+
+
+    <div class="header">
+
+
+        <div class="system-logo">
+
+            <img src="../assets/images/logo.png">
+
+        </div>
+
+
+
+        <h1>
+
+            Password Vulnerability and Cracking Method Classification System
+
+        </h1>
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="assessment-card">
+
+
+
+
+
+        <div class="input-area">
+
+
+
+
+
+            <div class="input-header">
+
+
+                <label>
+
+                    Enter New Password
+
+                </label>
+
+
+
+
+                <button
+
+                id="infoButton"
+
+                class="info-btn"
+
+                type="button">
+
+
+                    i
+
+
+                </button>
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="password-wrapper">
+
+
+
+                <input
+
+                id="comparePasswordInput"
+
+                type="password"
+
+                placeholder="Enter password for comparison..."
+
+                >
+
+
+
+
+
+                <button
+
+                type="button"
+
+                id="togglePassword"
+
+                class="eye-btn">
+
+
+
+
+
+                    <svg
+
+                    id="eyeOpen"
+
+                    class="eye-svg"
+
+                    viewBox="0 0 24 24"
+
+                    fill="none">
+
+
+                        <path
+
+                        d="M2 12C4.5 7.5 8 5 12 5C16 5 19.5 7.5 22 12C19.5 16.5 16 19 12 19C8 19 4.5 16.5 2 12Z"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+                        <circle
+
+                        cx="12"
+
+                        cy="12"
+
+                        r="3"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+                    </svg>
+
+
+
+
+
+
+                    <svg
+
+                    id="eyeClosed"
+
+                    class="eye-svg hidden"
+
+                    viewBox="0 0 24 24"
+
+                    fill="none">
+
+
+
+                        <path
+
+                        d="M3 3L21 21"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+
+
+                        <path
+
+                        d="M2 12C4.5 7.5 8 5 12 5C16 5 19.5 7.5 22 12"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+
+
+                        <path
+
+                        d="M6 16C7.8 17.9 9.8 19 12 19C16 19 19.5 16.5 22 12"
+
+                        stroke="#0369a1"
+
+                        stroke-width="2"/>
+
+
+                    </svg>
+
+
+
+                </button>
+
+
+            </div>
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     ACTION BUTTONS
+========================= -->
+
+
+<div class="button-group">
+
+
+
+    <button
+
+    id="resetButton"
+
+    class="reset-btn"
+
+    type="button">
+
+
+        RESET
+
+
+    </button>
+
+
+
+
+
+
+    <button
+
+    id="compareButton"
+
+    class="compare-btn"
+
+    type="button">
+
+
+        COMPARE PASSWORD
+
+
+    </button>
+
+
+
+
+</div>
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     BUTTON INFORMATION POPUP
+========================= -->
+
+
+<div class="button-info" id="buttonInfo">
+
+
+    <h3 id="buttonInfoTitle">
+
+        Button Information
+
+    </h3>
+
+
+    <p id="buttonInfoText">
+
+        Hover over a button to see its function.
+
+    </p>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     INFORMATION MENU
+========================= -->
+
+
+<div class="info-menu">
+
+
+
+    <button
+
+    class="info-option active"
+
+    data-section="about">
+
+
+        About Comparison
+
+
+    </button>
+
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="process">
+
+
+        Comparison Process
+
+
+    </button>
+
+
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="analysis">
+
+
+        Password Features
+
+
+    </button>
+
+
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="methods">
+
+
+        Security Differences
+
+
+    </button>
+
+
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="decision">
+
+
+        Decision Tree
+
+
+    </button>
+
+
+
+
+
+
+
+    <button
+
+    class="info-option"
+
+    data-section="tutorial">
+
+
+        Tutorial
+
+
+    </button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- =========================
+     INFORMATION PANEL
+========================= -->
+
+
+<div class="info-panel">
+
+
+
+
+
+    <div class="info-header">
+
+
+        <h2 id="infoTitle">
+
+            About Comparison
+
+        </h2>
+
+
+
+
+
+        <button
+
+        id="closeInfo"
+
+        class="close-info"
+
+        type="button">
+
+
+            ×
+
+
+        </button>
+
+
+
+    </div>
+
+
+
+
+
+
+    <div
+
+    class="info-content"
+
+    id="infoContent">
+
+
+
+
+
+        <h3>
+
+            Password Comparison Assessment
+
+        </h3>
+
+
+
+
+
+
+        <p>
+
+            This comparison test allows users to evaluate
+            another password and compare its vulnerability
+            against a previously analyzed password.
+
+        </p>
+
+
+
+
+
+
+        <p>
+
+            The system extracts password characteristics
+            and determines whether the new password provides
+            better protection against possible cracking strategies.
+
+        </p>
+
+
+
+
+
+
+        <p>
+
+            Only extracted password features are processed.
+            The original password is not stored by the system.
+
+        </p>
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<script src="../js/comparisonTest.js"></script>
+
+
+</body>
+
+
+</html>
