@@ -1,0 +1,335 @@
+/* ======================================
+   CLASSIFICATION PANEL COMPONENT
+   classification.css
+====================================== */
+
+
+/* MAIN CLASSIFICATION CARD */
+
+.classification-panel{
+
+    width:280px;
+
+    height:420px;
+
+    padding:25px;
+
+    position:relative;
+
+    flex-shrink:0;
+
+
+    background:
+    linear-gradient(
+        145deg,
+        rgba(15,23,42,.96),
+        rgba(30,41,59,.90)
+    );
+
+
+    border:
+
+    1px solid rgba(56,189,248,.18);
+
+
+    border-radius:20px;
+
+
+    backdrop-filter:blur(16px);
+
+
+    box-shadow:
+
+    0 20px 50px rgba(0,0,0,.45),
+
+    0 0 20px rgba(56,189,248,.08);
+
+
+    overflow:hidden;
+
+}
+
+
+
+/* glowing top line */
+
+.classification-panel::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:5px;
+
+
+    background:
+
+    linear-gradient(
+        90deg,
+        #38bdf8,
+        #60a5fa,
+        #38bdf8
+    );
+
+}
+
+
+
+
+/* TITLE */
+
+.classification-panel h2{
+
+    margin:0 0 20px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    color:#f8fafc;
+
+    letter-spacing:.5px;
+
+}
+
+
+
+
+
+/* ======================================
+   CLASSIFICATION ITEMS
+====================================== */
+
+
+.classification-item{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
+    margin:15px 0;
+
+}
+
+
+
+
+
+.classification-item .label{
+
+    font-size:10px;
+
+    font-weight:600;
+
+    letter-spacing:1px;
+
+    text-transform:uppercase;
+
+    color:#7dd3fc;
+
+}
+
+
+
+
+
+.classification-item .value{
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:#f8fafc;
+
+    white-space:normal;
+
+    word-break:break-word;
+
+}
+
+
+
+
+
+/* ======================================
+   SUMMARY BOX
+====================================== */
+
+
+.summary-box{
+
+    position:absolute;
+
+
+    left:20px;
+
+
+    right:20px;
+
+
+    bottom:20px;
+
+
+    height:130px;
+
+
+    padding:14px;
+
+
+    border-radius:14px;
+
+
+    background:
+
+    linear-gradient(
+
+        145deg,
+
+        rgba(15,23,42,.85),
+
+        rgba(30,41,59,.75)
+
+    );
+
+
+    border:
+
+    1px solid rgba(56,189,248,.15);
+
+
+
+    box-shadow:
+
+
+        inset 0 0 20px rgba(56,189,248,.05),
+
+
+        0 10px 25px rgba(0,0,0,.25);
+
+
+
+    overflow-y:auto;
+
+}
+
+
+
+/* scrollbar */
+
+.summary-box::-webkit-scrollbar{
+
+    width:5px;
+
+}
+
+
+
+.summary-box::-webkit-scrollbar-thumb{
+
+    background:#38bdf8;
+
+    border-radius:10px;
+
+}
+
+
+
+
+
+/* ======================================
+   SUMMARY TEXT
+====================================== */
+
+
+.summary-box h3{
+
+    margin:0 0 8px;
+
+
+    color:#7dd3fc;
+
+
+    font-size:12px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.5px;
+
+}
+
+
+
+
+
+.summary-box p{
+
+    margin:0;
+
+
+    color:#cbd5e1;
+
+
+    font-size:11px;
+
+
+    line-height:1.5;
+
+}
+
+
+
+
+.summary-section{
+
+    margin-bottom:10px;
+
+}
+
+
+
+.summary-section:last-child{
+
+    margin-bottom:0;
+
+}
+
+
+
+.summary-section > strong{
+
+    display:block;
+
+
+    margin-bottom:3px;
+
+
+    color:#7dd3fc;
+
+
+    font-size:11px;
+
+}
+
+
+
+.summary-section p{
+
+    margin:0;
+
+    color:#cbd5e1;
+
+    font-size:11px;
+
+    line-height:1.5;
+
+}

@@ -7,69 +7,120 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
 <title>
 Password Vulnerability Classification System
 </title>
 
-
-<!-- SYSTEM LOGO / TAB ICON -->
 <link rel="icon" type="image/png" href="assets/images/logo.png">
 
+<style>
+
+body{
+
+    margin:0;
+    height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-family:
+    "Century Gothic",
+    Arial,
+    sans-serif;
+
+    background:#0b1220;
+    color:white;
+
+}
+
+#message{
+
+    max-width:700px;
+    padding:40px;
+
+    text-align:center;
+
+    line-height:1.7;
+
+}
+
+h1{
+
+    margin-bottom:20px;
+
+}
+
+p{
+
+    opacity:.9;
+
+}
+
+</style>
 
 </head>
 
-
 <body>
 
+<div id="message">
 
+<h1>
+Password Vulnerability Classification System
+</h1>
+
+<p id="status">
+Starting system...
+</p>
+
+</div>
 
 <script>
 
-
 // =====================================
-// ENTRY CONTROLLER
+// SYSTEM STARTUP
 // =====================================
 
+// Project opened directly from file explorer
 
-// Check if user already accepted consent
+if(window.location.protocol === "file:"){
 
-const consent =
-sessionStorage.getItem("privacyConsentGranted");
+    document.getElementById("status").innerHTML =
 
+    "<strong>Project cannot start.</strong><br><br>" +
 
+    "This system must be opened through a local web server.<br><br>" +
 
-
-// First visit
-
-if(consent !== "true"){
-
-
-    window.location.href =
-    "pages/consent.html";
-
+    "Please run the project from Visual Studio Code or another local server, then open the provided localhost address.";
 
 }
 
-
-
-
-// Already accepted
+// Project opened correctly
 
 else{
 
+    const consent =
+    localStorage.getItem("consentAccepted");
 
-    window.location.href =
-    "pages/initialTest.html";
+    if(consent === "true"){
 
+        window.location.replace(
+            "pages/initialTest.html"
+        );
+
+    }
+
+    else{
+
+        window.location.replace(
+            "pages/consent.html"
+        );
+
+    }
 
 }
 
-
-
 </script>
-
-
 
 </body>
 

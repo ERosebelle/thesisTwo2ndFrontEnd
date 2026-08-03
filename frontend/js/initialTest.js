@@ -1157,7 +1157,6 @@ if(scanButton && passwordInput){
 
 sessionStorage.removeItem("analysisResult");
 
-localStorage.removeItem("analyzedPassword");
 
 localStorage.removeItem("comparisonResult");
 
@@ -1260,3 +1259,26 @@ window.addEventListener(
     "unload",
     function(){}
 );
+
+// =========================
+// ENTER KEY ANALYSIS
+// =========================
+
+if(passwordInput && scanButton){
+
+    passwordInput.addEventListener(
+        "keydown",
+        (event)=>{
+
+            if(event.key === "Enter"){
+
+                event.preventDefault();
+
+                scanButton.click();
+
+            }
+
+        }
+    );
+
+}

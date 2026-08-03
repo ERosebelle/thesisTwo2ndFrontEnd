@@ -2420,55 +2420,7 @@ body::after{
 
 }
 
-/* =========================
-   TUTORIAL IMAGE SLIDER
-========================= */
 
-
-.tutorial-slider{
-
-    position:relative;
-
-    width:380px;
-    height:auto;
-max-width:100%;
-    margin:auto;
-
-}
-
-
-
-.tutorial-slide{
-
-    position:absolute;
-
-    top:0;
-
-    left:0;
-
-    width:180px;
-
-    height:180px;
-
-    object-fit:contain;
-
-    opacity:0;
-
-    visibility:hidden;
-
-    transition:.4s ease;
-
-}
-
-
-
-.tutorial-slide.active{
-
-    opacity:1;
-
-    visibility:visible;
-
-}
 
 
 
@@ -2521,12 +2473,13 @@ max-width:100%;
    TUTORIAL IMAGE SLIDER
 ========================= */
 
-
 .tutorial-slider{
 
-    width:260px;
+    width:380px;
 
-    height:160px;
+    height:220px;
+
+    max-width:100%;
 
     margin:20px auto;
 
@@ -2537,7 +2490,6 @@ max-width:100%;
     cursor:pointer;
 
 }
-
 
 
 .tutorial-slide{

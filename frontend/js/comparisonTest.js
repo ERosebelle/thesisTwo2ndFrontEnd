@@ -858,16 +858,22 @@ if(resetButton){
 
 
     resetButton.addEventListener(
-        "click",
-        ()=>{
+    "click",
+    ()=>{
 
+        localStorage.removeItem(
+            "comparisonPassword"
+        );
 
-            window.location.href =
-            "initialTest.html";
+        localStorage.removeItem(
+            "previousPassword"
+        );
 
+        window.location.href =
+        "initialTest.html";
 
-        }
-    );
+    }
+);
 
 
 }
@@ -1001,17 +1007,46 @@ if(compareButton && passwordInput){
                 const result =
                 await response.json();
 
+// ======================================
+// SAVE PASSWORD COMPARISON DATA
+// Keep original password as permanent reference
+// ======================================
 
 
+// Get the FIRST analyzed password
+const originalReference =
+localStorage.getItem(
+    "analyzedPassword"
+);
 
 
-                // SAVE ONLY THE COMPARISON PASSWORD
-// Keep analyzedPassword unchanged from the Initial Test.
+// Save only for password preview display
+if(originalReference){
+
+    localStorage.setItem(
+        "previousPassword",
+        originalReference
+    );
+
+}
+
+
+// Remove old comparison first
+localStorage.removeItem(
+    "comparisonPassword"
+);
+
+
+// Store new comparison password
 localStorage.setItem(
     "comparisonPassword",
     password
 );
 
+localStorage.setItem(
+    "currentPassword",
+    password
+);
 
 
                 // SAVE RESULT
@@ -1360,3 +1395,28 @@ window.addEventListener(
     "unload",
     function(){}
 );
+
+
+
+// =========================
+// ENTER KEY COMPARISON
+// =========================
+
+if(passwordInput && compareButton){
+
+    passwordInput.addEventListener(
+        "keydown",
+        (event)=>{
+
+            if(event.key === "Enter"){
+
+                event.preventDefault();
+
+                compareButton.click();
+
+            }
+
+        }
+    );
+
+}

@@ -1,18 +1,79 @@
 // ======================================
-// RESULT PAGE
-// result.js
+// BACKEND ANALYSIS CONNECTION
 // ======================================
 
-document
-.querySelectorAll(".classification-item")
-.forEach(item => {
 
-    item.classList.remove(
-        "comparison-mode"
-    );
+async function analyzePassword(password){
 
-});
 
+    try{
+
+
+        const response =
+        await fetch(
+            "http://localhost:3000/analyze",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+
+                body:JSON.stringify({
+
+                    password: password
+
+                })
+
+            }
+        );
+
+
+
+        if(!response.ok){
+
+            throw new Error(
+                "Backend request failed"
+            );
+
+        }
+
+
+
+        const data =
+        await response.json();
+
+
+
+        console.log(
+            "BACKEND RESPONSE:",
+            data
+        );
+
+
+
+        return data;
+
+
+
+    }
+    catch(error){
+
+
+        console.error(
+            "Backend connection error:",
+            error
+        );
+
+
+        throw error;
+
+    }
+
+
+}
 // ======================================
 // PREVENT RELOAD / BACK BUTTON / DIRECT ACCESS
 // ======================================
@@ -94,6 +155,17 @@ async function loadComponents(){
 
     try{
 
+// ================================
+// CLASSIFICATION COMPONENT
+// ================================
+
+const classificationResponse =
+await fetch(
+    "./components/classification.html"
+);
+
+const classification =
+await classificationResponse.text();
 
 // ================================
 // DECISION TREE COMPONENT
@@ -169,7 +241,10 @@ await summaryCardResponse.text();
             "featureSection"
         );
 
-
+const classificationSection =
+document.getElementById(
+    "classificationSection"
+);
 
 
 
@@ -177,6 +252,13 @@ await summaryCardResponse.text();
 document.getElementById(
     "decisionSection"
 );
+
+if(classificationSection){
+
+    classificationSection.innerHTML =
+    classification;
+
+}
 
 if(decisionSection){
 
@@ -328,7 +410,6 @@ document.addEventListener(
 
 
 
-
 loadComponents()
 .then(()=>{
 
@@ -349,8 +430,11 @@ loadComponents()
 
     fetchAnalysisResult();
 
-});
 
+    initializePasswordPreview();
+
+
+});
 
 
 
@@ -747,23 +831,34 @@ if(resetButton){
 
 
 
-    resetButton.addEventListener(
-        "click",
-        ()=>{
+  resetButton.addEventListener(
+    "click",
+    ()=>{
 
-            localStorage.removeItem(
-                "analyzedPassword"
-            );
+        localStorage.removeItem(
+            "analyzedPassword"
+        );
 
-            localStorage.removeItem(
-                "comparisonPassword"
-            );
+        
 
-            window.location.href =
-            "initialTest.html";
+        localStorage.removeItem(
+            "previousPassword"
+        );
 
-        }
-    );
+        localStorage.removeItem(
+            "currentPassword"
+        );
+
+        sessionStorage.removeItem(
+            "analysisResult"
+        );
+
+
+        window.location.href =
+        "initialTest.html";
+
+    }
+);
 
 
 }
@@ -811,78 +906,16 @@ if(compareButton){
 
 
 
-// ======================================
-// BACKEND ANALYSIS CONNECTION
-// SUPPORTS NORMAL + COMPARISON MODE
-// ======================================
-
-
-
 const analyzedPassword =
 localStorage.getItem(
     "analyzedPassword"
 );
 
 
-
 const comparisonPassword =
 localStorage.getItem(
     "comparisonPassword"
 );
-
-
-
-
-
-async function analyzePassword(password){
-
-
-    const response =
-    await fetch(
-        "http://localhost:3000/analyze",
-        {
-
-
-            method:"POST",
-
-
-            headers:{
-
-
-                "Content-Type":
-                "application/json"
-
-
-            },
-
-
-            body:JSON.stringify({
-
-
-                password:password
-
-
-            })
-
-
-        }
-
-    );
-
-
-
-    return await response.json();
-
-
-}
-
-
-
-
-
-
-
-
 
 async function fetchAnalysisResult(){
 
@@ -909,12 +942,10 @@ async function fetchAnalysisResult(){
             );
 
 
-
-            const originalResult =
-            await analyzePassword(
-                analyzedPassword
-            );
-
+const originalResult =
+await analyzePassword(
+    analyzedPassword
+);
 
 
             const comparisonResult =
@@ -942,31 +973,48 @@ async function fetchAnalysisResult(){
 
 
 
-            updateComparisonClassification(
-                originalResult,
-                comparisonResult
-            );
 
 
             // Kept on window so decisionTraversalCard.js (a sibling
             // component, not a child of Decision Tree) can render
             // traversal details when the hologram is clicked -
             // without decisionTree.js having to hand it off directly.
-            window.latestAnalysisData =
-            comparisonResult;
+          window.latestAnalysisData =
+comparisonResult;
+
+
+// UPDATE CLASSIFICATION PANEL
+// FIX (Problem 1): comparison mode must render BOTH the previous
+// and current classification results. updateClassification() only
+// ever displays a single result, so it was overwriting/hiding the
+// previous password's data. updateComparisonClassification() already
+// exists in classification.js and correctly builds the Previous/
+// Current markup for both results - it just was never being called.
+if(
+    typeof updateComparisonClassification === "function"
+){
+
+    updateComparisonClassification(
+        originalResult,
+        comparisonResult
+    );
+
+}
 
 
 
+if(
+    typeof updateDecisionTree === "function"
+){
 
-            if(
-                typeof updateDecisionTree === "function"
-            ){
+    updateDecisionTree(
+        comparisonResult
+    );
 
-                updateDecisionTree(
-                    comparisonResult
-                );
+}
 
-            }
+
+
 
 
 
@@ -1033,11 +1081,15 @@ async function fetchAnalysisResult(){
 
 
 
+// UPDATE CLASSIFICATION PANEL
+if(
+    typeof updateClassification === "function"
+){
 
-        updateClassification(
-            data
-        );
+    updateClassification(data);
 
+}
+     
 
         // See comment in the comparison-mode branch above.
         window.latestAnalysisData =
@@ -1084,460 +1136,16 @@ async function fetchAnalysisResult(){
 
 
 
-
-
-
-
-// ======================================
-// NORMAL CLASSIFICATION
-// ======================================
-
-function updateClassification(data){
-
-    document
-    .querySelectorAll(".classification-item")
-    .forEach(item => {
-
-        item.classList.remove(
-            "comparison-mode"
-        );
-
-    });
-
-    const vulnerability =
-    document.getElementById(
-        "VulnerabilityFound"
-    );
-
-    const risk =
-    document.getElementById(
-        "riskLevel"
-    );
-
-    const summary =
-    document.getElementById(
-        "summaryText"
-    );
-
-    if(vulnerability){
-
-        vulnerability.textContent =
-        data.vulnerability || "-";
-
-    }
-
-    if(risk){
-
-        risk.textContent =
-        getRiskLevel(
-            data.vulnerability
-        );
-
-    }
-
-    if(summary){
-
-        const backendExplanation =
-        data.security_assessment
-        ?.vulnerability_explanation
-        || "";
-
-       const explanation =
-getVulnerabilityExplanation(
-    data.vulnerability
-);
-
-summary.innerHTML =
-
-`
-<div class="summary-section">
-
-    <strong>Risk Explanation</strong>
-
-    <p>
-        ${explanation.riskExplanation}
-    </p>
-
-</div>
-
-<div class="summary-section">
-
-    <strong>Cracking Method</strong>
-
-    <p>
-        ${explanation.crackingMethod}
-    </p>
-
-</div>
-`;
-    }
-
-}
-
-
-
-
-
-
-
-
-
-// ======================================
-// COMPARISON CLASSIFICATION
-// ======================================
-function updateComparisonClassification(
-    original,
-    comparison
-){
-
-    document
-    .querySelectorAll(".classification-item")
-    .forEach(item => {
-
-        item.classList.add(
-            "comparison-mode"
-        );
-
-    });
-
-    const vulnerability =
-    document.getElementById(
-        "VulnerabilityFound"
-    );
-
-    const risk =
-    document.getElementById(
-        "riskLevel"
-    );
-
-    const summary =
-    document.getElementById(
-        "summaryText"
-    );
-
-
-
-    if(vulnerability){
-
-        vulnerability.innerHTML =
-
-        `
-        <strong>Previous:</strong> ${original.vulnerability || "-"}<br>
-        <strong>Compared:</strong> ${comparison.vulnerability || "-"}
-        `;
-
-    }
-
-
-
-    if(risk){
-
-        risk.innerHTML =
-
-        `
-        <strong>Previous:</strong> ${getRiskLevel(original.vulnerability)}<br>
-        <strong>Compared:</strong> ${getRiskLevel(comparison.vulnerability)}
-        `;
-
-    }
-
-
-
-    if(summary){
-
-        const originalExplanation =
-        getVulnerabilityExplanation(
-            original.vulnerability
-        );
-
-        const comparisonExplanation =
-        getVulnerabilityExplanation(
-            comparison.vulnerability
-        );
-
-        summary.innerHTML =
-
-        `
-
-        <div class="summary-section">
-
-            <strong>Risk Explanation</strong>
-
-            <p>
-
-            <strong>Previous:</strong><br>
-${originalExplanation.riskExplanation}<br><br>
-<strong>Compared:</strong><br>
-${comparisonExplanation.riskExplanation}
-
-            </p>
-
-        </div>
-
-        <div class="summary-section">
-
-            <strong>Cracking Method</strong>
-
-            <p>
-
-                <strong>Previous:</strong><br>
-${originalExplanation.crackingMethod}<br><br>
-<strong>Compared:</strong><br>
-${comparisonExplanation.crackingMethod}
-
-            </p>
-
-        </div>
-
-        <div class="summary-section">
-
-            <strong>Overall Conclusion</strong>
-
-            <p>
-
-                ${getComparisonConclusion(
-
-                    original.vulnerability,
-
-                    comparison.vulnerability
-
-                )}
-
-            </p>
-
-        </div>
-
-        `;
-
-    }
-
-}
-
-
-
-
-
-
-
-
-
-// ======================================
-// RISK CALCULATOR
-// ======================================
-
-
-function getRiskLevel(
-    vulnerability
-){
-
-
-
-    switch(vulnerability){
-
-
-        case "DICTIONARY":
-
-
-            return "CRITICAL RISK";
-
-
-
-        case "RULE-BASED":
-
-
-            return "HIGH RISK";
-
-
-
-        case "BRUTE-FORCE":
-
-
-            return "MODERATE RISK";
-
-
-
-        default:
-
-
-            return "UNKNOWN";
-
-
-    }
-
-
-}
-
-
-
-// ======================================
-// VULNERABILITY EXPLANATIONS
-// ======================================
-// ======================================
-// VULNERABILITY EXPLANATIONS
-// ======================================
-
-function getVulnerabilityExplanation(
-    vulnerability
-){
-
-    switch(vulnerability){
-
-        case "DICTIONARY":
-
-            return{
-
-                riskExplanation:
-                "This password is classified as CRITICAL RISK because it contains recognizable dictionary words or commonly used password terms. These passwords are typically tested first during dictionary attacks, making them highly susceptible to rapid compromise.",
-
-                crackingMethod:
-                "The password was classified as DICTIONARY because the system detected recognizable words or commonly used password terms that match entries frequently found in password dictionaries."
-
-            };
-
-
-        case "RULE-BASED":
-
-            return{
-
-                riskExplanation:
-                "This password is classified as HIGH RISK because it follows predictable patterns that attackers can efficiently generate, allowing it to be guessed much faster than a random password.",
-
-                crackingMethod:
-                "The password was classified as RULE-BASED because the system detected predictable structures such as common words combined with numbers, symbols, capitalization, or other common mutation patterns targeted by rule-based attacks."
-
-            };
-
-
-        case "BRUTE-FORCE":
-
-            return{
-
-                riskExplanation:
-                "This password is classified as MODERATE RISK because it does not contain obvious dictionary words or predictable patterns. Although it is more resistant to specialized attacks, it can still eventually be discovered through exhaustive brute-force guessing.",
-
-                crackingMethod:
-                "The password was classified as BRUTE-FORCE because the system did not detect dictionary words or common rule-based patterns, indicating that exhaustive brute-force guessing is the most applicable attack strategy."
-
-            };
-
-
-        default:
-
-            return{
-
-                riskExplanation:
-                "The system could not determine the appropriate risk level for this password.",
-
-                crackingMethod:
-                "The password could not be associated with any supported cracking strategy."
-
-            };
-
-    }
-
-}
-
-
-// ======================================
-// VULNERABILITY RANK
-// (used only to compare relative resistance)
-// ======================================
-
-
-function getVulnerabilityRank(
-    vulnerability
-){
-
-
-    switch(vulnerability){
-
-
-        case "DICTIONARY":
-
-            return 1;
-
-
-        case "RULE-BASED":
-
-            return 2;
-
-
-        case "BRUTE-FORCE":
-
-            return 3;
-
-
-        default:
-
-            return 0;
-
-
-    }
-
-
-}
-
-
-
-
-// ======================================
-// COMPARISON CONCLUSION
-// ======================================
-
-
-function getComparisonConclusion(
-    originalVulnerability,
-    comparisonVulnerability
-){
-
-
-    const originalRank =
-    getVulnerabilityRank(
-        originalVulnerability
-    );
-
-
-    const comparisonRank =
-    getVulnerabilityRank(
-        comparisonVulnerability
-    );
-
-
-    if(comparisonRank > originalRank){
-
-        return "the compared password provides better resistance than the original password.";
-
-    }
-
-
-    if(comparisonRank < originalRank){
-
-        return "the compared password is weaker than the original password.";
-
-    }
-
-
-    return "the compared password offers similar resistance to the original password.";
-
-
-}
-
-
-
-
-
-
 // =====================================
 // PASSWORD PREVIEW DISPLAY
 // =====================================
-
 
 function initializePasswordPreview(){
 
 
 const previousPassword =
 localStorage.getItem(
-    "analyzedPassword"
+    "previousPassword"
 )
 ||
 "";
@@ -1545,7 +1153,7 @@ localStorage.getItem(
 
 const testedPassword =
 localStorage.getItem(
-    "comparisonPassword"
+    "currentPassword"
 )
 ||
 localStorage.getItem(
@@ -1555,28 +1163,41 @@ localStorage.getItem(
 "";
 
 
+console.log(
+    "PASSWORD PREVIEW DATA",
+    {
+        previousPassword,
+        testedPassword,
+        analyzedPassword: localStorage.getItem("analyzedPassword"),
+        comparisonPassword: localStorage.getItem("comparisonPassword")
+    }
+);
 
-    const previousContainer =
-    document.getElementById(
-        "previousPasswordContainer"
-    );
+const previousContainer =
+document.getElementById(
+    "previousPasswordContainer"
+);
 
 
 
-    const previousLabel =
-    document.querySelector(
-        ".previous-password-entry"
-    );
+const previousLabel =
+document.querySelector(
+    ".previous-password-entry"
+);
 
 
 
 
 
-    // ===============================
-    // NORMAL MODE
-    // ONLY TESTED PASSWORD
-    // ===============================
+// ===============================
+// NORMAL MODE
+// ONLY ONE PASSWORD
+// ===============================
 
+
+if(
+    !previousPassword
+){
 
     createPasswordReveal(
         "testedPassword",
@@ -1584,36 +1205,36 @@ localStorage.getItem(
     );
 
 
+    return;
+
+}
 
 
 
 
 
-    // ===============================
-    // COMPARISON MODE
-    // TESTED + PREVIOUS
-    // ===============================
+
+// ===============================
+// COMPARISON MODE
+// PREVIOUS + CURRENT
+// ===============================
 
 
-    if(
-        comparisonPassword &&
-        comparisonPassword.trim() !== ""
-    ){
+if(previousContainer){
 
+    previousContainer.style.display =
+    "block";
 
-        if(previousContainer){
-
-            previousContainer.style.display =
-            "block";
-
-        }
+}
 
 
 
- createPasswordReveal(
+createPasswordReveal(
     "previousPassword",
     previousPassword
 );
+
+
 
 createPasswordReveal(
     "testedPassword",
@@ -1622,24 +1243,25 @@ createPasswordReveal(
 
 
 
-        if(previousLabel){
+if(previousLabel){
 
-            previousLabel.querySelector(
-                ".password-label"
-            ).textContent =
-            "Previous Password";
-
-        }
+    const label =
+    previousLabel.querySelector(
+        ".password-label"
+    );
 
 
+    if(label){
+
+        label.textContent =
+        "Previous Password";
 
     }
-
-
 
 }
 
 
+}
 
 
 // =====================================
@@ -1705,46 +1327,3 @@ function createPasswordReveal(
     };
 
 }
-// =====================================
-// SUMMARY CARD TRIGGER
-// =====================================
-
-const summaryBox =
-document.getElementById(
-    "summaryBox"
-);
-
-if(summaryBox){
-
-    summaryBox.addEventListener(
-        "click",
-        ()=>{
-
-            const summaryContent =
-            document.getElementById(
-                "summaryText"
-            );
-
-            if(
-                summaryContent &&
-                typeof SummaryCard !== "undefined"
-            ){
-
-                SummaryCard.open(
-                    summaryContent.innerHTML
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// =====================================
-// START PASSWORD PREVIEW
-// =====================================
-
-
-initializePasswordPreview();

@@ -84,10 +84,24 @@ body::after{
 }
 
 .result-workspace{
+
     width:100%;
+
     height:100%;
-    position:relative;
+
+    display:flex;
+
+    gap:30px;
+
+    padding-top:120px;
+
+    padding-left:40px;
+
+    padding-right:40px;
+
 }
+
+
 
 /* =====================================
    PAGE HEADER WITH LOGO
@@ -187,310 +201,6 @@ body::after{
 
     font-weight:600;
 
-}
-
-
-
-.classification-panel{
-
-    position:absolute;
-
-    top:96px;
-
-    left:40px;
-
-    width:300px;
-
-    height:460px;
-
-    padding:25px;
-
-    border-radius:22px;
-
-    background:
-    linear-gradient(
-        160deg,
-        rgba(15,23,42,.96) 0%,
-        rgba(30,41,59,.92) 60%,
-        rgba(51,65,85,.88) 100%
-    );
-
-    border:1px solid rgba(56,189,248,.18);
-
-    backdrop-filter:blur(18px);
-
-    overflow:hidden;
-
-    display:flex;
-
-    flex-direction:column;
-
-    box-shadow:
-        0 0 18px rgba(56,189,248,.08),
-        0 18px 45px rgba(0,0,0,.45);
-
-}
-.classification-panel::before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:6px;
-    background:linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
-    box-shadow:0 0 15px rgba(56,189,248,.6);
-}
-
-.classification-panel::after{
-    content:"";
-    position:absolute;
-    left:0;
-    bottom:0;
-    width:100%;
-    height:100px;
-    background:linear-gradient(transparent, rgba(2,6,23,.92));
-}
-.classification-panel h2{
-
-    margin:0 0 20px;
-
-    font-size:18px;
-
-    font-weight:500;
-
-    color:#f8fafc;
-
-    letter-spacing:.5px;
-
-}
-
-
-
-.classification-item{
-
-    display:flex;
-
-    flex-direction:row;
-
-    align-items:center;
-
-    gap:8px;
-
-    margin:12px 0;
-
-    flex-wrap:nowrap;
-
-}
-
-.classification-item .label{
-
-    font-size:10px;
-
-    font-weight:500;
-
-    letter-spacing:1px;
-
-    text-transform:uppercase;
-
-    color:#7dd3fc;
-
-    white-space:nowrap;
-
-}
-
-
-
-.classification-item .value{
-
-    font-size:17px;
-
-    font-weight:500;
-
-    color:#f8fafc;
-
-    white-space:nowrap;
-
-}
-
-
-/* =====================================
-   SUMMARY CARD INSIDE CLASSIFICATION
-===================================== */
-
-.summary-box{
-
-    position:absolute;
-
-    left:20px;
-
-    right:20px;
-
-    bottom:20px;
-
-    height:170px;
-
-    padding:16px;
-
-
-    border-radius:16px;
-
-
-    background:
-    linear-gradient(
-        145deg,
-        rgba(15,23,42,.75),
-        rgba(30,41,59,.65)
-    );
-
-
-    border:1px solid rgba(56,189,248,.15);
-
-
-    box-shadow:
-        inset 0 0 20px rgba(56,189,248,.05),
-        0 10px 25px rgba(0,0,0,.25);
-
-
-    overflow-y:auto;
-
-}
-
-
-/* scrollbar */
-
-.summary-box::-webkit-scrollbar{
-
-    width:6px;
-
-}
-
-
-.summary-box::-webkit-scrollbar-thumb{
-
-    background:#38bdf8;
-
-    border-radius:10px;
-
-}
-
-
-
-
-.summary-box h3{
-
-    margin:0 0 10px;
-
-
-    color:#7dd3fc;
-
-
-    font-size:13px;
-
-
-    font-weight:500;
-
-
-    letter-spacing:.5px;
-
-}
-
-
-
-.summary-box p{
-
-    margin:0;
-
-
-    color:#cbd5e1;
-
-
-    font-size:12px;
-
-
-    font-weight:400;
-
-
-    line-height:1.6;
-
-}
-
-.summary-box p{
-
-    margin:0;
-
-    color:#cbd5e1;
-
-    font-size:12px;
-
-    font-weight:400;
-
-    line-height:1.6;
-
-}
-/* =====================================
-   SUMMARY SECTIONS
-===================================== */
-
-.summary-section{
-
-    margin-bottom:14px;
-
-}
-
-.summary-section:last-child{
-
-    margin-bottom:0;
-
-}
-
-.summary-section > strong{
-
-    display:block;
-
-    margin-bottom:4px;
-
-    color:#7dd3fc;
-
-    font-size:13px;
-
-    font-weight:600;
-
-    letter-spacing:.4px;
-
-}
-
-.summary-section p{
-
-    margin:0 0 8px;
-
-    color:#cbd5e1;
-
-    font-size:12px;
-
-    line-height:1.5;
-
-}
-
-.summary-section p:last-child{
-
-    margin-bottom:0;
-
-}
-.classification-panel .corner{
-    position:absolute;
-    width:24px;
-    height:24px;
-    border-top:2px solid rgba(56,189,248,.45);
-    border-left:2px solid rgba(56,189,248,.45);
-    top:16px;
-    left:16px;
-}
-
-.classification-panel:hover{
-    border-color:rgba(56,189,248,.35);
-    box-shadow:
-        0 0 25px rgba(56,189,248,.12),
-        0 25px 55px rgba(0,0,0,.5);
 }
 
 
@@ -829,43 +539,14 @@ body::after{
 
 
 @media(max-width:1100px){
-    .classification-panel{
-        width:260px;
-    }
+
     .result-menu,
     .result-panel,
     .button-group{
         left:320px;
     }
-}
-
-/* =====================================
-   COMPARISON MODE
-===================================== */
-
-.classification-item.comparison-mode{
-
-    flex-direction:column;
-
-    align-items:flex-start;
-
-    gap:6px;
 
 }
-
-.classification-item.comparison-mode .value{
-
-    white-space:normal;
-
-    display:block;
-
-    width:100%;
-
-    line-height:1.6;
-
-}
-
-
 /* =====================================
    PASSWORD PREVIEW CARD (COMPACT)
 ===================================== */
@@ -1291,22 +972,3 @@ transform:translateX(20px);
 
 }
 
-.summary-box{
-
-    cursor:pointer;
-
-    transition:
-        border-color .2s ease,
-        box-shadow .2s ease;
-
-}
-
-.summary-box:hover{
-
-    border-color:
-        rgba(56,189,248,.4);
-
-    box-shadow:
-        0 0 15px rgba(56,189,248,.15);
-
-}

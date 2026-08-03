@@ -1,46 +1,69 @@
-console.log("Summary Card JS Connected");// =====================================
+console.log("Summary Card JS Connected");
+
+
+// =====================================
 // SUMMARY CARD
 // =====================================
 
-const SummaryCard = (()=>{
+window.SummaryCard = (()=>{
+
 
     let overlay;
     let body;
     let closeButton;
 
+
+
     function initialize(){
-console.log("SummaryCard.initialize()");
+
+        console.log(
+            "SummaryCard.initialize()"
+        );
+
+
         overlay =
         document.getElementById(
             "summaryCardOverlay"
         );
+
 
         body =
         document.getElementById(
             "summaryCardBody"
         );
 
+
         closeButton =
         document.getElementById(
             "summaryCardClose"
         );
+
+
 
         if(
             !overlay ||
             !body ||
             !closeButton
         ){
+
             console.warn(
                 "Summary Card elements not found."
             );
+
             return;
+
         }
+
+
 
         closeButton.onclick =
         close;
 
+
+
         overlay.onclick =
         event=>{
+
 
             if(
                 event.target === overlay
@@ -50,16 +73,33 @@ console.log("SummaryCard.initialize()");
 
             }
 
+
         };
+
+
 
         document.addEventListener(
             "keydown",
             handleEscape
         );
 
+
+
+        console.log(
+            "SummaryCard Ready"
+        );
+
+
     }
 
+
+
+
+
+
+
     function handleEscape(event){
+
 
         if(
             event.key === "Escape"
@@ -69,53 +109,105 @@ console.log("SummaryCard.initialize()");
 
         }
 
+
     }
 
+
+
+
+
+
+
+
     function open(content){
+
 
         if(
             !overlay ||
             !body
         ){
+
+            console.warn(
+                "SummaryCard cannot open. Elements missing."
+            );
+
             return;
+
         }
+
+
 
         body.innerHTML =
         content;
+
+
 
         overlay.classList.add(
             "active"
         );
 
+
     }
+
+
+
+
+
+
+
 
     function close(){
 
+
         if(!overlay){
+
             return;
+
         }
+
+
 
         overlay.classList.remove(
             "active"
         );
 
+
     }
 
+
+
+
+
+
     return{
+
 
         initialize,
         open,
         close
 
+
     };
+
+
 
 })();
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
 
-        SummaryCard.initialize();
+
+
+// =====================================
+// WAIT FOR DYNAMIC COMPONENT LOAD
+// =====================================
+
+
+window.addEventListener(
+    "summaryCardLoaded",
+    ()=>{
+
+
+        window.SummaryCard.initialize();
+
 
     }
 );
