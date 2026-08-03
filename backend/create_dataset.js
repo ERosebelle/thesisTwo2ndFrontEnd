@@ -2,29 +2,16 @@ const fs = require('fs');
 const path = require('path');
 
 const engData = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, 'words_dictionary.json'),
-    'utf-8'
-  )
+  fs.readFileSync(path.join(__dirname, 'words_dictionary.json'), 'utf-8')
 );
-
 const englishWords = Object.keys(engData);
-const tagData = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, 'tagalog_dictionary.json'),
-    'utf-8'
-  )
-);
 
+const tagData = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'tagalog_dictionary.json'), 'utf-8')
+);
 const tagalogWords = tagData.map(entry => entry.word.toLowerCase());
 
-// ===== COMBINE BOTH =====
-const dictionaryWords = [
-  ...englishWords,
-  ...tagalogWords
-];
-
-// 🌟 SOLUSYON SA ERROR: Gumawa ng listahan ng mga salitang may length na 8 o pataas
+const dictionaryWords = [...englishWords, ...tagalogWords];
 const longDictionaryWords = dictionaryWords.filter(word => word.length >= 8);
 
 const symbols = ['!', '@', '#', '$', '%', '&', '*'];
@@ -48,37 +35,42 @@ function randomString(length) {
   return out;
 }
 
-function hasSequence(str) {
-  return /(123|abc|234|bcd|qwe)/i.test(str) ? 1 : 0;
-}
-
-function hasLeet(str) {
-  return /[@$]/.test(str) ? 1 : 0;
-}
-
-function hasSymbol(str) {
-  return /[!@#$%&*]/.test(str) ? 1 : 0;
-}
-
+// 🌟 FULL 12-FEATURE GENERATOR LOGIC
 function buildFeatures(password, label, isDictionary) {
-  // Piliting maging lowercase kung DICTIONARY para walang maling upper-case flag
   const cleanPassword = (label === 'DICTIONARY') ? password.toLowerCase() : password;
+
+  const lower = /[a-z]/.test(cleanPassword) ? 1 : 0;
+  const upper = /[A-Z]/.test(cleanPassword) ? 1 : 0;
+  const digit = /\d/.test(cleanPassword) ? 1 : 0;
+  const sym = /[^a-zA-Z0-9]/.test(cleanPassword) ? 1 : 0;
+
+  const charClassCount = lower + upper + digit + sym;
+  const hasLeet = (/[@$40531!]/.test(cleanPassword) && isDictionary) ? 1 : 0;
+  const numSuffix = (isDictionary && /\d{2,}$/.test(cleanPassword)) ? 1 : 0;
+  const hasSeq = /(123|abc|234|bcd|qwe)/i.test(cleanPassword) ? 1 : 0;
+  const hasRep = /(.)\1{1,}/.test(cleanPassword) ? 1 : 0;
+
+  const rulePattern = (
+    hasLeet ||
+    numSuffix ||
+    hasSeq ||
+    hasRep
+  ) ? 1 : 0;
 
   return {
     password_sample: cleanPassword,
-    f_length: cleanPassword.length >= 8 ? 1 : 0,
-    f_dict: isDictionary,
-    f_leet: hasLeet(cleanPassword),
-    f_num: /\d/.test(cleanPassword) ? 1 : 0,
-    f_sym: hasSymbol(cleanPassword),
-    f_seq: hasSequence(cleanPassword),
-    // 🌟 INAYOS ANG ORDER: Nilagay dito para sumakto sa CSV text formatting mo sa ibaba
-    f_numeric_suffix: /\d{2,}$/.test(cleanPassword) ? 1 : 0,
-    f_rule_pattern: (
-      hasLeet(cleanPassword) ||
-      /\d{2,}$/.test(cleanPassword) ||
-      hasSequence(cleanPassword)
-    ) ? 1 : 0,
+    f_length: cleanPassword.length,
+    f_char_class_count: charClassCount,
+    f_has_lowercase: lower,
+    f_has_uppercase: upper,
+    f_has_digit: digit,
+    f_has_symbol: sym,
+    f_dictionary_present: isDictionary,
+    f_has_leetspeak: hasLeet,
+    f_numeric_suffix: numSuffix,
+    f_has_sequence: hasSeq,
+    f_has_repetition: hasRep,
+    f_rule_pattern_present: rulePattern,
     label: label
   };
 }
@@ -87,27 +79,15 @@ const rows = [];
 
 // SHORT DICTIONARY
 for (let i = 0; i < 100; i++) {
-  rows.push(
-    buildFeatures(
-      rand(dictionaryWords),
-      "DICTIONARY",
-      1
-    )
-  );
+  rows.push(buildFeatures(rand(dictionaryWords), "DICTIONARY", 1));
 }
 
 // LONG DICTIONARY
 for (let i = 0; i < 100; i++) {
-  rows.push(
-    buildFeatures(
-      rand(longDictionaryWords),
-      "DICTIONARY",
-      1
-    )
-  );
+  rows.push(buildFeatures(rand(longDictionaryWords), "DICTIONARY", 1));
 }
 
-// ===== RULE-BASED =====
+// RULE-BASED
 for (let i = 0; i < 200; i++) {
   const word = rand(dictionaryWords);
   const variants = [
@@ -117,27 +97,23 @@ for (let i = 0; i < 200; i++) {
     rand(symbols) + word + rand(['123', '99'])
   ];
 
-  const pass = rand(variants);
-  rows.push(
-    buildFeatures(pass, 'RULE-BASED', 1)
-  );
+  rows.push(buildFeatures(rand(variants), 'RULE-BASED', 1));
 }
 
-// ===== BRUTE-FORCE =====
+// BRUTE-FORCE
 for (let i = 0; i < 200; i++) {
   const pass = randomString(10 + Math.floor(Math.random() * 5));
-  rows.push(
-    buildFeatures(pass, 'BRUTE-FORCE', 0)
-  );
+  rows.push(buildFeatures(pass, 'BRUTE-FORCE', 0));
 }
 
-// ===== CSV CREATION =====
-let csv = 'password_sample,f_length,f_dict,f_leet,f_num,f_sym,f_seq,f_numeric_suffix,f_rule_pattern,label\n';
+// 🌟 CSV CREATION (12 COLUMNS)
+let csv = 'password_sample,f_length,f_char_class_count,f_has_lowercase,f_has_uppercase,f_has_digit,f_has_symbol,f_dictionary_present,f_has_leetspeak,f_numeric_suffix,f_has_sequence,f_has_repetition,f_rule_pattern_present,label\n';
+
 rows.forEach(r => {
-  csv += `${r.password_sample},${r.f_length},${r.f_dict},${r.f_leet},${r.f_num},${r.f_sym},${r.f_seq},${r.f_numeric_suffix},${r.f_rule_pattern},${r.label}\n`;
+  csv += `${r.password_sample},${r.f_length},${r.f_char_class_count},${r.f_has_lowercase},${r.f_has_uppercase},${r.f_has_digit},${r.f_has_symbol},${r.f_dictionary_present},${r.f_has_leetspeak},${r.f_numeric_suffix},${r.f_has_sequence},${r.f_has_repetition},${r.f_rule_pattern_present},${r.label}\n`;
 });
 
 fs.writeFileSync('additional_dataset.csv', csv);
 
-console.log('✅ additional_dataset.csv generated successfully!');
+console.log('✅ additional_dataset.csv with 12 features generated successfully!');
 console.log(`✅ Total generated samples: ${rows.length}`);

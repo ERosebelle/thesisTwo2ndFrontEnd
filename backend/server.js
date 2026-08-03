@@ -266,36 +266,25 @@ function comparePasswords(currentFeatures, previousFeatures){
 
 // ===== 2. PASSWORD CLASSIFICATION =====
 function classifyPassword(extractedFeatures) {
-
-    // Isalpak ito sa pinaka-unahan ng classifyPassword bago mag-ML:
-    if (extractedFeatures.dictionary_present && !extractedFeatures.has_digit && !extractedFeatures.has_symbol) {
-        // Kung may uppercase pero dictionary word naman talaga at walang rules, ibig sabihin normal capitalization lang ito ng isang dictionary string
-        if (extractedFeatures.has_uppercase && !extractedFeatures.has_leetspeak && !extractedFeatures.numeric_suffix) {
-            return {
-                label: "DICTIONARY",
-                path: [
-                    "A capitalized dictionary word was detected without additional complexity. Passwords that rely only on capitalization are generally easier to predict.",
-                    "Prediction handled as the DICTIONARY classification"
-                ]
-            };
-        }
-    }
-
-    // 2. PREPARE FEATURES FOR ML MODEL (Dito na dadaan sina helloWorld at GGwhfjete)
+    // 🌟 FULL 12 FEATURES PASSED TO MODEL
     const modelFeatures = [[
-        extractedFeatures.length >= 8 ? 1 : 0,  // f_length
-        extractedFeatures.dictionary_present,   // f_dict
-        extractedFeatures.has_leetspeak,        // f_leet
-        extractedFeatures.has_digit,            // f_num
-        extractedFeatures.has_symbol,           // f_sym
-        extractedFeatures.has_sequence,         // f_seq
-        extractedFeatures.numeric_suffix,       // f_numeric_suffix
-        extractedFeatures.rule_pattern_present  // f_rule_pattern
+        extractedFeatures.length,
+        extractedFeatures.character_class_count,
+        extractedFeatures.has_lowercase,
+        extractedFeatures.has_uppercase,
+        extractedFeatures.has_digit,
+        extractedFeatures.has_symbol,
+        extractedFeatures.dictionary_present,
+        extractedFeatures.has_leetspeak,
+        extractedFeatures.numeric_suffix,
+        extractedFeatures.has_sequence,
+        extractedFeatures.has_repetition,
+        extractedFeatures.rule_pattern_present
     ]];
 
+    console.log("FEATURES:", extractedFeatures);
     console.log("MODEL FEATURES:", modelFeatures);
 
-    // 3. RUN MACHINE LEARNING PREDICTION
     const prediction = classifier.predict(modelFeatures);
     console.log("RAW PREDICTION:", prediction);
 
@@ -306,21 +295,22 @@ function classifyPassword(extractedFeatures) {
     };
 
     let finalLabel = labelMap[prediction[0]];
-    let finalPath = [
-        "Your password has been analyzed based on its structure and patterns",
-        `Prediction: ${finalLabel}`
-    ];
 
-    // 4. POST-ML FALLBACK
-    if (finalLabel === "DICTIONARY" && extractedFeatures.rule_pattern_present === 1) {
-        finalLabel = "RULE-BASED";
-        finalPath.push("Your password contains predictable character substitutions and common patterns, so the system classified it as Rule-Based Vulnerability.");
+    // Safety Override: Pure dictionary words without rules shouldn't drift to Rule-Based/Brute-Force
+    if (extractedFeatures.dictionary_present === 1 && extractedFeatures.rule_pattern_present === 0) {
+        finalLabel = "DICTIONARY";
     }
 
-    return {
+    const result = {
         label: finalLabel,
-        path: finalPath
+        path: [
+            "Your password has been analyzed based on its structure and patterns",
+            `Prediction: ${finalLabel}`
+        ]
     };
+
+    console.log("RESULT:", result);
+    return result;
 }
 
 

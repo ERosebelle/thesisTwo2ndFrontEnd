@@ -15,9 +15,9 @@
         "maxDepth": 10,
         "gainThreshold": 0.01,
         "splitValue": 0.5,
-        "splitColumn": 1,
-        "gain": 0.33361180884826774,
-        "numberSamples": 599,
+        "splitColumn": 6,
+        "gain": 0.3333333333333347,
+        "numberSamples": 600,
         "left": {
             "kind": "classifier",
             "gainFunction": "gini",
@@ -41,16 +41,42 @@
             "minNumSamples": 3,
             "maxDepth": 10,
             "gainThreshold": 0.01,
-            "splitValue": 0.5,
-            "splitColumn": 0,
-            "gain": 0.0011587275722825252,
-            "numberSamples": 399,
-            "distribution": [
-                [
-                    0.5012531328320802,
-                    0.49874686716791977
+            "splitValue": 2,
+            "splitColumn": 1,
+            "gain": 0.4756097560975587,
+            "numberSamples": 400,
+            "left": {
+                "kind": "classifier",
+                "gainFunction": "gini",
+                "splitFunction": "mean",
+                "minNumSamples": 3,
+                "maxDepth": 10,
+                "gainThreshold": 0.01,
+                "gain": null,
+                "distribution": [
+                    [
+                        0.9999999999999976
+                    ]
                 ]
-            ]
+            },
+            "right": {
+                "kind": "classifier",
+                "gainFunction": "gini",
+                "splitFunction": "mean",
+                "minNumSamples": 3,
+                "maxDepth": 10,
+                "gainThreshold": 0.01,
+                "splitValue": 0.5,
+                "splitColumn": 11,
+                "gain": 0.004868487688309657,
+                "numberSamples": 205,
+                "distribution": [
+                    [
+                        0.024390243902439025,
+                        0.9756097560975617
+                    ]
+                ]
+            }
         }
     },
     "name": "DTClassifier"
