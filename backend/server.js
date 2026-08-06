@@ -4,11 +4,9 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const { DecisionTreeClassifier } = require("ml-cart");
 const path = require('path');
-
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 
 // ===== LOAD ML MODEL =====
 const model = JSON.parse(
@@ -16,7 +14,6 @@ const model = JSON.parse(
 );
 
 const classifier = DecisionTreeClassifier.load(model);
-
 console.log("✅ ML model loaded");
 
 // ===== LOAD DATASET =====
@@ -163,105 +160,65 @@ function extractFeatures(password) {
 }
 
 // ===== PASSWORD COMPARISON =====
-
-function calculateSecurityScore(features){
-
+function calculateSecurityScore(features) {
     let score = 0;
-
 
     // Password length contribution
     score += features.length;
 
-
     // Character diversity contribution
     score += features.character_class_count * 10;
 
-
     // Vulnerability penalties
-    if(features.dictionary_present){
+    if (features.dictionary_present) {
         score -= 20;
     }
 
-
-    if(features.rule_pattern_present){
+    if (features.rule_pattern_present) {
         score -= 15;
     }
 
-
-    if(features.has_sequence){
+    if (features.has_sequence) {
         score -= 10;
     }
 
-
-    if(features.has_repetition){
+    if (features.has_repetition) {
         score -= 10;
     }
-
-
     return score;
-
 }
 
+function comparePasswords(currentFeatures, previousFeatures) {
+    const scoreCurrent = calculateSecurityScore(currentFeatures);
+    const scorePrevious = calculateSecurityScore(previousFeatures);
 
-
-function comparePasswords(currentFeatures, previousFeatures){
-
-    const scoreCurrent =
-        calculateSecurityScore(currentFeatures);
-
-
-    const scorePrevious =
-        calculateSecurityScore(previousFeatures);
-
-
-
-    if(scoreCurrent > scorePrevious){
-
+    if (scoreCurrent > scorePrevious) {
         return {
-            status:"CURRENT_PREFERRED",
-
+            status: "CURRENT_PREFERRED",
             current_score: scoreCurrent,
-
             previous_score: scorePrevious,
-
             message:
-            "Your current password has stronger security characteristics compared to your previous password."
+                "Your current password has stronger security characteristics compared to your previous password."
         };
-
     }
 
-
-
-    if(scorePrevious > scoreCurrent){
-
+    if (scorePrevious > scoreCurrent) {
         return {
-            status:"PREVIOUS_PREFERRED",
-
+            status: "PREVIOUS_PREFERRED",
             current_score: scoreCurrent,
-
             previous_score: scorePrevious,
-
             message:
-            "Your previous password has stronger security characteristics compared to your current password."
+                "Your previous password has stronger security characteristics compared to your current password."
         };
-
     }
-
-
 
     return {
-
-        status:"SIMILAR",
-
+        status: "SIMILAR",
         current_score: scoreCurrent,
-
         previous_score: scorePrevious,
-
         message:
-        "Your current and previous passwords have similar security characteristics."
-
+            "Your current and previous passwords have similar security characteristics."
     };
-
 }
 
 // ===== 2. PASSWORD CLASSIFICATION =====
@@ -284,7 +241,6 @@ function classifyPassword(extractedFeatures) {
 
     console.log("FEATURES:", extractedFeatures);
     console.log("MODEL FEATURES:", modelFeatures);
-
     const prediction = classifier.predict(modelFeatures);
     console.log("RAW PREDICTION:", prediction);
 
@@ -312,7 +268,6 @@ function classifyPassword(extractedFeatures) {
     console.log("RESULT:", result);
     return result;
 }
-
 
 // ===== 3. DYNAMIC REALISTIC SECURITY STRATEGIES & BREAKDOWN =====
 function getStrategies(vulnerabilityType, extractedFeatures, password) {
@@ -342,7 +297,7 @@ function getStrategies(vulnerabilityType, extractedFeatures, password) {
         technicalBreakdown.vulnerability_explanation =
             `The password '${currentPassword}' consists entirely of a standard dictionary word found in the database without sufficient complexity additions.`;
         technicalBreakdown.attack_vector =
-          `This password is vulnerable to Dictionary Attacks because it matches commonly used words that attackers test first using automated cracking tools and pre-compiled wordlists.`;
+            `This password is vulnerable to Dictionary Attacks because it matches commonly used words that attackers test first using automated cracking tools and pre-compiled wordlists.`;
         technicalBreakdown.remediation =
             `Transition from the single word '${currentPassword}' to the 'Passphrase Method' by combining 3 to 4 random, unrelated words.`;
 
@@ -401,22 +356,18 @@ function getStrategies(vulnerabilityType, extractedFeatures, password) {
     return { tips, technicalBreakdown };
 }
 
-
-// ===== 4. DYNAMIC DECISION TREE VISUAL TRACE PATH =====
-//
-// This now builds a full, two-sided binary tree (every question always has
-// a YES child AND a NO child) instead of a single chain that only contained
-// whichever branch was actually taken. Each decision node also carries an
-// explicit `decision: "YES" | "NO"` field, and every child node carries a
-// `taken: true | false` flag. That's the piece the frontend needs in order
-// to know which side of the tree to actually walk/highlight, instead of
-// guessing (previously it always walked children[0]).
+/* ===== 4. DYNAMIC DECISION TREE VISUAL TRACE PATH =====
+This now builds a full, two-sided binary tree (every question always has
+a YES child AND a NO child) instead of a single chain that only contained
+whichever branch was actually taken. Each decision node also carries an
+explicit `decision: "YES" | "NO"` field, and every child node carries a
+`taken: true | false` flag. That's the piece the frontend needs in order
+to know which side of the tree to actually walk/highlight, instead of
+guessing (previously it always walked children[0]).*/
 function generateVisualTreePath(vulnerabilityType, extractedFeatures, password) {
-
 
     /*
         Creates a TRUE binary decision tree.
-
         Every decision node has:
         - YES branch
         - NO branch
@@ -425,277 +376,167 @@ function generateVisualTreePath(vulnerabilityType, extractedFeatures, password) 
         - show both branches
         - animate only the taken path
     */
-
-
-function decisionNode(
-    question,
-    feature,
-    yesChild,
-    noChild,
-    answer,
-    explanation
-){
-
-    return {
-
-        name: question,
-
-        type: "decision",
-
-        feature: feature,
-
-        value: answer === "YES" ? 1 : 0,
-
-        decision: answer,
-
-        explanation: {
-
-            YES: explanation.YES,
-
-            NO: explanation.NO
-
-        },
-
-        children: [
-
-            {
-                name:"YES",
-                branch:"YES",
-                taken: answer === "YES",
-                explanation: explanation.YES,
-                children: yesChild ? [yesChild] : []
-            },
-
-            {
-                name:"NO",
-                branch:"NO",
-                taken: answer === "NO",
-                explanation: explanation.NO,
-                children: noChild ? [noChild] : []
-            }
-
-        ]
-
-    };
-
-}
-
-
-
-    function leaf(label){
+    function decisionNode(question, feature, yesChild, noChild, answer, explanation) {
 
         return {
+            name: question,
+            type: "decision",
+            feature: feature,
+            value: answer === "YES" ? 1 : 0,
+            decision: answer,
+            explanation: {
+                YES: explanation.YES,
+                NO: explanation.NO
+            },
 
-            name: label,
+            children: [
+                {
+                    name: "YES",
+                    branch: "YES",
+                    taken: answer === "YES",
+                    explanation: explanation.YES,
+                    children: yesChild ? [yesChild] : []
+                },
 
-            type:"result",
-
-            final:true,
-
-            result:label
-
+                {
+                    name: "NO",
+                    branch: "NO",
+                    taken: answer === "NO",
+                    explanation: explanation.NO,
+                    children: noChild ? [noChild] : []
+                }
+            ]
         };
-
     }
 
+    function leaf(label) {
+        return {
+            name: label,
+            type: "result",
+            final: true,
+            result: label
+        };
+    }
+
+    /* FEATURE SHORTHANDS
+    Pull out the already-computed extractedFeatures values we
+    want to visually explain. This does NOT change what
+    classifyPassword() predicted - it only decides which side
+    of each visual question is "taken" (matches the real value).*/
+    const isDictionary = extractedFeatures.dictionary_present === 1;
+    const isLongEnough = extractedFeatures.length >= 8;
+    const hasSymbol = extractedFeatures.has_symbol === 1;
+    const hasDigit = extractedFeatures.has_digit === 1;
+    const hasUpper = extractedFeatures.has_uppercase === 1;
+    const hasLower = extractedFeatures.has_lowercase === 1;
+    const diverseClasses = extractedFeatures.character_class_count >= 3;
+    const isLeet = extractedFeatures.has_leetspeak === 1;
+    const isSuffix = extractedFeatures.numeric_suffix === 1;
+    const isSequence = extractedFeatures.has_sequence === 1;
+    const isRepeat = extractedFeatures.has_repetition === 1;
+    const hasRulePattern = extractedFeatures.rule_pattern_present === 1;
+
+    // Derived, visualization-only signals - not used by classifyPassword(), just extra "why" checks for the tree.
+    const highEntropy = extractedFeatures.length >= 12 && extractedFeatures.character_class_count >= 3;
+    const commonStructure = isDictionary && hasUpper && !hasSymbol && !hasDigit;
 
 
+    /*CHAIN BUILDER
+    Wraps `continueNode` with one more visual question. Whichever side matches `isYes` becomes the
+    "taken" side and leads tocontinueNode; the other side is a short, plausible dead-end leaf
+    (never actually walked by the real traversal, since `isYes` always reflects the real extracted feature value).*/
+    function wrap(question, feature, isYes, continueNode, offPathLabel) {
+        const explanations = {
+            "dictionary_present": {
+                YES: "A recognizable dictionary word was detected. Attackers commonly test known words first using wordlists.",
+                NO: "No dictionary word was detected. The password does not directly match common words."
+            },
 
-    // =================================
-    // FEATURE SHORTHANDS
-    // Pull out the already-computed extractedFeatures values we
-    // want to visually explain. This does NOT change what
-    // classifyPassword() predicted - it only decides which side
-    // of each visual question is "taken" (matches the real value).
-    // =================================
+            "length": {
+                YES: "The password reached the minimum length requirement. Longer passwords increase the search space.",
+                NO: "The password is shorter than the recommended length, making guessing attempts easier."
+            },
 
+            "has_lowercase": {
+                YES: "Lowercase characters were detected, increasing character variety.",
+                NO: "No lowercase characters were detected."
+            },
 
-    const isDictionary =
-    extractedFeatures.dictionary_present === 1;
+            "has_uppercase": {
+                YES: "Uppercase characters were detected. However, predictable capitalization can still be guessed.",
+                NO: "No uppercase characters were detected."
+            },
 
-    const isLongEnough =
-    extractedFeatures.length >= 8;
+            "has_digit": {
+                YES: "Numbers were detected. Digits increase complexity but predictable placement may reduce security.",
+                NO: "No digits were detected."
+            },
 
-    const hasSymbol =
-    extractedFeatures.has_symbol === 1;
+            "has_symbol": {
+                YES: "Special symbols were detected, increasing possible combinations.",
+                NO: "No symbols were detected."
+            },
 
-    const hasDigit =
-    extractedFeatures.has_digit === 1;
+            "character_class_count": {
+                YES: "The password uses multiple character categories.",
+                NO: "The password uses limited character categories."
+            },
 
-    const hasUpper =
-    extractedFeatures.has_uppercase === 1;
+            "entropy": {
+                YES: "The password has higher estimated entropy because of length and character diversity.",
+                NO: "The password has lower entropy and fewer possible combinations."
+            },
 
-    const hasLower =
-    extractedFeatures.has_lowercase === 1;
+            "rule_pattern_present": {
+                YES: "Predictable patterns were detected, such as sequences, repetition, suffix numbers, or substitutions.",
+                NO: "No common human-created pattern was detected."
+            },
 
-    const diverseClasses =
-    extractedFeatures.character_class_count >= 3;
+            "has_sequence": {
+                YES: "Sequential patterns like abc or 123 were detected.",
+                NO: "No sequential pattern was detected."
+            },
 
-    const isLeet =
-    extractedFeatures.has_leetspeak === 1;
+            "has_repetition": {
+                YES: "Repeated characters were detected, reducing randomness.",
+                NO: "No repeated character pattern was detected."
+            },
 
-    const isSuffix =
-    extractedFeatures.numeric_suffix === 1;
+            "has_leetspeak": {
+                YES: "Leetspeak substitutions were detected, which attackers commonly include in rule-based attacks.",
+                NO: "No leetspeak substitution was detected."
+            },
 
-    const isSequence =
-    extractedFeatures.has_sequence === 1;
+            "numeric_suffix": {
+                YES: "A number suffix was detected after a dictionary word, a common password habit.",
+                NO: "No predictable numeric suffix was detected."
+            },
 
-    const isRepeat =
-    extractedFeatures.has_repetition === 1;
+            "common_structure": {
+                YES: "The password follows a common capitalization structure.",
+                NO: "The password does not follow the common capitalization pattern."
+            }
+        };
 
-    const hasRulePattern =
-    extractedFeatures.rule_pattern_present === 1;
+        return decisionNode(
+            question,
+            feature,
+            isYes ? continueNode : leaf(offPathLabel),
+            isYes ? leaf(offPathLabel) : continueNode,
+            isYes ? "YES" : "NO",
+            explanations[feature] || {
+                YES: "This feature exists in the password.",
+                NO: "This feature does not exist in the password."
+            }
+        );
+    }
 
-    // Derived, visualization-only signals - not used by
-    // classifyPassword(), just extra "why" checks for the tree.
-    const highEntropy =
-    extractedFeatures.length >= 12 &&
-    extractedFeatures.character_class_count >= 3;
+    /*DICTIONARY BRANCH -Chain runs bottom-up: the first wrap() call sits deepest
+    (closest to the final leaf), the last wrap() call becomes the root.
+    The real predicted label is always reached at the very end of the "taken" path.*/
 
-    const commonStructure =
-    isDictionary &&
-    hasUpper &&
-    !hasSymbol &&
-    !hasDigit;
-
-
-
-
-    // =================================
-    // CHAIN BUILDER
-    // Wraps `continueNode` with one more visual question. Whichever
-    // side matches `isYes` becomes the "taken" side and leads to
-    // continueNode; the other side is a short, plausible dead-end
-    // leaf (never actually walked by the real traversal, since
-    // `isYes` always reflects the real extracted feature value).
-    // =================================
-
-
-function wrap(
-    question,
-    feature,
-    isYes,
-    continueNode,
-    offPathLabel
-){
-
-    const explanations = {
-
-        "dictionary_present": {
-            YES:"A recognizable dictionary word was detected. Attackers commonly test known words first using wordlists.",
-            NO:"No dictionary word was detected. The password does not directly match common words."
-        },
-
-        "length": {
-            YES:"The password reached the minimum length requirement. Longer passwords increase the search space.",
-            NO:"The password is shorter than the recommended length, making guessing attempts easier."
-        },
-
-        "has_lowercase": {
-            YES:"Lowercase characters were detected, increasing character variety.",
-            NO:"No lowercase characters were detected."
-        },
-
-        "has_uppercase": {
-            YES:"Uppercase characters were detected. However, predictable capitalization can still be guessed.",
-            NO:"No uppercase characters were detected."
-        },
-
-        "has_digit": {
-            YES:"Numbers were detected. Digits increase complexity but predictable placement may reduce security.",
-            NO:"No digits were detected."
-        },
-
-        "has_symbol": {
-            YES:"Special symbols were detected, increasing possible combinations.",
-            NO:"No symbols were detected."
-        },
-
-        "character_class_count": {
-            YES:"The password uses multiple character categories.",
-            NO:"The password uses limited character categories."
-        },
-
-        "entropy": {
-            YES:"The password has higher estimated entropy because of length and character diversity.",
-            NO:"The password has lower entropy and fewer possible combinations."
-        },
-
-        "rule_pattern_present": {
-            YES:"Predictable patterns were detected, such as sequences, repetition, suffix numbers, or substitutions.",
-            NO:"No common human-created pattern was detected."
-        },
-
-        "has_sequence": {
-            YES:"Sequential patterns like abc or 123 were detected.",
-            NO:"No sequential pattern was detected."
-        },
-
-        "has_repetition": {
-            YES:"Repeated characters were detected, reducing randomness.",
-            NO:"No repeated character pattern was detected."
-        },
-
-        "has_leetspeak": {
-            YES:"Leetspeak substitutions were detected, which attackers commonly include in rule-based attacks.",
-            NO:"No leetspeak substitution was detected."
-        },
-
-        "numeric_suffix": {
-            YES:"A number suffix was detected after a dictionary word, a common password habit.",
-            NO:"No predictable numeric suffix was detected."
-        },
-
-        "common_structure": {
-            YES:"The password follows a common capitalization structure.",
-            NO:"The password does not follow the common capitalization pattern."
-        }
-
-    };
-
-
-    return decisionNode(
-
-        question,
-
-        feature,
-
-        isYes ? continueNode : leaf(offPathLabel),
-
-        isYes ? leaf(offPathLabel) : continueNode,
-
-        isYes ? "YES":"NO",
-
-        explanations[feature] || {
-
-            YES:"This feature exists in the password.",
-            NO:"This feature does not exist in the password."
-
-        }
-
-    );
-
-}
-
-
-
-
-    // =================================
-    // DICTIONARY BRANCH
-    // Chain runs bottom-up: the first wrap() call sits deepest
-    // (closest to the final leaf), the last wrap() call becomes
-    // the root. The real predicted label is always reached at the
-    // very end of the "taken" path.
-    // =================================
-
-
-    if(isDictionary){
-
-
-        let node =
-        leaf(vulnerabilityType);
-
-
+    if (isDictionary) {
+        let node = leaf(vulnerabilityType);
         node = wrap("Numeric suffix?", "numeric_suffix", isSuffix, node, "DICTIONARY");
         node = wrap("Has leetspeak?", "has_leetspeak", isLeet, node, "DICTIONARY");
         node = wrap("Rule pattern present?", "rule_pattern_present", hasRulePattern, node, "DICTIONARY");
@@ -706,25 +547,11 @@ function wrap(
         node = wrap("Contains uppercase?", "has_uppercase", hasUpper, node, "DICTIONARY");
         node = wrap("Password length >= 8?", "length", isLongEnough, node, "DICTIONARY");
         node = wrap("Dictionary present?", "dictionary_present", true, node, "BRUTE-FORCE");
-
-
         return node;
-
-
     }
 
-
-
-
-    // =================================
     // NON-DICTIONARY BRANCH
-    // =================================
-
-
-    let node =
-    leaf(vulnerabilityType);
-
-
+    let node = leaf(vulnerabilityType);
     node = wrap("Has repetition?", "has_repetition", isRepeat, node, "BRUTE-FORCE");
     node = wrap("Has sequence?", "has_sequence", isSequence, node, "BRUTE-FORCE");
     node = wrap("Rule pattern present?", "rule_pattern_present", hasRulePattern, node, "BRUTE-FORCE");
@@ -736,14 +563,8 @@ function wrap(
     node = wrap("Contains lowercase?", "has_lowercase", hasLower, node, "BRUTE-FORCE");
     node = wrap("Password length >= 8?", "length", isLongEnough, node, "BRUTE-FORCE");
     node = wrap("Dictionary present?", "dictionary_present", false, node, "DICTIONARY");
-
-
     return node;
-
 }
-
-
-
 
 // ===== API ROUTE =====
 app.post('/analyze', (req, res) => {
@@ -752,68 +573,48 @@ app.post('/analyze', (req, res) => {
     if (!password) {
         return res.status(400).json({ error: "Password is required" });
     }
-const extractedFeatures = extractFeatures(password);
-console.log("FEATURES:", extractedFeatures);
+    const extractedFeatures = extractFeatures(password);
+    console.log("FEATURES:", extractedFeatures);
 
+    // ===== PREVIOUS PASSWORD COMPARISON =====
+    let comparisonResult = null;
+    if (previousPassword) {
 
-// ===== PREVIOUS PASSWORD COMPARISON =====
-let comparisonResult = null;
+        const previousFeatures = extractFeatures(previousPassword);
 
-if (previousPassword) {
+        /*Literal duplicate input (e.g. "1" then "1" again) gets its
+        own clear message instead of the generic "similar" wording,
+        which is reserved for two *different* passwords that just
+        happen to score the same.*/
+        if (password === previousPassword) {
+            const identicalScore = calculateSecurityScore(extractedFeatures);
+            comparisonResult = {
+                status: "IDENTICAL",
+                current_score: identicalScore,
+                previous_score: identicalScore,
+                message:
+                    "Your current password is identical to your previous password, so they share the exact same security characteristics."
+            };
 
-    const previousFeatures = extractFeatures(previousPassword);
+        } else {
+            comparisonResult = comparePasswords(extractedFeatures, previousFeatures);
+        }
 
-    // Literal duplicate input (e.g. "1" then "1" again) gets its
-    // own clear message instead of the generic "similar" wording,
-    // which is reserved for two *different* passwords that just
-    // happen to score the same.
-    if (password === previousPassword) {
-
-        const identicalScore = calculateSecurityScore(extractedFeatures);
-
-        comparisonResult = {
-            status: "IDENTICAL",
-            current_score: identicalScore,
-            previous_score: identicalScore,
-            message:
-                "Your current password is identical to your previous password, so they share the exact same security characteristics."
-        };
-
-    } else {
-
-        comparisonResult = comparePasswords(
-            extractedFeatures,
-            previousFeatures
-        );
-
+        console.log("PREVIOUS FEATURES:", previousFeatures);
+        console.log("COMPARISON:", comparisonResult);
     }
 
-    console.log("PREVIOUS FEATURES:", previousFeatures);
-    console.log("COMPARISON:", comparisonResult);
-
-}
-
-
-const classificationResult = classifyPassword(extractedFeatures);
-
+    const classificationResult = classifyPassword(extractedFeatures);
 
     // Kunin ang pormal at realistic strategies at breakdown
-    const { tips, technicalBreakdown } = getStrategies(
-        classificationResult.label,
-        extractedFeatures,
-        password
-    );
+    const { tips, technicalBreakdown } = getStrategies(classificationResult.label, extractedFeatures,
+        password);
 
     // I-generate ang tinukoy mong Tree Structure Base sa Input Properties
-    const decisionTreeVisual = generateVisualTreePath(
-        classificationResult.label,
-        extractedFeatures,
-        password
-    );
+    const decisionTreeVisual = generateVisualTreePath(classificationResult.label, extractedFeatures, password);
 
     // Kalkulahin ang estimated entropy bits para sa UI data visualization charts
     const entropyBits = Math.round(password.length * Math.log2(extractedFeatures.character_class_count * 22 || 26));
-
     console.log("PASSWORD:", password);
     console.log("RESULT:", classificationResult);
 
@@ -823,8 +624,7 @@ const classificationResult = classifyPassword(extractedFeatures);
         vulnerability: classificationResult.label,
         decision_path: classificationResult.path,
         features: extractedFeatures,
-
-                password_comparison: comparisonResult,
+        password_comparison: comparisonResult,
 
         // Iwanan lang natin ang live dynamic trace block
         visual_decision_tree_trace: decisionTreeVisual,

@@ -1,121 +1,66 @@
-console.log("Summary Card JS Connected");// =====================================
+console.log("Summary Card JS Connected");
 // SUMMARY CARD
-// =====================================
-
-const SummaryCard = (()=>{
-
+const SummaryCard = (() => {
     let overlay;
     let body;
     let closeButton;
 
-    function initialize(){
-console.log("SummaryCard.initialize()");
-        overlay =
-        document.getElementById(
-            "summaryCardOverlay"
-        );
+    function initialize() {
+        console.log("SummaryCard.initialize()");
+        overlay = document.getElementById("summaryCardOverlay");
+        body = document.getElementById("summaryCardBody");
+        closeButton = document.getElementById("summaryCardClose");
 
-        body =
-        document.getElementById(
-            "summaryCardBody"
-        );
-
-        closeButton =
-        document.getElementById(
-            "summaryCardClose"
-        );
-
-        if(
-            !overlay ||
-            !body ||
-            !closeButton
-        ){
-            console.warn(
-                "Summary Card elements not found."
-            );
+        if (!overlay || !body || !closeButton) {
+            console.warn("Summary Card elements not found.");
             return;
         }
 
-        closeButton.onclick =
-        close;
+        closeButton.onclick = close;
 
         overlay.onclick =
-        event=>{
+            event => {
+                if (event.target === overlay)
+                    {
+                    close();
+                }
+            };
 
-            if(
-                event.target === overlay
-            ){
-
-                close();
-
-            }
-
-        };
-
-        document.addEventListener(
-            "keydown",
-            handleEscape
-        );
-
+        document.addEventListener("keydown", handleEscape);
     }
 
-    function handleEscape(event){
-
-        if(
-            event.key === "Escape"
-        ){
-
+    function handleEscape(event) {
+        if (event.key === "Escape") 
+            {
             close();
-
         }
-
     }
 
-    function open(content){
-
-        if(
-            !overlay ||
-            !body
-        ){
+    function open(content) {
+        if (!overlay || !body) {
             return;
         }
 
-        body.innerHTML =
-        content;
-
-        overlay.classList.add(
-            "active"
-        );
-
+        body.innerHTML = content;
+        overlay.classList.add("active");
     }
 
-    function close(){
-
-        if(!overlay){
+    function close() {
+        if (!overlay) {
             return;
         }
 
-        overlay.classList.remove(
-            "active"
-        );
-
+        overlay.classList.remove("active");
     }
 
-    return{
-
-        initialize,
-        open,
-        close
-
+    return {
+        initialize, open, close
     };
-
 })();
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
-
         SummaryCard.initialize();
-
     }
 );

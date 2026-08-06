@@ -1,7 +1,4 @@
-// =====================================
-// DECISION TREE
-// decisionTree.js
-// =====================================
+/* DECISION TREE decisionTree.js*/
 
 
 const DecisionTree = (() => {

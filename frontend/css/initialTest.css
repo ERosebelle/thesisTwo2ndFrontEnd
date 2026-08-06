@@ -1,1786 +1,581 @@
 *{
-
     box-sizing:border-box;
     font-family:"Segoe UI", Arial, sans-serif;
-
 }
-
-
-
 body{
-
-
     margin:0;
-
-
     height:100vh;
-
-
     display:flex;
-
-
     justify-content:center;
-
-
     align-items:center;
-
-
-
-    background:
-
-
-    radial-gradient(
-        circle at center,
-        #16213e 0%,
-        #020617 75%
-    );
-
-
-
+    background: radial-gradient(circle at center,#16213e 0%,#020617 75%);
     color:#e2e8f0;
-position:relative;
-
+    position:relative;
     overflow:hidden;
-
-
     animation:pageFade .8s ease forwards;
-
-
 }
-
-
-
 
 @keyframes pageFade{
-
-
     from{
-
         opacity:0;
         transform:translateY(20px);
-
     }
-
 
     to{
-
         opacity:1;
         transform:translateY(0);
-
     }
-
-
 }
 
-
-
-
-
-
-
-/* =========================
-   DIGITAL GRID
-========================= */
-
-
+/* DIGITAL GRID */
 body::before{
-
-
     content:"";
-
-
     position:absolute;
-
-
     inset:0;
-
-
-
-    background-image:
-
-
-
-    linear-gradient(
-        rgba(56,189,248,.05) 1px,
-        transparent 1px
-    ),
-
-
-
-    linear-gradient(
-        90deg,
-        rgba(56,189,248,.05) 1px,
-        transparent 1px
-    );
-
-
-
+    background-image: linear-gradient(rgba(56,189,248,.05) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(56,189,248,.05) 1px, transparent 1px);
     background-size:50px 50px;
-
-
     animation:gridMove 20s linear infinite;
-
-
 }
-
-
-
 
 @keyframes gridMove{
-
-
     from{
-
         background-position:
         0 0,
         0 0;
-
     }
-
 
     to{
-
-        background-position:
-        50px 50px,
-        50px 50px;
-
+        background-position: 50px 50px, 50px 50px;
     }
-
-
 }
 
-
-
-/* =========================
-   SCANNER LINE ANIMATION
-========================= */
-
-
+/* SCANNER LINE ANIMATION*/
 body::after{
-
-
     content:"";
-
-
     position:absolute;
-
-
     left:0;
-
-
     width:100%;
-
-
     height:2px;
-
-
-    background:
-
-
-    linear-gradient(
-        90deg,
-        transparent,
-        #38bdf8,
-        transparent
-    );
-
-
+    background: linear-gradient(90deg, transparent,#38bdf8,transparent);
     opacity:.25;
-
-
     animation:scan 8s linear infinite;
-
-
     z-index:1;
-
-
 }
-
-
 
 @keyframes scan{
-
-
     from{
-
         top:-10%;
-
     }
-
 
     to{
-
         top:110%;
-
     }
-
-
 }
 
-
-
-
-
-/* =========================
-   SCENE CONTROLLER
-========================= */
-
-
-
+/* SCENE CONTROLLER*/
 .scene{
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
-   transform:translateX(190px);
-
+    transform:translateX(190px);
     gap:300px;
-
     position:relative;
-
     z-index:2;
-
     transition:.6s ease;
-
 }
 
-
-
-
-
-
-
-
-
-
-/* =========================
-   MAIN CONTAINER
-========================= */
+/* MAIN CONTAINER*/
 .test-container{
-
     width:600px;
-
     transition:.6s ease;
-
     flex-shrink:0;
-
 }
 
 .scene.show-info .test-container{
-
     transform:translateX(-670px);
-
 }
 
-
-
-
-
-
-/* =========================
-   TITLE
-========================= */
-
-
+/* TITLE*/
 .header{
-
-
     text-align:center;
-
-
     margin-bottom:35px;
-
-
 }
-
-
-
 
 .header h1{
-
-
     font-size:28px;
-
-
     line-height:1.35;
-
-
     margin:0;
-
-
     color:#f8fafc;
-
-
-
     letter-spacing:.5px;
-
-
-
-    text-shadow:
-
-
-    0 0 20px rgba(56,189,248,.5);
-
-
-
+    text-shadow: 0 0 20px rgba(56,189,248,.5);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   CARD
-========================= */
-
+/* CARD */
 .assessment-card{
-
     width:100%;
-
     height:190px;
-
-    background:
-    linear-gradient(
-        145deg,
-        #accae7,
-        #dbeafe
-    );
-
+    background: linear-gradient(145deg,#accae7,#dbeafe);
     color:#1e293b;
-
     padding:20px 25px;
-
     border-radius:24px;
-
     border:1px solid rgba(56,189,248,.45);
-
-    box-shadow:
-
-    0 30px 70px rgba(0,0,0,.6),
-
-    0 0 45px rgba(56,189,248,.25);
-
+    box-shadow: 0 30px 70px rgba(0,0,0,.6), 0 0 45px rgba(56,189,248,.25);
     position:relative;
-
     display:flex;
-
     flex-direction:column;
-
     justify-content:center;
-
     transition:.6s ease;
-
 }
 
-
-
-/* =========================
-   INPUT HEADER
-========================= */
-
-
+/* INPUT HEADER */
 .input-header{
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
-
     margin-bottom:6px;
-
 }
-
-
 
 .input-area label{
-
     font-size:13px;
-
     font-weight:700;
-
     color:#0369a1;
-
     letter-spacing:1px;
-
 }
 
-
-
-
-
-/* =========================
-   INFO BUTTON
-========================= */
-
-
+/* INFO BUTTON*/
 .info-btn{
-
     width:24px;
-
     height:24px;
-
     border-radius:50%;
-
     border:1px solid #0284c7;
-
     background:transparent;
-
     color:#0284c7;
-
     font-size:14px;
-
     font-weight:bold;
-
     cursor:pointer;
-
     transition:.3s;
-
 }
 
-
-
-
-
-/* =========================
-   PASSWORD INPUT
-========================= */
-
-
+/* PASSWORD INPUT*/
 .password-wrapper{
-
     position:relative;
-
     width:100%;
-
 }
-
-
 
 .password-wrapper input{
-
-
     width:100%;
-
-
-    padding:
-
-    9px 45px 9px 15px;
-
-
+    padding: 9px 45px 9px 15px;
     border-radius:12px;
-
-
-    border:
-
-    1px solid #94a3b8;
-
-
+    border:1px solid #94a3b8;
     background:#ffffff;
-
-
     font-size:13px;
-
-
     outline:none;
-
-
     color:#0f172a;
-
-
     transition:.3s;
-
-
 }
-
-
 
 .password-wrapper input::placeholder{
-
     color:#94a3b8;
-
 }
-
-
 
 .password-wrapper input:focus{
-
     border-color:#0284c7;
-
-
-    box-shadow:
-
-    0 0 20px rgba(14,165,233,.4);
-
+    box-shadow:0 0 20px rgba(14,165,233,.4);
 }
 
-
-
-
-
-/* =========================
-   EYE BUTTON
-========================= */
-
-
+/* EYE BUTTON */
 .eye-btn{
-
-
     position:absolute;
-
-
     right:8px;
-
-
     top:50%;
-
-
     transform:translateY(-50%);
-
-
-
     width:28px;
-
-
     height:28px;
-
-
-
     border:none;
-
-
     background:transparent;
-
-
-
     cursor:pointer;
-
-
-
     display:flex;
-
-
     justify-content:center;
-
-
     align-items:center;
-
-
 }
-
-
 
 .eye-svg{
-
-
     width:18px;
-
-
     height:18px;
-
-
 }
 
-
-
-
-
-/* =========================
-   SCAN BUTTON
-========================= */
-
-
+/* SCAN BUTTON*/
 .scan-btn{
-
-
     margin-top:10px;
-
-
     width:100%;
-
-
     padding:8px;
-
-
-
     border:none;
-
-
-
     border-radius:12px;
-
-
-
     background:
-
-
-    linear-gradient(
-
-        135deg,
-
-        #0369a1,
-
-        #0284c7
-
-    );
-
-
-
+    linear-gradient(135deg,#0369a1,#0284c7);
     color:white;
-
-
-
     font-size:13px;
-
-
-
     font-weight:700;
-
-
-
     letter-spacing:1px;
-
-
-
     cursor:pointer;
-
-
-
-    box-shadow:
-
-
-    0 0 25px rgba(56,189,248,.35);
-
-
-
+    box-shadow: 0 0 25px rgba(56,189,248,.35);
     transition:.3s;
-
-
 }
-
-
 
 .scan-btn:hover{
-
-
     transform:translateY(-3px);
-
-
-
-    background:
-
-
-    linear-gradient(
-
-        135deg,
-
-        #0284c7,
-
-        #38bdf8
-
-    );
-
-
-
-    box-shadow:
-
-
-    0 0 40px rgba(56,189,248,.7);
-
-
+    background:linear-gradient(135deg, #0284c7, #38bdf8);
+    box-shadow:0 0 40px rgba(56,189,248,.7);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   INFO BUTTON
-========================= */
-
-
+/* INFO BUTTON*/
 .info-btn{
-
-
     width:28px;
-
-
     height:28px;
-
-
     border-radius:50%;
-
-
     border:1px solid #0284c7;
-
-
     background:transparent;
-
-
     color:#0284c7;
-
-
     font-size:16px;
-
-
     font-weight:bold;
-
-
     cursor:pointer;
-
-
     transition:.3s;
-
-
 }
-
-
 
 .info-btn:hover{
-
-
     background:#0284c7;
-
-
     color:white;
-
-
     box-shadow:
-
-
     0 0 15px #38bdf8;
-
-
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   PASSWORD INPUT
-========================= */
-
-
+/* PASSWORD INPUT */
 .password-wrapper{
-
-
     position:relative;
-
-
     width:100%;
-
-
 }
-
-
-
 
 .password-wrapper input{
-
-
-    width:100%;
-
-
-    padding:
-
-
-    16px 55px 16px 18px;
-
-
-
+    width: 100%;
+    padding: 16px 55px 16px 18px;
     border-radius:14px;
-
-
-
-    border:
-
-
-    1px solid #94a3b8;
-
-
-
+    border:1px solid #94a3b8;
     background:#ffffff;
-
-
-
     font-size:15px;
-
-
-
     outline:none;
-
-
-
     color:#0f172a;
-
-
-
     transition:.3s;
-
-
 }
-
-
-
-
 .password-wrapper input::placeholder{
-
-
     color:#94a3b8;
-
-
 }
-
-
-
-
 .password-wrapper input:focus{
-
-
     border-color:#0284c7;
-
-
-
-    box-shadow:
-
-
-    0 0 20px rgba(14,165,233,.4);
-
-
+    box-shadow: 0 0 20px rgba(14,165,233,.4);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   EYE BUTTON
-========================= */
-
-
+/*  EYE BUTTON */
 .eye-btn{
-
-
     position:absolute;
-
-
     right:12px;
-
-
     top:50%;
-
-
     transform:translateY(-50%);
-
-
-
     width:38px;
-
-
     height:38px;
-
-
-
     border:none;
-
-
     background:transparent;
-
-
-
     cursor:pointer;
-
-
     display:flex;
-
-
     justify-content:center;
-
-
     align-items:center;
-
-
-
 }
-
-
 
 .eye-svg{
-
-
     width:23px;
-
-
     height:23px;
-
-
     transition:.3s ease;
-
-
 }
-
-
-
 
 .hidden{
-
-
     display:none;
-
-
 }
-
-
-
 
 .eye-btn:hover .eye-svg{
-
-
-    filter:
-
-    drop-shadow(
-        0 0 8px #38bdf8
-    );
-
-
+    filter: drop-shadow(0 0 8px #38bdf8);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   SCAN BUTTON
-========================= */
-
-
+/* SCAN BUTTON */
 .scan-btn{
-
-
     margin-top:30px;
-
-
     width:100%;
-
-
     padding:15px;
-
-
-
     border:none;
-
-
-
     border-radius:14px;
-
-
-
     background:
-
-
-    linear-gradient(
-        135deg,
-        #0369a1,
-        #0284c7
-    );
-
-
-
+    linear-gradient(135deg,#0369a1, #0284c7);
     color:white;
-
-
-
     font-size:15px;
-
-
-
     font-weight:700;
-
-
-
     letter-spacing:1.5px;
-
-
-
-    cursor:pointer;
-
-
-
-    box-shadow:
-
-
-    0 0 25px rgba(56,189,248,.35);
-
-
-
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(56,189,248,.35);
     transition:.3s;
-
-
 }
-
-
-
 
 .scan-btn:hover{
-
-
     transform:translateY(-3px);
-
-
-
-    background:
-
-
-    linear-gradient(
-        135deg,
-        #0284c7,
-        #38bdf8
-    );
-
-
-
-    box-shadow:
-
-
-    0 0 40px rgba(56,189,248,.7);
-
-
-
+    background:  linear-gradient(135deg,#0284c7, #38bdf8);
+    box-shadow: 0 0 40px rgba(56,189,248,.7);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   INFORMATION PANEL
-========================= */
-
-
-
+/* INFORMATION PANEL*/
 .info-panel{
-
-
     position:absolute;
-
-
     width:400px;
-
-
     min-height:500px;
-
-
-
-    background:
-
-
-    linear-gradient(
-        145deg,
-        rgba(248,250,252,.96),
-        rgba(226,232,240,.95)
-    );
-
-
-
+    background: linear-gradient(145deg,rgba(248,250,252,.96), rgba(226,232,240,.95));
     color:#1e293b;
-
-
-
     border-radius:24px;
-
-
-
     padding:30px;
-
-
-
     opacity:0;
-
-
-
     transform:translateX(100px);
-
-
-
     pointer-events:none;
-
-
-
     transition:.6s ease;
-
-
-
     overflow:hidden;
-
-
-
-    box-shadow:
-
-
-    0 30px 70px rgba(0,0,0,.6),
-
-
-    0 0 40px rgba(56,189,248,.25);
-
-
+    box-shadow: 0 30px 70px rgba(0,0,0,.6), 0 0 40px rgba(56,189,248,.25);
 }
-
-
-
-
-
 
 .scene.show-info .info-panel{
-
-
     opacity:1;
-
-
     transform:translateX(280px);
-
-
     pointer-events:auto;
-
-
 }
-
-
-
-
 
 .info-header{
-
-
     display:flex;
-
-
     justify-content:space-between;
-
-
     align-items:center;
-
-
 }
-
-
 
 .info-header h2{
-
-
     font-size:20px;
-
-
     color:#0369a1;
-
-
 }
-
-
-
-
 
 .close-info{
-
-
     border:none;
-
-
     background:none;
-
-
     font-size:28px;
-
-
     cursor:pointer;
-
-
     color:#0369a1;
-
-
 }
-
-
-
-
-
 
 .info-content{
-
     height:320px;
-
     overflow-y:auto;
-
     scrollbar-width:none;
-
     animation:contentFade .4s ease;
-
 }
-
 
 /* Chrome, Edge, Safari */
-
 .info-content::-webkit-scrollbar{
-
     display:none;
-
 }
-
 
 .info-content p{
-
-
     font-size:14px;
-
-
     line-height:1.7;
-
-
     color:#475569;
-
-
 }
-
-
-
-
 
 .info-content ul{
-
-
     padding-left:20px;
-
-
 }
-
-
-
-
 
 .info-content li{
-
-
     margin-bottom:10px;
-
-
 }
-/* =========================
-   INFORMATION MENU COLUMN
-========================= */
 
-
+/* INFORMATION MENU COLUMN */
 .info-menu{
-
-
     width:170px;
-
-
     display:flex;
-
-
     flex-direction:column;
-
-
     gap:15px;
-
-
-
     opacity:0;
-
-
-
     transform:translateX(20px);
-
-
-
     pointer-events:none;
-
-
-
     transition:.6s ease;
-
-
 }
-
-
-
-
 
 .scene.show-info .info-menu{
-
-
     opacity:1;
-
-
     transform:translateX(0);
-
-
-
     pointer-events:auto;
-
-
 }
 
-
-
-
-
-
-
-/* =========================
-   INFORMATION BUTTONS
-========================= */
-
-
+/* INFORMATION BUTTONS */
 .info-option{
-
-
     width:100%;
-
-
     padding:14px 10px;
-
-
     border-radius:14px;
-
-
     border:1px solid rgba(56,189,248,.45);
-
-
-
     background:
-
-
-    linear-gradient(
-        145deg,
-        rgba(248,250,252,.95),
-        rgba(226,232,240,.95)
-    );
-
-
-
+    linear-gradient(145deg, rgba(248,250,252,.95), rgba(226,232,240,.95));
     color:#0369a1;
-
-
-
     font-size:13px;
-
-
     font-weight:700;
-
-
-
     cursor:pointer;
-
-
-
     transition:.3s ease;
-
-
-
-    box-shadow:
-
-
-    0 10px 25px rgba(0,0,0,.25);
-
-
+    box-shadow: 0 10px 25px rgba(0,0,0,.25);
 }
-
-
-
-
 
 .info-option:hover{
-
-
     transform:translateX(5px);
-
-
     background:#0284c7;
-
-
     color:white;
-
-
-
-    box-shadow:
-
-
-    0 0 20px rgba(56,189,248,.7);
-
-
+    box-shadow: 0 0 20px rgba(56,189,248,.7);
 }
-
-
-
-
 
 .info-option.active{
-
-
     background:
-
-
-    linear-gradient(
-        135deg,
-        #0369a1,
-        #0284c7
-    );
-
-
+    linear-gradient(135deg,#0369a1,#0284c7);
     color:white;
-
-
-    box-shadow:
-
-
-    0 0 25px rgba(56,189,248,.6);
-
-
+    box-shadow:0 0 25px rgba(56,189,248,.6);
 }
 
-
-
-
-
-
-
-
-
-/* =========================
-   UPDATED THREE COLUMN SPACE
-========================= */
-
-
+/* UPDATED THREE COLUMN SPACE */
 .scene.show-info{
-
-
     gap:0px;
-
-
 }
-
-
-
-
-
-
-
 
 .scene.show-info .info-menu{
-
-
     margin-left:-650px;
-
-
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* =========================
-   INFORMATION CONTENT AREA
-========================= */
-
+/* INFORMATION CONTENT AREA */
 
 .info-panel{
-
-
     overflow:hidden;
-
-
 }
-
-
-
-
-
-
-
-
-
 
 .info-content p{
-
-
     font-size:14px;
-
-
     line-height:1.7;
-
-
 }
-
-
-
-
 
 .info-content ul{
-
-
     padding-left:20px;
-
-
 }
-
-
-
-
 
 .info-content li{
-
-
     margin-bottom:10px;
-
-
 }
-
-
-
-
 
 @keyframes contentFade{
-
-
     from{
-
-
         opacity:0;
-
-
         transform:translateY(15px);
-
-
     }
-
-
 
     to{
-
-
         opacity:1;
-
-
         transform:translateY(0);
-
-
     }
-
-
 }
-/* =========================
-   SYSTEM LOGO
-========================= */
+/* SYSTEM LOGO */
 
 .header{
     position:relative;
     text-align:center;
 }
 
-
 .system-logo{
-
     display:flex;
-
     justify-content:center;
-
     align-items:center;
-
     margin-bottom:8px;
-
 }
-
 
 .system-logo img{
-
     width:150px;
-
     height:150px;
-
     object-fit:contain;
-
     display:block;
-
-
-    filter:
-    drop-shadow(0 0 8px rgba(56,189,248,.5));
-
-
+    filter: drop-shadow(0 0 8px rgba(56,189,248,.5));
 }
 
-/* =========================
-   TUTORIAL IMAGES
-========================= */
+/* TUTORIAL IMAGES */
 
 .tutorial-container{
-
     text-align:center;
     margin-bottom:25px;
-
 }
-
 
 .tutorial-container img{
-
     width:380px;
     height:auto;
-
     max-width:100%;
-
     border-radius:12px;
-
     margin-top:10px;
-
     border:1px solid rgba(56,189,248,.45);
-
-    box-shadow:
-    0 0 20px rgba(56,189,248,.25);
-
+    box-shadow:0 0 20px rgba(56,189,248,.25);
     transition:.3s ease;
-
 }
-
 
 .tutorial-container img:hover{
-
     transform:scale(1.05);
-
-    box-shadow:
-    0 0 35px rgba(56,189,248,.6);
-
+    box-shadow: 0 0 35px rgba(56,189,248,.6);
 }
 
-/* =========================
-   TUTORIAL IMAGE SLIDER
-========================= */
-
-
+/* TUTORIAL IMAGE SLIDER */
 .tutorial-slider{
-
     position:relative;
-
     width:380px;
     height:auto;
-max-width:100%;
+    max-width:100%;
     margin:auto;
 
 }
 
-
-
 .tutorial-slide{
-
     position:absolute;
-
     top:0;
-
     left:0;
-
     width:180px;
-
     height:180px;
-
     object-fit:contain;
-
     opacity:0;
-
-    visibility:hidden;
-
+    visibility: hidden;
     transition:.4s ease;
-
 }
-
-
 
 .tutorial-slide.active{
-
     opacity:1;
-
     visibility:visible;
-
 }
-
-
 
 .tutorial-dots{
-
     display:flex;
-
     justify-content:center;
-
     gap:8px;
-
     margin-top:12px;
-
 }
-
-
 
 .dot{
-
     width:8px;
-
     height:8px;
-
     border-radius:50%;
-
     background:#94a3b8;
-
     cursor:pointer;
-
 }
 
-
-
 .dot.active{
-
     background:#0284c7;
-
-    box-shadow:
-    0 0 10px #38bdf8;
-
+    box-shadow:0 0 10px #38bdf8;
 }
 
 .tutorial-slide{
-
     cursor:pointer;
-
 }

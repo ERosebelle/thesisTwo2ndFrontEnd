@@ -13,7 +13,7 @@ const labelMap = {
 };
 
 // Target dataset file
-const datasetFile = "dataset.csv"; 
+const datasetFile = "dataset.csv";
 
 fs.createReadStream(datasetFile)
   .pipe(csv())

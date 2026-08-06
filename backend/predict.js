@@ -2,14 +2,11 @@ const fs = require("fs");
 const { DecisionTreeClassifier } = require("ml-cart");
 
 // Load trained model
-const model = JSON.parse(
-  fs.readFileSync("model.json")
-);
-
+const model = JSON.parse(fs.readFileSync("model.json"));
 const classifier = DecisionTreeClassifier.load(model);
 
-// 🌟 SAMPLE FEATURES (12 FEATURES)
-// Pinalitan para maging aligned sa 12 features ng model.json:
+/* 🌟 SAMPLE FEATURES (12 FEATURES)
+Pinalitan para maging aligned sa 12 features ng model.json:*/
 const sample = [
   10, // 1.  f_length
   3,  // 2.  f_char_class_count (e.g., lower + upper + digit)
