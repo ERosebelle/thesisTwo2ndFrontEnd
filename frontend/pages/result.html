@@ -1,48 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <title>Password Analysis Result</title>
 
-    <!-- MAIN PAGE CSS -->
+    <!-- MAIN CSS -->
     <link rel="stylesheet" href="../css/result.css">
 
     <!-- COMPONENT CSS -->
+    <link rel="stylesheet" href="../css/classification.css">
     <link rel="stylesheet" href="../css/decisionTree.css">
     <link rel="stylesheet" href="../css/recommendation.css">
     <link rel="stylesheet" href="../css/featureVector.css">
     <link rel="stylesheet" href="../css/decisionTraversalCard.css">
-
-    <!-- NEW -->
     <link rel="stylesheet" href="../css/summaryCard.css">
 
-    <!-- JS -->
+    <!-- COMPONENT JAVASCRIPT (Required first) -->
+    <script src="../js/summaryCard.js" defer></script>
+    <script src="../js/classification.js" defer></script>
     <script src="../js/decisionTree.js" defer></script>
     <script src="../js/recommendation.js" defer></script>
     <script src="../js/featureVector.js" defer></script>
     <script src="../js/decisionTraversalCard.js" defer></script>
 
-    <!-- NEW -->
-    <script src="../js/summaryCard.js" defer></script>
+    <!-- PAGE CONTROLLER -->
     <script src="../js/result.js" defer></script>
 </head>
-
 <body>
 
     <div class="result-container">
         <div class="result-card">
 
-            <!-- PAGE HEADER -->
+            <!-- HEADER -->
             <div class="page-header">
                 <img src="../assets/images/logo.png" alt="System Logo" class="header-logo">
-
                 <div class="header-text">
-                    <h1>Password Vulnerability and Cracking Method Classification System </h1>
-
-                    <p> Password Analysis Result </p>
+                    <h1>Password Vulnerability and Cracking Method Classification System</h1>
+                    <p>Password Analysis Result</p>
                 </div>
             </div>
 
@@ -51,41 +47,19 @@
 
                 <!-- CLASSIFICATION PANEL -->
                 <div class="classification-panel">
-
-                    <h2> Classification Result </h2>
-
-                    <div class="classification-item">
-                        <span class="label"> Vulnerability Found: </span>
-                        <span id="VulnerabilityFound" class="value"> Loading... </span>
-                    </div>
-
-                    <div class="classification-item">
-                        <span class="label"> Risk Level: </span>
-
-                        <span id="riskLevel" class="value"> Loading... </span>
-                    </div>
-
-                    <div id="summaryBox" class="summary-box">
-                        <h3> Summary </h3>
-
-                        <p id="summaryText"> Waiting for password analysis... </p>
-                    </div>
+                    <div id="classificationSection"></div>
                 </div>
 
                 <!-- ANALYSIS AREA -->
                 <div class="analysis-area">
-
-                    <!-- TAB BUTTONS -->
                     <div class="result-menu">
-                        <button class="menu-btn active" data-section="decision"> Decision Tree Path </button>
-                        <button class="menu-btn" data-section="recommendation"> Recommendation </button>
-                        <button class="menu-btn" data-section="features"> Feature Vector </button>
+                        <button class="menu-btn active" data-section="decision">Decision Tree Path</button>
+                        <button class="menu-btn" data-section="recommendation">Recommendation</button>
+                        <button class="menu-btn" data-section="features">Feature Vector</button>
                     </div>
 
-                    <!-- RESULT DISPLAY PANEL -->
                     <div class="result-panel">
                         <div class="bg-shape"></div>
-
                         <div id="panelBody">
                             <div id="decisionSection" class="result-section"></div>
                             <div id="recommendationSection" class="result-section"></div>
@@ -93,51 +67,43 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <p class="system-reminder">
-                This assessment raises awareness of potential password vulnerabilities.
-                No password can guarantee complete protection.
+                This assessment raises awareness of potential password vulnerabilities. No password can guarantee complete protection.
             </p>
-        </div>
 
-        <!-- PASSWORD PREVIEW CARD -->
-        <div class="password-preview-card">
-            <div class="password-entry">
-                <span class="password-label">
-                    Tested Password
-                </span>
-
-                <div id="testedPassword" class="hidden-password"> ******** </div>
-            </div>
-
-            <div class="password-entry" id="previousPasswordContainer" style="display:none;">
-                <span class="password-label"> Previous Password </span>
-
-                <div id="previousPassword" class="hidden-password"> ******** </div>
-            </div>
-        </div>
-
-        <!-- ACTION BUTTONS -->
-        <div class="button-group">
-            <button id="resetButton" class="reset-btn"> RESET </button>
-
-            <button id="compareButton" class="compare-btn"> COMPARE NEW PASSWORD </button>
-        </div>
-
-        <!-- BUTTON INFO -->
-        <div class="button-info" id="buttonInfo">
-            <h3 id="buttonInfoTitle"> Button Information </h3>
-
-            <p id="buttonInfoText"> Hover over a button to see its function. </p>
         </div>
     </div>
+
+    <!-- PASSWORD PREVIEW -->
+    <div class="password-preview-card">
+        <div class="password-entry">
+            <span class="password-label">Tested Password</span>
+            <div id="testedPassword" class="hidden-password">********</div>
+        </div>
+
+        <div class="password-entry" id="previousPasswordContainer" style="display:none;">
+            <span class="password-label">Previous Password</span>
+            <div id="previousPassword" class="hidden-password">********</div>
+        </div>
     </div>
 
-    <!-- Decision Traversal Card -->
+    <!-- ACTION BUTTONS -->
+    <div class="button-group">
+        <button id="resetButton" class="reset-btn">RESET</button>
+        <button id="compareButton" class="compare-btn">COMPARE NEW PASSWORD</button>
+    </div>
+
+    <!-- BUTTON INFO TOOLTIP -->
+    <div class="button-info" id="buttonInfo">
+        <h3 id="buttonInfoTitle">Button Information</h3>
+        <p id="buttonInfoText">Hover over a button to see its function.</p>
+    </div>
+
+    <!-- OVERLAY COMPONENT ROOTS -->
     <div id="decisionTraversalCardRoot"></div>
-
-    <!-- NEW Summary Card -->
     <div id="summaryCardRoot"></div>
 
 </body>

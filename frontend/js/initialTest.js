@@ -325,7 +325,7 @@ const scanButton =
 if (passwordInput && scanButton) {
     passwordInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            event.preventDefault(); 
+            event.preventDefault();
             scanButton.click();
         }
     });

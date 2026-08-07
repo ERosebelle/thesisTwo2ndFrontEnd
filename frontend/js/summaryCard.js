@@ -15,7 +15,6 @@ const SummaryCard = (() => {
             console.warn("Summary Card elements not found.");
             return;
         }
-
         closeButton.onclick = close;
 
         overlay.onclick =
@@ -53,14 +52,16 @@ const SummaryCard = (() => {
         overlay.classList.remove("active");
     }
 
-    return {
-        initialize, open, close
+    return{
+        initialize,open,close
     };
+
 })();
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-        SummaryCard.initialize();
+// WAIT FOR DYNAMIC COMPONENT LOAD
+window.addEventListener(
+    "summaryCardLoaded",
+    ()=>{
+        window.SummaryCard.initialize();
     }
 );

@@ -1,3 +1,4 @@
+/*  1. GLOBAL & BASE STYLES */
 * {
     box-sizing: border-box;
     font-family: "Segoe UI", Arial, sans-serif;
@@ -13,29 +14,20 @@ body {
     position: relative;
     overflow: hidden;
     animation: pageFade .8s ease forwards;
+    background: radial-gradient(
+        circle at top,
+        #1e3a8a 0%,
+        #0f172a 45%,
+        #020617 100%
+    );
 }
 
 @keyframes pageFade {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-body {
-    background:
-        radial-gradient(circle at top,
-            #1e3a8a 0%,
-            #0f172a 45%,
-            #020617 100%);
-}
-
-/* Digital grid */
+/* Digital Grid Background */
 body::before {
     content: "";
     position: absolute;
@@ -49,16 +41,11 @@ body::before {
 }
 
 @keyframes gridMove {
-    from {
-        background-position: 0 0, 0 0;
-    }
-
-    to {
-        background-position: 50px 50px, 50px 50px;
-    }
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 50px 50px, 50px 50px; }
 }
 
-/* Scanner line */
+/* Scanner Line Animation */
 body::after {
     content: "";
     position: absolute;
@@ -72,15 +59,11 @@ body::after {
 }
 
 @keyframes scan {
-    from {
-        top: -10%;
-    }
-
-    to {
-        top: 110%;
-    }
+    from { top: -10%; }
+    to { top: 110%; }
 }
 
+/* 2. MAIN LAYOUT & WORKSPACE */
 .result-container {
     width: 100%;
     height: 100vh;
@@ -97,11 +80,14 @@ body::after {
 .result-workspace {
     width: 100%;
     height: 100%;
-    position: relative;
+    display: flex;
+    gap: 30px;
+    padding-top: 120px;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 
-/* PAGE HEADER WITH LOGO */
-
+/* 3. PAGE HEADER */
 .page-header {
     position: absolute;
     top: 28px;
@@ -145,188 +131,7 @@ body::after {
     font-weight: 600;
 }
 
-.classification-panel {
-    position: absolute;
-    top: 96px;
-    left: 40px;
-    width: 300px;
-    height: 460px;
-    padding: 25px;
-    border-radius: 22px;
-    background:
-        linear-gradient(160deg,
-            rgba(15, 23, 42, .96) 0%,
-            rgba(30, 41, 59, .92) 60%,
-            rgba(51, 65, 85, .88) 100%);
-
-    border: 1px solid rgba(56, 189, 248, .18);
-    backdrop-filter: blur(18px);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow:
-        0 0 18px rgba(56, 189, 248, .08),
-        0 18px 45px rgba(0, 0, 0, .45);
-}
-
-.classification-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 6px;
-    background: linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
-    box-shadow: 0 0 15px rgba(56, 189, 248, .6);
-}
-
-.classification-panel::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100px;
-    background: linear-gradient(transparent, rgba(2, 6, 23, .92));
-}
-
-.classification-panel h2 {
-    margin: 0 0 20px;
-    font-size: 18px;
-    font-weight: 500;
-    color: #f8fafc;
-    letter-spacing: .5px;
-}
-
-.classification-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    margin: 12px 0;
-    flex-wrap: nowrap;
-}
-
-.classification-item .label {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #7dd3fc;
-    white-space: nowrap;
-}
-
-.classification-item .value {
-    font-size: 17px;
-    font-weight: 500;
-    color: #f8fafc;
-    white-space: nowrap;
-}
-
-
-/* SUMMARY CARD INSIDE CLASSIFICATION */
-.summary-box {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-    height: 170px;
-    padding: 16px;
-    border-radius: 16px;
-    background:
-        linear-gradient(145deg,
-            rgba(15, 23, 42, .75),
-            rgba(30, 41, 59, .65));
-
-    border: 1px solid rgba(56, 189, 248, .15);
-    box-shadow:
-        inset 0 0 20px rgba(56, 189, 248, .05),
-        0 10px 25px rgba(0, 0, 0, .25);
-    overflow-y: auto;
-}
-
-/* scrollbar */
-.summary-box::-webkit-scrollbar {
-    width: 6px;
-}
-
-.summary-box::-webkit-scrollbar-thumb {
-    background: #38bdf8;
-    border-radius: 10px;
-}
-
-.summary-box h3 {
-    margin: 0 0 10px;
-    color: #7dd3fc;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: .5px;
-}
-
-.summary-box p {
-    margin: 0;
-    color: #cbd5e1;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.6;
-}
-
-.summary-box p {
-    margin: 0;
-    color: #cbd5e1;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.6;
-}
-
-/* SUMMARY SECTIONS */
-.summary-section {
-    margin-bottom: 14px;
-}
-
-.summary-section:last-child {
-    margin-bottom: 0;
-}
-
-.summary-section>strong {
-    display: block;
-    margin-bottom: 4px;
-    color: #7dd3fc;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: .4px;
-}
-
-.summary-section p {
-    margin: 0 0 8px;
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.summary-section p:last-child {
-
-    margin-bottom: 0;
-
-}
-
-.classification-panel .corner {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-top: 2px solid rgba(56, 189, 248, .45);
-    border-left: 2px solid rgba(56, 189, 248, .45);
-    top: 16px;
-    left: 16px;
-}
-
-.classification-panel:hover {
-    border-color: rgba(56, 189, 248, .35);
-    box-shadow:
-        0 0 25px rgba(56, 189, 248, .12),
-        0 25px 55px rgba(0, 0, 0, .5);
-}
-
+/*  4. NAVIGATION / RESULT MENU TABS */
 .result-menu {
     display: flex;
     justify-content: flex-end;
@@ -350,11 +155,7 @@ body::after {
     font-size: 14px;
     font-weight: 600;
     letter-spacing: .4px;
-    transition:
-        background .25s ease,
-        border-color .25s ease,
-        color .25s ease,
-        box-shadow .25s ease;
+    transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
@@ -362,9 +163,7 @@ body::after {
     color: #ffffff;
     background: linear-gradient(180deg, rgba(51, 65, 85, .96), rgba(30, 41, 59, .95));
     border-color: rgba(56, 189, 248, .45);
-    box-shadow:
-        0 0 15px rgba(56, 189, 248, .15),
-        inset 0 2px 0 rgba(96, 165, 250, .25);
+    box-shadow: 0 0 15px rgba(56, 189, 248, .15), inset 0 2px 0 rgba(96, 165, 250, .25);
 }
 
 .menu-btn.active {
@@ -372,15 +171,14 @@ body::after {
     background: linear-gradient(180deg, rgba(51, 65, 85, .98), rgba(30, 41, 59, .98));
     border-color: rgba(56, 189, 248, .45);
     border-bottom: 1px solid rgba(15, 23, 42, .98);
-    box-shadow:
-        0 0 18px rgba(56, 189, 248, .20),
-        inset 0 2px 0 rgba(96, 165, 250, .35);
+    box-shadow: 0 0 18px rgba(56, 189, 248, .20), inset 0 2px 0 rgba(96, 165, 250, .35);
 }
 
 .menu-btn:active {
     filter: brightness(.95);
 }
 
+/*  5. RESULT PANEL & CONTENT SECTIONS */
 .result-panel {
     position: absolute;
     top: 97px;
@@ -389,17 +187,11 @@ body::after {
     height: 420px;
     padding: 30px;
     border-radius: 20px 0 20px 1000px;
-    background:
-        linear-gradient(160deg,
-            rgba(15, 23, 42, .96),
-            rgba(30, 41, 59, .90),
-            rgba(51, 65, 85, .85));
+    background: linear-gradient(160deg, rgba(15, 23, 42, .96), rgba(30, 41, 59, .90), rgba(51, 65, 85, .85));
     border: 1px solid rgba(56, 189, 248, .18);
     backdrop-filter: blur(16px);
     overflow: hidden;
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .45),
-        0 0 20px rgba(56, 189, 248, .08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .45), 0 0 20px rgba(56, 189, 248, .08);
 }
 
 .result-panel::before {
@@ -452,12 +244,7 @@ body::after {
     width: 520px;
     height: 46px;
     border-radius: 12px;
-    background:
-        linear-gradient(90deg,
-            rgba(59, 130, 246, .22) 0%,
-            rgba(56, 189, 248, .14) 40%,
-            rgba(56, 189, 248, .06) 70%,
-            transparent 100%);
+    background: linear-gradient(90deg, rgba(59, 130, 246, .22) 0%, rgba(56, 189, 248, .14) 40%, rgba(56, 189, 248, .06) 70%, transparent 100%);
     z-index: -1;
     pointer-events: none;
 }
@@ -473,9 +260,7 @@ body::after {
 
 .result-panel:hover {
     border-color: rgba(56, 189, 248, .35);
-    box-shadow:
-        0 25px 60px rgba(0, 0, 0, .5),
-        0 0 28px rgba(56, 189, 248, .15);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .5), 0 0 28px rgba(56, 189, 248, .15);
 }
 
 #panelBody {
@@ -492,6 +277,7 @@ body::after {
     overflow: hidden;
 }
 
+/*  6. ACTION BUTTONS & GROUP */
 .button-group {
     position: absolute;
     bottom: 9px;
@@ -513,10 +299,7 @@ body::after {
     font-weight: 700;
     letter-spacing: .5px;
     color: #f8fafc;
-    transition:
-        background .25s ease,
-        box-shadow .25s ease,
-        transform .2s ease;
+    transition: background .25s ease, box-shadow .25s ease, transform .2s ease;
 }
 
 .reset-btn {
@@ -541,6 +324,7 @@ body::after {
     transform: scale(.97);
 }
 
+/* 7. SYSTEM REMINDER */
 .system-reminder {
     position: absolute;
     bottom: 15px;
@@ -573,7 +357,7 @@ body::after {
     font-style: normal;
 }
 
-/* POPUP (button info tooltip) */
+/* 8. BUTTON INFO TOOLTIP */
 .button-info {
     position: fixed;
     width: 280px;
@@ -582,10 +366,7 @@ body::after {
     color: #1e293b;
     border-radius: 20px;
     border: 1px solid rgba(56, 189, 248, .45);
-    box-shadow:
-        0 25px 60px rgba(0, 0, 0, .45),
-        0 0 35px rgba(56, 189, 248, .35),
-        inset 0 0 20px rgba(255, 255, 255, .5);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .45), 0 0 35px rgba(56, 189, 248, .35), inset 0 0 20px rgba(255, 255, 255, .5);
     opacity: 0;
     pointer-events: none;
     transition: opacity .3s ease;
@@ -612,34 +393,7 @@ body::after {
     color: #475569;
 }
 
-@media(max-width:1100px) {
-    .classification-panel {
-        width: 260px;
-    }
-
-    .result-menu,
-    .result-panel,
-    .button-group {
-        left: 320px;
-    }
-}
-
-/* COMPARISON MODE  */
-.classification-item.comparison-mode {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-}
-
-.classification-item.comparison-mode .value {
-    white-space: normal;
-    display: block;
-    width: 100%;
-    line-height: 1.6;
-}
-
-
-/* PASSWORD PREVIEW CARD (COMPACT) */
+/*  9. PASSWORD PREVIEW CARD */
 .password-preview-card {
     position: absolute;
     left: 350px;
@@ -648,18 +402,11 @@ body::after {
     height: 130px;
     padding: 14px 16px;
     transition: height .3s ease;
-
-    background: linear-gradient(145deg,
-            rgba(15, 23, 42, .88),
-            rgba(30, 41, 59, .82));
-
+    background: linear-gradient(145deg, rgba(15, 23, 42, .88), rgba(30, 41, 59, .82));
     border: 1px solid rgba(56, 189, 248, .22);
     border-radius: 14px;
     backdrop-filter: blur(12px);
-    box-shadow:
-        0 12px 25px rgba(0, 0, 0, .35),
-        0 0 15px rgba(56, 189, 248, .08);
-
+    box-shadow: 0 12px 25px rgba(0, 0, 0, .35), 0 0 15px rgba(56, 189, 248, .08);
     z-index: 20;
     overflow: hidden;
 }
@@ -675,8 +422,7 @@ body::after {
     left: 0;
     width: 100%;
     height: 2px;
-    background:
-        linear-gradient(90deg, #38bdf8, #60a5fa, transparent);
+    background: linear-gradient(90deg, #38bdf8, #60a5fa, transparent);
 }
 
 .password-entry {
@@ -684,6 +430,8 @@ body::after {
     flex-direction: column;
     gap: 4px;
     margin-bottom: -3px;
+    width: 100%;
+    overflow: hidden;
 }
 
 .password-entry:last-child {
@@ -730,32 +478,10 @@ body::after {
     cursor: pointer;
     scrollbar-width: thin;
     scrollbar-color: #38bdf8 rgba(56, 189, 248, .08);
-}
-
-.password-preview-card .hidden-password.revealed {
     -webkit-overflow-scrolling: touch;
 }
 
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar {
-    height: 5px;
-}
-
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar-track {
-    background: rgba(56, 189, 248, .08);
-    border-radius: 100px;
-}
-
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar-thumb {
-    background: #38bdf8;
-    border-radius: 100px;
-}
-
-.password-entry {
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Decorative scrollbar */
+/* Decorative Scrollbar */
 .password-preview-card .hidden-password.revealed::-webkit-scrollbar {
     height: 5px;
 }
@@ -783,9 +509,7 @@ body::after {
     transform: scale(.96);
 }
 
-
-/* DECISION TREE EXPLANATION CARD */
-
+/* 10. DECISION TREE EXPLANATION CARD */
 .decision-explanation {
     position: relative;
     transform: translateX(20px);
@@ -793,18 +517,12 @@ body::after {
     width: 870px;
     padding: 1px 20px;
     border-radius: 18px;
-    background:
-        linear-gradient(145deg,
-            rgba(15, 23, 42, .85),
-            rgba(30, 41, 59, .75));
-    border:1px solid rgba(56, 189, 248, .18);
-    box-shadow: inset 0 0 20px rgba(56, 189, 248, .05),
-                    0 12px 30px rgba(0, 0, 0, .35);
-
+    background: linear-gradient(145deg, rgba(15, 23, 42, .85), rgba(30, 41, 59, .75));
+    border: 1px solid rgba(56, 189, 248, .18);
+    box-shadow: inset 0 0 20px rgba(56, 189, 248, .05), 0 12px 30px rgba(0, 0, 0, .35);
     overflow: hidden;
 }
 
-/* glowing top line */
 .decision-explanation::before {
     content: "";
     position: absolute;
@@ -812,11 +530,9 @@ body::after {
     left: 0;
     width: 100%;
     height: 3px;
-    background:
-        linear-gradient(90deg, #38bdf8, #60a5fa, transparent);
+    background: linear-gradient(90deg, #38bdf8, #60a5fa, transparent);
 }
 
-/* title */
 .decision-explanation h3 {
     margin: 0 0 12px;
     font-size: 15px;
@@ -826,7 +542,6 @@ body::after {
     text-transform: uppercase;
 }
 
-/* explanation text */
 #decisionExplanation {
     margin: 0;
     color: #cbd5e1;
@@ -835,7 +550,6 @@ body::after {
     font-weight: 400;
 }
 
-/* highlight when updated dynamically */
 #decisionExplanation:not(:empty) {
     animation: explanationFade .4s ease;
 }
@@ -845,23 +559,17 @@ body::after {
         opacity: 0;
         transform: translateY(8px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.summary-box {
-    cursor: pointer;
-    transition:
-        border-color .2s ease,
-        box-shadow .2s ease;
-}
-
-.summary-box:hover {
-    border-color: rgba(56, 189, 248, .4);
-
-    box-shadow: 0 0 15px rgba(56, 189, 248, .15);
-
+/* 11. MEDIA QUERIES */
+@media (max-width: 1100px) {
+    .result-menu,
+    .result-panel,
+    .button-group {
+        left: 320px;
+    }
 }

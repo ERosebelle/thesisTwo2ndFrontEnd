@@ -1,29 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Vulnerability Classification System</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "Century Gothic", Arial, sans-serif;
+            background: #0b1220;
+            color: white;
+        }
 
-<title>Password Vulnerability Classification System</title>
+        #message {
+            max-width: 700px;
+            padding: 40px;
+            text-align: center;
+            line-height: 1.7;
+        }
 
-<!-- SYSTEM LOGO / TAB ICON -->
-<link rel="icon" type="image/png" href="assets/images/logo.png">
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            opacity: .9;
+        }
+    </style>
 </head>
 <body>
-<script>
+    <div id="message">
+        <h1>Password Vulnerability Classification System </h1>
 
-// ENTRY CONTROLLER - Check if user already accepted consent
-const consent = sessionStorage.getItem("privacyConsentGranted");
+        <p id="status">
+            Starting system...
+        </p>
+    </div>
 
-// First visit
-if(consent !== "true"){
-    window.location.href = "pages/consent.html";
-}
+    <script>
+        // SYSTEM STARTUP
+        // Project opened directly from file explorer
+        if (window.location.protocol === "file:") {
+            document.getElementById("status").innerHTML =
+                "<strong>Project cannot start.</strong><br><br>" +
+                "This system must be opened through a local web server.<br><br>" +
+                "Please run the project from Visual Studio Code or another local server, then open the provided localhost address.";
+        }
 
-// Already accepted
-else{
-    window.location.href = "pages/initialTest.html";
-}
-</script>
+        // Project opened correctly
+        else {
+            const consent = localStorage.getItem("consentAccepted");
+            if (consent === "true") {
+                window.location.replace("pages/initialTest.html"
+                );
+            }
+
+            else {
+                window.location.replace("pages/consent.html");
+            }
+        }
+    </script>
 </body>
 </html>

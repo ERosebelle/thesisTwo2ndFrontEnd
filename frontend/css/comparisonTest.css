@@ -802,6 +802,7 @@ body::after {
     margin-top: 10px;
 }
 
+<<<<<<< HEAD
 .dot {
     width: 9px;
     height: 9px;
@@ -813,4 +814,144 @@ body::after {
 .dot.active {
     background: #0284c7;
     transform: scale(1.3);
+=======
+
+
+
+
+.tutorial-dots{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:8px;
+
+    margin-top:12px;
+
+}
+
+
+
+.dot{
+
+    width:8px;
+
+    height:8px;
+
+    border-radius:50%;
+
+    background:#94a3b8;
+
+    cursor:pointer;
+
+}
+
+
+
+.dot.active{
+
+    background:#0284c7;
+
+    box-shadow:
+    0 0 10px #38bdf8;
+
+}
+
+.tutorial-slide{
+
+    cursor:pointer;
+
+}
+
+/* =========================
+   TUTORIAL IMAGE SLIDER
+========================= */
+
+.tutorial-slider{
+
+    width:380px;
+
+    height:220px;
+
+    max-width:100%;
+
+    margin:20px auto;
+
+    position:relative;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+}
+
+
+.tutorial-slide{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:contain;
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    display:none;
+
+}
+
+
+
+.tutorial-slide.active{
+
+    display:block;
+
+}
+
+
+
+
+
+.tutorial-dots{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:10px;
+
+    margin-top:10px;
+
+}
+
+
+
+.dot{
+
+    width:9px;
+
+    height:9px;
+
+    border-radius:50%;
+
+    background:#94a3b8;
+
+    cursor:pointer;
+
+}
+
+
+
+.dot.active{
+
+    background:#0284c7;
+
+    transform:scale(1.3);
+
+>>>>>>> 75481f855c22cb820c04364461ba9851141e8eba
 }

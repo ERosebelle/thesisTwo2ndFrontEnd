@@ -310,7 +310,7 @@ const compareButton = document.getElementById("compareButton");
 if (passwordInput && compareButton) {
     passwordInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            event.preventDefault(); 
+            event.preventDefault();
             compareButton.click();
         }
     });
@@ -327,7 +327,8 @@ if (compareButton && passwordInput) {
                     () => {
                         passwordInput.style.boxShadow = "";
                     },
-                    1000);
+                    1000
+                );
                 return;
             }
 
@@ -360,9 +361,8 @@ if (compareButton && passwordInput) {
                 // SAVE RESULT
                 sessionStorage.setItem("analysisResult", JSON.stringify(result));
                 window.location.href = "result.html";
-            }
 
-            catch (error) {
+            } catch (error) {
                 console.error("Comparison Analysis Error:", error);
                 alert("Unable to connect to analysis server.");
                 compareButton.disabled = false;
@@ -441,6 +441,7 @@ direct access to Comparison Test*/
     const navigation = performance.getEntriesByType("navigation")[0];
     const isReload = navigation && navigation.type === "reload";
     const isBackForward = navigation && navigation.type === "back_forward";
+
     const hasPreviousPassword = localStorage.getItem("analyzedPassword");
 
     if (isReload || isBackForward || !hasPreviousPassword) {
@@ -461,6 +462,4 @@ window.addEventListener(
 Without this, the browser can repaint a cached snapshot of this
 page before the checks above run, causing a brief flash of stale
 content before the redirect happens.*/
-window.addEventListener("unload",
-    function () { }
-);
+window.addEventListener("unload", function () { });

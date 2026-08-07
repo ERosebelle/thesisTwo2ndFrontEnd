@@ -1,9 +1,26 @@
-// RESULT PAGE, result.js
-document
-    .querySelectorAll(".classification-item")
-    .forEach(item => {
-        item.classList.remove("comparison-mode");
-    });
+// BACKEND ANALYSIS CONNECTION
+async function analyzePassword(password) {
+    try {
+        const response = await fetch("http://localhost:3000/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ password: password })
+        });
+
+        if (!response.ok) {
+            throw new Error("Backend request failed");
+        }
+
+        const data = await response.json();
+        console.log("BACKEND RESPONSE:", data);
+        return data;
+    } catch (error) {
+        console.error("Backend connection error:", error);
+        throw error;
+    }
+}
 
 // PREVENT RELOAD / BACK BUTTON / DIRECT ACCESS
 (function guardResultPageAccess() {
@@ -14,30 +31,31 @@ document
     if (navType === "reload" || navType === "back_forward" || !hasAnalyzedPassword) {
         window.location.replace("initialTest.html");
     }
-}
-)
-    ();
+})();
 
-/* Catches browser back/forward-cache (bfcache) restores
-that do not re-run scripts and therefore would not be caught by the navigation-type check above.*/
-window.addEventListener(
-    "pageshow",
-    function (event) {
-        if (event.persisted) {
-            window.location.replace("initialTest.html");
-        }
+/*Catches browser back/forward-cache (bfcache) restores that do not re-run scripts and therefore 
+would not becaught by the navigation-type check above.*/
+window.addEventListener("pageshow", function(event) {
+    if (event.persisted) {
+        window.location.replace("initialTest.html");
     }
-);
+});
 
-/* Opts this page out of the browser's back/forward cache (bfcache).
-Without this, browsers may instantly repaint a cached snapshot of
-this page on back/forward navigation *before* any JS runs, causing
-a brief flash of stale content before the guard above can redirect.*/
-window.addEventListener("unload", function () { });
-
+/*Opts this page out of the browser's back/forward cache (bfcache).
+Without this, browsers may instantly repaint a cached snapshot ofthis page on back/forward navigation
+*before* any JS runs, causing a brief flash of stale content before the guard above can redirect.*/
+window.addEventListener("unload", function() {
+    // Delete the previous and current password when the tab is closed or page is unloaded
+    localStorage.removeItem("previousPassword");
+    localStorage.removeItem("currentPassword");
+});
 // LOAD COMPONENT HTML
 async function loadComponents() {
     try {
+        // CLASSIFICATION COMPONENT
+        const classificationResponse = await fetch("./components/classification.html");
+        const classification = await classificationResponse.text();
+
         // DECISION TREE COMPONENT
         const decisionResponse = await fetch("./components/decisionTree.html");
         const decisionTreeComponent = await decisionResponse.text();
@@ -50,90 +68,90 @@ async function loadComponents() {
         const featureResponse = await fetch("./components/featureVector.html");
         const featureVector = await featureResponse.text();
 
-        /* DECISION TRAVERSAL CARD COMPONENT, Independent Result-page overlay - NOT part of the
-        Deci/Reco/Vecs component set, loaded separately into its own body-level mount point below.*/
+        /*DECISION TRAVERSAL CARD COMPONENT
+        Independent Result-page overlay - NOT part of the
+        Deci/Reco/Vecs component set, loaded separately into
+        its own body-level mount point below.*/
         const decisionTraversalCardResponse = await fetch("./components/decisionTraversalCard.html");
         const decisionTraversalCard = await decisionTraversalCardResponse.text();
+
         const summaryCardResponse = await fetch("./components/summaryCard.html");
         const summaryCard = await summaryCardResponse.text();
+
         const recommendationSection = document.getElementById("recommendationSection");
         const featureSection = document.getElementById("featureSection");
+        const classificationSection = document.getElementById("classificationSection");
         const decisionSection = document.getElementById("decisionSection");
 
+        if (classificationSection) {
+            classificationSection.innerHTML = classification;
+        }
         if (decisionSection) {
             decisionSection.innerHTML = decisionTreeComponent;
         }
-
         if (recommendationSection) {
             recommendationSection.innerHTML = recommendation;
         }
-
         if (featureSection) {
             featureSection.innerHTML = featureVector;
         }
 
-        /* The traversal card mounts at body level (outside the Deci/Reco/Vecs layout), 
+        /*The traversal card mounts at body level (outside the Deci/Reco/Vecs layout), 
         not inside any of the three result-section containers above.*/
         const decisionTraversalCardRoot = document.getElementById("decisionTraversalCardRoot");
-
         if (decisionTraversalCardRoot) {
             decisionTraversalCardRoot.innerHTML = decisionTraversalCard;
         }
 
         const summaryCardRoot = document.getElementById("summaryCardRoot");
-
         if (summaryCardRoot) {
             summaryCardRoot.innerHTML = summaryCard;
         }
 
         console.log("Components loaded");
+
         if (typeof initializeFeatureVector === "function") {
             initializeFeatureVector();
         }
-
         if (typeof initializeRecommendation === "function") {
             initializeRecommendation();
         }
-
         if (typeof initializeDecisionTraversalCard === "function") {
             initializeDecisionTraversalCard();
         }
-
         if (typeof SummaryCard !== "undefined") {
             SummaryCard.initialize();
         }
-    }
-
-    catch (error) {
+    } catch (error) {
         console.error("Component loading error:", error);
     }
 }
 
-/* DECISION TRAVERSAL CARD TRIGGER - Decision Tree only notifies that its hologram was clicked
-("decisionTree:hologramClicked"). Result.js, as the page-level owner/controller, decides what that means - opening the
-independent Decision Traversal Card with the latest backend analysis data.*/
+/*DECISION TRAVERSAL CARD TRIGGER
+Decision Tree only notifies that its hologram was clicked
+("decisionTree:hologramClicked"). Result.js, as the page-level
+owner/controller, decides what that means - opening the
+independent Decision Traversal Card with the latest backend
+analysis data.*/
 
-document.addEventListener(
-    "decisionTree:hologramClicked",
-    () => {
-        if (typeof DecisionTraversalCard !== "undefined" && typeof DecisionTraversalCard.open === "function") {
-            DecisionTraversalCard.open(window.latestAnalysisData);
-        }
+document.addEventListener("decisionTree:hologramClicked", () => {
+    if (typeof DecisionTraversalCard !== "undefined" && typeof DecisionTraversalCard.open === "function") {
+        DecisionTraversalCard.open(window.latestAnalysisData);
     }
-);
+});
 
-loadComponents()
-    .then(() => {
-        console.log("Decision component ready");
-
-        if (typeof initializeDecisionTree === "function") {
-            initializeDecisionTree();
-        }
-        fetchAnalysisResult();
-    });
+loadComponents().then(() => {
+    console.log("Decision component ready");
+    if (typeof initializeDecisionTree === "function") {
+        initializeDecisionTree();
+    }
+    fetchAnalysisResult();
+    initializePasswordPreview();
+});
 
 // TAB CONTROLLER
 const tabs = document.querySelectorAll(".menu-btn");
+
 const sections = {
     decision: document.getElementById("decisionSection"),
     recommendation: document.getElementById("recommendationSection"),
@@ -141,29 +159,25 @@ const sections = {
 };
 
 tabs.forEach(tab => {
-    tab.addEventListener(
-        "click",
-        () => {
-            const selected = tab.dataset.section;
-            tabs.forEach(button => {
-                button.classList.remove("active");
-            });
+    tab.addEventListener("click", () => {
+        const selected = tab.dataset.section;
 
-            tab.classList.add("active");
+        tabs.forEach(button => {
+            button.classList.remove("active");
+        });
 
-            Object.values(sections)
-                .forEach(section => {
+        tab.classList.add("active");
 
-                    if (section) {
-                        section.style.display = "none";
-                    }
-                });
-
-            if (sections[selected]) {
-                sections[selected].style.display = "block";
+        Object.values(sections).forEach(section => {
+            if (section) {
+                section.style.display = "none";
             }
+        });
+
+        if (sections[selected]) {
+            sections[selected].style.display = "block";
         }
-    );
+    });
 });
 
 // DEFAULT TAB
@@ -173,7 +187,6 @@ if (sections.decision) {
 if (sections.recommendation) {
     sections.recommendation.style.display = "none";
 }
-
 if (sections.features) {
     sections.features.style.display = "none";
 }
@@ -190,7 +203,6 @@ const buttonDescriptions = {
         title: "Reset Password Analysis",
         text: "Returns to the Initial Test page where you can start a new password vulnerability assessment."
     },
-
     compare: {
         title: "Compare New Password",
         text: "Allows you to enter another password and compare its vulnerability against the previous analysis result."
@@ -201,13 +213,16 @@ function showButtonInfo(type, button) {
     if (!buttonInfo || !button) {
         return;
     }
+
     const data = buttonDescriptions[type];
+
     if (data) {
         buttonInfoTitle.textContent = data.title;
         buttonInfoText.textContent = data.text;
     }
 
     const rect = button.getBoundingClientRect();
+
     buttonInfo.style.left = (rect.left + rect.width / 2) + "px";
     buttonInfo.style.top = (rect.top - buttonInfo.offsetHeight - 15) + "px";
     buttonInfo.style.transform = "translateX(-50%)";
@@ -225,69 +240,60 @@ if (resetButton) {
     resetButton.addEventListener("mouseenter", () => showButtonInfo("reset", resetButton));
     resetButton.addEventListener("mouseleave", hideButtonInfo);
 
-    resetButton.addEventListener("click",
-        () => {
-            localStorage.removeItem("analyzedPassword");
-            localStorage.removeItem("comparisonPassword");
-            window.location.href = "initialTest.html";
-        }
-    );
+    resetButton.addEventListener("click", () => {
+        localStorage.removeItem("analyzedPassword");
+        localStorage.removeItem("previousPassword");
+        localStorage.removeItem("currentPassword");
+        sessionStorage.removeItem("analysisResult");
+        window.location.href = "initialTest.html";
+    });
 }
 
 if (compareButton) {
     compareButton.addEventListener("mouseenter", () => showButtonInfo("compare", compareButton));
     compareButton.addEventListener("mouseleave", hideButtonInfo);
+
     compareButton.addEventListener("click", () => {
         window.location.href = "comparisonTest.html";
-    }
-    );
+    });
 }
 
-// BACKEND ANALYSIS CONNECTION, SUPPORTS NORMAL + COMPARISON MODE
 const analyzedPassword = localStorage.getItem("analyzedPassword");
 const comparisonPassword = localStorage.getItem("comparisonPassword");
-
-async function analyzePassword(password) {
-    const response = await fetch("http://localhost:3000/analyze",
-        {
-            method: "POST", headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ password: password })
-        }
-    );
-    return await response.json();
-}
 
 async function fetchAnalysisResult() {
     try {
         // COMPARISON MODE
         if (analyzedPassword && comparisonPassword) {
             console.log("Comparison Mode");
+
+            // ✅ FIX 1: I-set ang UI variables bago tayo mag-overwrite.
+            localStorage.setItem("previousPassword", analyzedPassword);
+            localStorage.setItem("currentPassword", comparisonPassword);
+
             const originalResult = await analyzePassword(analyzedPassword);
             const comparisonResult = await analyzePassword(comparisonPassword);
+
             console.log("Original:", originalResult);
             console.log("Comparison:", comparisonResult);
 
-            updateComparisonClassification(originalResult, comparisonResult);
-
-            /* Kept on window so decisionTraversalCard.js (a sibling component, not a child of Decision Tree) 
-            can render traversal details when the hologram is clicked -  without decisionTree.js having to hand it 
-            off directly.*/
             window.latestAnalysisData = comparisonResult;
+
+            if (typeof updateComparisonClassification === "function") {
+                updateComparisonClassification(originalResult, comparisonResult);
+            }
 
             if (typeof updateDecisionTree === "function") {
                 updateDecisionTree(comparisonResult);
             }
 
-            /* --- NEW FIX ---
-            Promote the current comparison password 
-            so that it becomes the "previous" password the next time the Compare button is pressed.*/
+            // ✅ FIX 2: I-promote ang current comparison password bilang bagong baseline
             localStorage.setItem("analyzedPassword", comparisonPassword);
 
-            /* Comparison has been consumed and displayed. Remove it so a future normal-mode visit to
-            result.html does not re-enter comparison mode.*/
+            // Remove it so a future normal-mode visit to
+            // result.html does not re-enter comparison mode.
             localStorage.removeItem("comparisonPassword");
+
             return;
         }
 
@@ -299,264 +305,84 @@ async function fetchAnalysisResult() {
 
         const data = await analyzePassword(analyzedPassword);
         console.log("BACKEND RESPONSE:", data);
-        updateClassification(data);
+
+        // UPDATE CLASSIFICATION PANEL
+        if (typeof updateClassification === "function") {
+            updateClassification(data);
+        }
 
         // See comment in the comparison-mode branch above.
         window.latestAnalysisData = data;
+
         if (typeof updateDecisionTree === "function") {
             updateDecisionTree(data);
         }
-    }
-
-    catch (error) {
+    } catch (error) {
         console.error("API ERROR:", error);
     }
 }
 
-// NORMAL CLASSIFICATION
-function updateClassification(data) {
-    document
-        .querySelectorAll(".classification-item")
-        .forEach(item => {
-            item.classList.remove("comparison-mode");
-        });
-
-    const vulnerability = document.getElementById("VulnerabilityFound");
-    const risk = document.getElementById("riskLevel");
-    const summary = document.getElementById("summaryText");
-
-    if (vulnerability) {
-        vulnerability.textContent = data.vulnerability || "-";
-    }
-
-    if (risk) {
-        risk.textContent = getRiskLevel(data.vulnerability);
-    }
-
-    if (summary) {
-        const backendExplanation = data.security_assessment?.vulnerability_explanation || "";
-        const explanation = getVulnerabilityExplanation(data.vulnerability);
-        summary.innerHTML = `
-
-<div class="summary-section">
-    <strong>Risk Explanation</strong>
-    <p>${explanation.riskExplanation}</p>
-</div>
-
-<div class="summary-section">
-    <strong>Cracking Method</strong>
-    <p>${explanation.crackingMethod}</p>
-</div>
-
-`;
-    }
-}
-
-// COMPARISON CLASSIFICATION
-function updateComparisonClassification(original, comparison) {
-    document
-        .querySelectorAll(".classification-item")
-        .forEach(item => {
-            item.classList.add("comparison-mode");
-        });
-
-    const vulnerability = document.getElementById("VulnerabilityFound");
-    const risk = document.getElementById("riskLevel");
-    const summary = document.getElementById("summaryText");
-
-    if (vulnerability) {
-        vulnerability.innerHTML = `
-        <strong>Previous:</strong> ${original.vulnerability || "-"}<br>
-        <strong>Compared:</strong> ${comparison.vulnerability || "-"}
-        `;
-    }
-
-    if (risk) {
-        risk.innerHTML = `
-        <strong>Previous:</strong> ${getRiskLevel(original.vulnerability)}<br>
-        <strong>Compared:</strong> ${getRiskLevel(comparison.vulnerability)}
-        `;
-    }
-
-    if (summary) {
-        const originalExplanation = getVulnerabilityExplanation(original.vulnerability);
-        const comparisonExplanation = getVulnerabilityExplanation(comparison.vulnerability);
-
-        summary.innerHTML = `
-        <div class="summary-section">
-            <strong>Risk Explanation</strong>
-            <p>
-            <strong>Previous:</strong><br>
-        ${originalExplanation.riskExplanation}
-        <br><br>
-        <strong>Compared:</strong><br>
-        ${comparisonExplanation.riskExplanation}
-        </p>
-        </div>
-
-        <div class="summary-section">
-            <strong>Cracking Method</strong>
-            <p>
-            <strong>Previous:</strong><br>
-        ${originalExplanation.crackingMethod}
-        <br><br>
-        <strong>Compared:</strong><br>
-        ${comparisonExplanation.crackingMethod}
-        </p>
-        </div>
-
-        <div class="summary-section">
-            <strong>Overall Conclusion</strong>
-            <p>
-            ${getComparisonConclusion(original.vulnerability, comparison.vulnerability)}
-            </p>
-        </div>
-        `;
-    }
-}
-
-// RISK CALCULATOR
-function getRiskLevel(vulnerability) {
-    switch (vulnerability) {
-        case "DICTIONARY":
-            return "CRITICAL RISK";
-        case "RULE-BASED":
-            return "HIGH RISK";
-        case "BRUTE-FORCE":
-            return "MODERATE RISK";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-// VULNERABILITY EXPLANATIONS
-function getVulnerabilityExplanation(vulnerability) {
-    switch (vulnerability) {
-        case "DICTIONARY":
-            return {
-                riskExplanation:
-                    "This password is classified as CRITICAL RISK because it contains recognizable dictionary words or commonly used password terms. These passwords are typically tested first during dictionary attacks, making them highly susceptible to rapid compromise.",
-                crackingMethod:
-                    "The password was classified as DICTIONARY because the system detected recognizable words or commonly used password terms that match entries frequently found in password dictionaries."
-            };
-        case "RULE-BASED":
-            return {
-                riskExplanation:
-                    "This password is classified as HIGH RISK because it follows predictable patterns that attackers can efficiently generate, allowing it to be guessed much faster than a random password.",
-                crackingMethod:
-                    "The password was classified as RULE-BASED because the system detected predictable structures such as common words combined with numbers, symbols, capitalization, or other common mutation patterns targeted by rule-based attacks."
-            };
-        case "BRUTE-FORCE":
-            return {
-                riskExplanation:
-                    "This password is classified as MODERATE RISK because it does not contain obvious dictionary words or predictable patterns. Although it is more resistant to specialized attacks, it can still eventually be discovered through exhaustive brute-force guessing.",
-                crackingMethod:
-                    "The password was classified as BRUTE-FORCE because the system did not detect dictionary words or common rule-based patterns, indicating that exhaustive brute-force guessing is the most applicable attack strategy."
-            };
-        default:
-            return {
-                riskExplanation:
-                    "The system could not determine the appropriate risk level for this password.",
-                crackingMethod:
-                    "The password could not be associated with any supported cracking strategy."
-            };
-    }
-}
-
-// VULNERABILITY RANK (used only to compare relative resistance)
-function getVulnerabilityRank(
-    vulnerability
-) {
-    switch (vulnerability) {
-        case "DICTIONARY":
-            return 1;
-        case "RULE-BASED":
-            return 2;
-        case "BRUTE-FORCE":
-            return 3;
-        default:
-            return 0;
-    }
-}
-
-// COMPARISON CONCLUSION
-function getComparisonConclusion(originalVulnerability, comparisonVulnerability) {
-    const originalRank = getVulnerabilityRank(originalVulnerability);
-    const comparisonRank = getVulnerabilityRank(comparisonVulnerability);
-
-    if (comparisonRank > originalRank) {
-        return "the compared password provides better resistance than the original password.";
-    }
-    if (comparisonRank < originalRank) {
-        return "the compared password is weaker than the original password.";
-    }
-    return "the compared password offers similar resistance to the original password.";
-}
-
 // PASSWORD PREVIEW DISPLAY
 function initializePasswordPreview() {
-    const previousPassword = localStorage.getItem("analyzedPassword") || "";
-    const testedPassword = localStorage.getItem("comparisonPassword") || localStorage.getItem("analyzedPassword") || "";
+    const previousPassword = localStorage.getItem("previousPassword") || "";
+    const testedPassword = localStorage.getItem("currentPassword") || localStorage.getItem("analyzedPassword") || "";
+
+    console.log("PASSWORD PREVIEW DATA", {
+        previousPassword,
+        testedPassword,
+        analyzedPassword: localStorage.getItem("analyzedPassword"),
+        comparisonPassword: localStorage.getItem("comparisonPassword")
+    });
+
     const previousContainer = document.getElementById("previousPasswordContainer");
     const previousLabel = document.querySelector(".previous-password-entry");
 
-    // NORMAL MODE, ONLY TESTED PASSWORD
-    createPasswordReveal("testedPassword", testedPassword);
-    // COMPARISON MODE, TESTED + PREVIOUS
-    if (comparisonPassword && comparisonPassword.trim() !== "") {
-        if (previousContainer) {
-            previousContainer.style.display = "block";
-        }
-        createPasswordReveal("previousPassword", previousPassword
-        );
-
+    // NORMAL MODE, ONLY ONE PASSWORD
+    if (!previousPassword) {
         createPasswordReveal("testedPassword", testedPassword);
-        if (previousLabel) {
-            previousLabel.querySelector(".password-label").textContent = "Previous Password";
+        return;
+    }
+
+    // COMPARISON MODE PREVIOUS + CURRENT
+    if (previousContainer) {
+        previousContainer.style.display = "block";
+    }
+
+    createPasswordReveal("previousPassword", previousPassword);
+    createPasswordReveal("testedPassword", testedPassword);
+
+    if (previousLabel) {
+        const label = previousLabel.querySelector(".password-label");
+        if (label) {
+            label.textContent = "Previous Password";
         }
     }
 }
+
 
 // HOLD TO REVEAL PASSWORD
 function createPasswordReveal(elementID, password) {
     const element = document.getElementById(elementID);
-
-    if (!element || !password)
-        return;
+    if (!element || !password) return;
 
     // Show only up to 7 asterisks when hidden
     const masked = "*".repeat(Math.min(password.length, 13));
     let revealed = false;
+
     element.textContent = masked;
     element.classList.remove("revealed");
 
-    element.onclick = function () {
+    element.onclick = function() {
         revealed = !revealed;
+
         if (revealed) {
             element.textContent = password;
             element.classList.add("revealed");
             element.scrollLeft = 0;
-        }
-        else {
+        } else {
             element.textContent = masked;
             element.classList.remove("revealed");
             element.scrollLeft = 0;
         }
     };
 }
-
-// SUMMARY CARD TRIGGER
-const summaryBox = document.getElementById("summaryBox");
-if (summaryBox) {
-    summaryBox.addEventListener("click",
-        () => {
-            const summaryContent = document.getElementById("summaryText");
-            if (summaryContent && typeof SummaryCard !== "undefined") {
-                SummaryCard.open(summaryContent.innerHTML);
-            }
-        }
-    );
-}
-
-// START PASSWORD PREVIEW
-initializePasswordPreview();

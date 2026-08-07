@@ -1,1303 +1,450 @@
-/* DECISION TREE decisionTree.js*/
-
-
+/* DECISION TREE decisionTree.js */
 const DecisionTree = (() => {
-let renderedTree = null;
+    let renderedTree = null;
 
-
-    // =====================================
-    // UNWRAP YES/NO MARKER OBJECTS
-    // server.js wraps every real child (a decision node or a
-    // leaf) inside a {name:"YES"/"NO", taken, children:[realChild]}
-    // marker object. Markers are NOT real tree nodes - they only
-    // carry metadata about a branch (which side it is, and whether
-    // it was the one actually taken). This walks past them and
-    // returns the real children directly, along with that metadata,
-    // so nothing ever has to render or traverse the markers
-    // themselves.
-    // =====================================
-
-
-    function getRealChildEdges(node){
-
-        if(
-            !node ||
-            !node.children ||
-            !node.children.length
-        )
+    /* UNWRAP YES/NO MARKER OBJECTS
+    server.js wraps every real child (a decision node or a 
+    leaf) inside a {name:"YES"/"NO", taken, children:[realChild]}
+    marker object. Markers are NOT real tree nodes - they only
+    carry metadata about a branch (which side it is, and whether
+    it was the one actually taken). This walks past them and
+    returns the real children directly, along with that metadata,
+    so nothing ever has to render or traverse the markers
+    themselves.*/
+    function getRealChildEdges(node) {
+        if (!node || !node.children || !node.children.length)
             return [];
 
         return node.children
-
             .filter(marker =>
                 marker &&
                 marker.children &&
                 marker.children.length
             )
-
             .map(marker => ({
-
                 node: marker.children[0],
-
-                branch:
-                marker.branch ||
-                marker.name,
-
-                taken:
-                marker.taken === true
-
+                branch: marker.branch || marker.name,
+                taken: marker.taken === true
             }));
-
     }
 
+    /* INITIALIZE DECISION TREE
+       Called after component HTML loads */
+    function initializeDecisionTree() {
+        console.log("Decision Tree JS Connected");
+        attachHologramClickNotifier();
+    }
 
-    // =====================================
-    // INITIALIZE DECISION TREE
-    // Called after component HTML loads
-    // =====================================
+    /* HOLOGRAM CLICK NOTIFIER
+    The hologram is a trigger only. Decision Tree does NOT
+    know about, and never opens, the Decision Traversal Card.
+    It only dispatches a DOM event on the document - result.js
+    (the Result page owner/controller) listens for that event
+       and decides what to do with it (open decisionTraversalCard.js) */
+    function attachHologramClickNotifier() {
+        const hologram = document.querySelector(".decision-tree-hologram");
 
-
-function initializeDecisionTree(){
-
-    console.log(
-        "Decision Tree JS Connected"
-    );
-
-    attachHologramClickNotifier();
-
-}
-
-
-
-
-    // =====================================
-    // HOLOGRAM CLICK NOTIFIER
-    // The hologram is a trigger only. Decision Tree does NOT
-    // know about, and never opens, the Decision Traversal Card.
-    // It only dispatches a DOM event on the document - result.js
-    // (the Result page owner/controller) listens for that event
-    // and decides what to do with it (open decisionTraversalCard.js).
-    // =====================================
-
-
-    function attachHologramClickNotifier(){
-
-
-        const hologram =
-        document.querySelector(
-            ".decision-tree-hologram"
-        );
-
-
-        if(!hologram)
+        if (!hologram)
             return;
 
-
-        // Guard against double-binding if initializeDecisionTree()
-        // is ever called more than once for the same component load.
-        if(hologram.dataset.clickNotifierAttached)
+        /* Guard against double-binding if initializeDecisionTree()
+           is ever called more than once for the same component load. */
+        if (hologram.dataset.clickNotifierAttached)
             return;
 
+        hologram.dataset.clickNotifierAttached = "true";
 
-        hologram.dataset.clickNotifierAttached =
-        "true";
-
-
-        function notifyHologramClicked(){
-
+        function notifyHologramClicked() {
             document.dispatchEvent(
-
-                new CustomEvent(
-                    "decisionTree:hologramClicked"
-                )
-
+                new CustomEvent("decisionTree:hologramClicked")
             );
-
         }
 
+        hologram.addEventListener("click", notifyHologramClicked);
 
-        hologram.addEventListener(
-            "click",
-            notifyHologramClicked
-        );
-
-
-        // The hologram already has role="button" tabindex="0" in
-        // the markup, so keyboard users need Enter/Space support too.
-        hologram.addEventListener(
-            "keydown",
-            (event)=>{
-
-                if(
-                    event.key === "Enter" ||
-                    event.key === " "
-                ){
-
-                    event.preventDefault();
-
-                    notifyHologramClicked();
-
-                }
-
+        /* The hologram already has role="button" tabindex="0" in
+           the markup, so keyboard users need Enter/Space support too. */
+        hologram.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                notifyHologramClicked();
             }
-        );
-
-
+        });
     }
 
-
-
-
-
-    // =====================================
-    // UPDATE DECISION TREE
-    // RECEIVES BACKEND DATA FROM RESULT.JS
-    // =====================================
-
-
-    function updateDecisionTree(data){
-
-
-
-        console.log(
-            "Decision Tree Data:",
-            data
-        );
-
-
-updateExplanation(
-    data
-);
-
-
-renderDecisionTree(
-    data.visual_decision_tree_trace
-);
-
-
-animateTreeTraversal(
-    data
-);
-
-
+    // UPDATE DECISION TREE RECEIVES BACKEND DATA FROM RESULT.JS
+    function updateDecisionTree(data) {
+        console.log("Decision Tree Data:", data);
+        updateExplanation(data);
+        renderDecisionTree(data.visual_decision_tree_trace);
+        animateTreeTraversal(data);
     }
 
-
-
-
-
-
-
-    // =====================================
     // UPDATE BACKEND EXPLANATION
-    // =====================================
+    function updateExplanation(data) {
+        const explanation = document.getElementById("decisionExplanation");
 
-
-    function updateExplanation(data){
-
-
-
-        const explanation =
-        document.getElementById(
-            "decisionExplanation"
-        );
-
-
-
-        if(!explanation){
-
-            console.error(
-                "Decision explanation missing"
-            );
-
+        if (!explanation) {
+            console.error("Decision explanation missing");
             return;
-
         }
 
+        const backendExplanation = data.security_assessment?.vulnerability_explanation || "";
 
+        console.log("SECURITY ASSESSMENT:", data.security_assessment);
 
+        if (backendExplanation) {
+            explanation.innerHTML = censorPassword(backendExplanation, data.password);
 
+            const attackVector = document.getElementById("attackVector");
+            const remediation = document.getElementById("remediation");
 
-        const backendExplanation =
-        data.security_assessment
-        ?.vulnerability_explanation
-        ||
-        "";
+            attackVector.innerHTML = censorPassword(data.security_assessment.attack_vector, data.password);
+            remediation.innerHTML = censorPassword(data.security_assessment.remediation, data.password);
 
+            activatePasswordReveal();
+            return;
+        }
 
-
-console.log(
-    "SECURITY ASSESSMENT:",
-    data.security_assessment
-);
-
-      if(backendExplanation){
-
-
-    explanation.innerHTML =
-censorPassword(
-    backendExplanation,
-    data.password
-);
-
-
-    const attackVector =
-    document.getElementById(
-        "attackVector"
-    );
-
-
-    const remediation =
-    document.getElementById(
-        "remediation"
-    );
-
-
-   attackVector.innerHTML =
-censorPassword(
-    data.security_assessment.attack_vector,
-    data.password
-);
-
-    remediation.innerHTML =
-censorPassword(
-    data.security_assessment.remediation,
-    data.password
-);
-
-
-activatePasswordReveal();
-
-
-return;
-
-
-}
-
-
-
-
-        switch(
-            data.vulnerability
-        ){
-
-
+        switch (data.vulnerability) {
             case "DICTIONARY":
-
-
-                explanation.innerHTML =
-censorPassword(
-    "The Decision Tree identified...",
-    data.password
-);
-
-            break;
-
-
-
-
-
+                explanation.innerHTML = censorPassword("The Decision Tree identified...", data.password);
+                break;
             case "RULE-BASED":
-
-
-    explanation.innerHTML =
-
-    censorPassword(
-        "The Decision Tree identified rule-based vulnerability because extracted features reveal predictable combinations such as words, numbers, symbols, capitalization, or mutation patterns commonly generated by attackers.",
-        data.password
-    );
-
-
-break;
-
-
-
-
+                explanation.innerHTML = censorPassword(
+                    "The Decision Tree identified rule-based vulnerability because extracted features reveal predictable combinations such as words, numbers, symbols, capitalization, or mutation patterns commonly generated by attackers.",
+                    data.password
+                );
+                break;
             case "BRUTE-FORCE":
-
-
-    explanation.innerHTML =
-
-    censorPassword(
-        "The Decision Tree identified brute-force vulnerability because no strong dictionary or predictable rule patterns were detected. The remaining classification path indicates exhaustive guessing as the applicable attack strategy.",
-        data.password
-    );
-
-
-break;
-
-
-
-
-
+                explanation.innerHTML = censorPassword(
+                    "The Decision Tree identified brute-force vulnerability because no strong dictionary or predictable rule patterns were detected. The remaining classification path indicates exhaustive guessing as the applicable attack strategy.",
+                    data.password
+                );
+                break;
             default:
-
-
-    explanation.innerHTML =
-
-    censorPassword(
-        "The Decision Tree could not determine the classification path.",
-        data.password
-    );
-
-activatePasswordReveal();
-    }
-
+                explanation.innerHTML = censorPassword(
+                    "The Decision Tree could not determine the classification path.",
+                    data.password
+                );
+                activatePasswordReveal();
+        }
     } // <-- FIX #1: this closing brace was missing, so updateExplanation
-      // never ended and everything below was nested inside it.
-
-
-
-
-
-
-
-
-
-    // =====================================
-    // HOLOGRAM ANIMATION CONTROL
-    // =====================================
-
-// =====================================
-// HOLOGRAM ANIMATION CONTROL
-// BACKEND-BASED PATH
-// =====================================
-// =====================================
-// HOLOGRAM ANIMATION CONTROL
-// BACKEND-BASED DYNAMIC PATH
-// =====================================
-
-function renderDecisionTree(tree){
-
-
-    const nodeContainer =
-    document.getElementById(
-        "decisionTreeNodes"
-    );
-
-
-    const branchContainer =
-    document.getElementById(
-        "decisionTreeBranches"
-    );
-
-
-    if(!nodeContainer || !branchContainer)
-        return;
-
-renderedTree = tree;
-
-    nodeContainer.innerHTML = "";
-    branchContainer.innerHTML = "";
-
-
-
-    if(!tree)
-        return;
-
-
-
-    // =============================
-    // DEPTH-AWARE LAYOUT
-    // The backend tree now always has BOTH branches at every
-    // decision (not just the one taken), so we size vertical/
-    // horizontal spacing to the tree's real depth to keep the
-    // whole thing inside the small 220x120 viewBox.
-    // =============================
-
-
-    function getDepth(node){
-
-        const edges =
-        getRealChildEdges(node);
-
-        if(!edges.length)
-            return 1;
-
-        return 1 + Math.max(
-            ...edges.map(
-                edge => getDepth(edge.node)
-            )
-        );
-
-    }
-
-
-    const depth = getDepth(tree);
-
-    const verticalStep =
-    Math.min(
-        40,
-        200/ Math.max(depth - 1, 1)
-    );
-
-
-    let idCounter = 0;
-
-
-
-    function createNode(node, x, y){
-
-
-        const circle =
-        document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "circle"
-        );
-
-
-        const id =
-        "n" + (idCounter++);
-
-
-        // Stash the id on the node object itself so
-        // animateTreeTraversal() can look up the same DOM
-        // element later without re-walking by name.
-        node._domId = id;
-
-
-        circle.setAttribute(
-            "cx",
-            x
-        );
-
-
-        circle.setAttribute(
-            "cy",
-            y
-        );
-
-
-        circle.setAttribute(
-            "r",
-            node.final ? 5 : 4
-        );
-
-circle.classList.add(
-    "dt-node"
-);
-
-
-// ROOT NODE
-// Always purple. Never turns green, even once visited.
-if(node === tree){
-
-    circle.classList.add(
-        "dt-root"
-    );
-
-}
-
-
-// DECISION QUESTION NODE
-// Always purple. Never turns green, even once visited -
-// only the YES/NO branch markers below it turn green.
-else if(node.type === "decision"){
-
-    circle.classList.add(
-        "dt-question"
-    );
-
-}
-
-
-// FINAL RESULT / LEAF NODE
-// Stays neutral (same as an unvisited node) at render time.
-// The backend always builds all 3 possible leaves, so we can't
-// know which one was actually reached until animateTreeTraversal()
-// walks the real path - highlightResult() adds the yellow "dt-result"
-// class to only that one leaf once the animation finishes.
-else if(node.final){
-
-    circle.classList.add(
-        "dt-node--leaf"
-    );
-
-}
-
-
-// Anything else is a YES/NO branch marker. It gets no extra class
-// here, so it renders as a plain (dark/unvisited) .dt-node and only
-// turns green via the .dt-node.active rule if animateTreeTraversal()
-// marks it as part of the actual taken path.
-
-
-        circle.dataset.id = id;
-
-        circle.dataset.name =
-        node.name;
-
-
-        nodeContainer.appendChild(
-            circle
-        );
-
-
-        return {
-            x,
-            y,
-            id
-        };
-
-    }
-
-
-
-    function build(node, x, y, level=0){
-
-
-        if(!node)
+    // never ended and everything below was nested inside it.
+
+    /* HOLOGRAM ANIMATION CONTROL
+       BACKEND-BASED PATH */
+    /* HOLOGRAM ANIMATION CONTROL
+       BACKEND-BASED DYNAMIC PATH */
+    function renderDecisionTree(tree) {
+        const nodeContainer = document.getElementById("decisionTreeNodes");
+        const branchContainer = document.getElementById("decisionTreeBranches");
+
+        if (!nodeContainer || !branchContainer)
             return;
 
+        renderedTree = tree;
+        nodeContainer.innerHTML = "";
+        branchContainer.innerHTML = "";
 
+        if (!tree)
+            return;
 
-        const current =
-        createNode(
-            node,
-            x,
-            y
-        );
+        /* DEPTH-AWARE LAYOUT
+        The backend tree now always has BOTH branches at every
+        decision (not just the one taken), so we size vertical/
+        horizontal spacing to the tree's real depth to keep the
+           whole thing inside the small 220x120 viewBox. */
+        function getDepth(node) {
+            const edges = getRealChildEdges(node);
+            if (!edges.length)
+                return 1;
+            return 1 + Math.max(...edges.map(edge => getDepth(edge.node)));
+        }
 
+        const depth = getDepth(tree);
+        const verticalStep = Math.min(40, 200 / Math.max(depth - 1, 1));
+        let idCounter = 0;
 
+        function createNode(node, x, y) {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            const id = "n" + (idCounter++);
 
-        // Skip past the YES/NO marker objects entirely - draw
-        // straight lines from this real node to its real children.
-        const edges =
-        getRealChildEdges(node);
+            /* Stash the id on the node object itself so
+            animateTreeTraversal() can look up the same DOM
+               element later without re-walking by name. */
+            node._domId = id;
 
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", node.final ? 5 : 4);
+            circle.classList.add("dt-node");
 
-        if(edges.length){
+            /* ROOT NODE
+               Always purple. Never turns green, even once visited. */
+            if (node === tree) {
+                circle.classList.add("dt-root");
+            }
+            /* DECISION QUESTION NODE
+            Always purple. Never turns green, even once visited -
+               only the YES/NO branch markers below it turn green. */
+            else if (node.type === "decision") {
+                circle.classList.add("dt-question");
+            }
+            /* FINAL RESULT / LEAF NODE
+            Stays neutral (same as an unvisited node) at render time.
+            The backend always builds all 3 possible leaves, so we can't
+            know which one was actually reached until animateTreeTraversal()
+            walks the real path - highlightResult() adds the yellow "dt-result"
+               class to only that one leaf once the animation finishes. */
+            else if (node.final) {
+                circle.classList.add("dt-node--leaf");
+            }
 
+            // Anything else is a YES/NO branch marker. It gets no extra class
+            // here, so it renders as a plain (dark/unvisited) .dt-node and only
+            // turns green via the .dt-node.active rule if animateTreeTraversal()
+            // marks it as part of the actual taken path.
 
-            const gap = 45;
+            circle.dataset.id = id;
+            circle.dataset.name = node.name;
+            nodeContainer.appendChild(circle);
 
-            edges.forEach(
-                (edge,index)=>{
+            return { x, y, id };
+        }
 
+        function build(node, x, y, level = 0) {
+            if (!node)
+                return;
 
-                    let childX =
-                    x +
-                    ((index -
-                    (edges.length-1)/2)
-                    * gap);
+            const current = createNode(node, x, y);
 
+            // Skip past the YES/NO marker objects entirely - draw
+            // straight lines from this real node to its real children.*/
+            const edges = getRealChildEdges(node);
 
-                    childX =
-                    Math.min(
-                        214,
-                        Math.max(6, childX)
-                    );
+            if (edges.length) {
+                const gap = 45;
 
+                edges.forEach((edge, index) => {
+                    let childX = x + ((index - (edges.length - 1) / 2) * gap);
+                    childX = Math.min(214, Math.max(6, childX));
+                    const childY = y + verticalStep;
 
-                    const childY =
-                    y + verticalStep;
+                    const childPos = build(edge.node, childX, childY, level + 1);
 
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", current.x);
+                    line.setAttribute("y1", current.y);
+                    line.setAttribute("x2", childPos.x);
+                    line.setAttribute("y2", childPos.y);
+                    line.classList.add("dt-branch");
 
-
-                    const childPos =
-                    build(
-                        edge.node,
-                        childX,
-                        childY,
-                        level+1
-                    );
-
-
-
-                    const line =
-                    document.createElementNS(
-                        "http://www.w3.org/2000/svg",
-                        "line"
-                    );
-
-
-                    line.setAttribute(
-                        "x1",
-                        current.x
-                    );
-
-
-                    line.setAttribute(
-                        "y1",
-                        current.y
-                    );
-
-
-                    line.setAttribute(
-                        "x2",
-                        childPos.x
-                    );
-
-
-                    line.setAttribute(
-                        "y2",
-                        childPos.y
-                    );
-
-
-                    line.classList.add(
-                        "dt-branch"
-                    );
-
-
-                    // The line leading INTO a node is keyed by
-                    // that node's id, so the traversal below can
-                    // find "the line that leads to node X".
-                    line.dataset.id =
-                    childPos.id;
-
-
-                    line.dataset.choice =
-                    edge.branch;
-
-
-                    branchContainer.appendChild(
-                        line
-                    );
-
-
+                    /* The line leading INTO a node is keyed by that node's id, so the traversal
+                    below can find "the line that leads to node X".*/
+                    line.dataset.id = childPos.id;
+                    line.dataset.choice = edge.branch;
+                    branchContainer.appendChild(line);
 
                     // Small YES/NO branch label at the line's
                     // midpoint - this is the "label, not a node"
                     // the wrapper objects were supposed to be.
-                    const label =
-                    document.createElementNS(
-                        "http://www.w3.org/2000/svg",
-                        "text"
-                    );
-
-
-                    label.setAttribute(
-                        "x",
-                        (current.x + childPos.x) / 2
-                    );
-
-
-                    label.setAttribute(
-                        "y",
-                        (current.y + childPos.y) / 2
-                    );
-
-
-                    label.setAttribute(
-                        "text-anchor",
-                        "middle"
-                    );
-
-
-                    label.classList.add(
-                        "dt-label",
-                        "dt-branch-label"
-                    );
-
-
-                    label.dataset.id =
-                    childPos.id;
-
-
-                    label.textContent =
-                    edge.branch;
-
-
-                    branchContainer.appendChild(
-                        label
-                    );
-
-
-                }
-            );
-
-
-        }
-
-
-        return current;
-
-    }
-
-
-
-   build(
-    tree,
-    110,
-    15
-);
-}
-
-function animateTreeTraversal(data){
-
-
-    const nodes =
-    document.querySelectorAll(
-        ".dt-node"
-    );
-
-
-    const branches =
-    document.querySelectorAll(
-        ".dt-branch"
-    );
-
-
-    const branchLabels =
-    document.querySelectorAll(
-        ".dt-branch-label"
-    );
-
-
-
-    if(!nodes.length)
-        return;
-
-
-
-    // =============================
-    // RESET ANIMATION
-    // =============================
-
-
-    nodes.forEach(node=>{
-
-        node.classList.remove(
-            "active"
-        );
-
-    });
-
-
-
-    branches.forEach(branch=>{
-
-        branch.classList.remove(
-            "active"
-        );
-
-    });
-
-
-
-    branchLabels.forEach(label=>{
-
-        label.classList.remove(
-            "active"
-        );
-
-    });
-
-
-
-
-
-    // =============================
-    // GET BACKEND TREE
-    // =============================
-
-const tree =
-renderedTree;
-
-
-    if(!tree){
-
-        console.warn(
-            "No visual decision tree trace found"
-        );
-
-        return;
-
-    }
-
-
-
-
-
-    // =============================
-    // WALK THE ACTUAL DECISION PATH
-    // Every real node (decision question or leaf) was given a
-    // _domId when it was rendered. Markers were never rendered,
-    // so we walk straight from real node to real node using
-    // getRealChildEdges(), taking whichever edge has taken===true.
-    // =============================
-
-
-    const pathIds = [];
-
-
-    if(tree._domId){
-
-        pathIds.push(
-            tree._domId
-        );
-
-    }
-
-
-    let current = tree;
-
-
-    while(
-        current &&
-        !current.final
-    ){
-
-
-        const edges =
-        getRealChildEdges(
-            current
-        );
-
-
-        const takenEdge =
-        edges.find(
-            edge => edge.taken
-        );
-
-
-        if(
-            !takenEdge ||
-            !takenEdge.node._domId
-        )
-            break;
-
-
-        pathIds.push(
-            takenEdge.node._domId
-        );
-
-
-        current =
-        takenEdge.node;
-
-    }
-
-
-
-    console.log(
-        "Decision Tree Animation Path:",
-        pathIds
-    );
-
-
-
-
-
-
-    // =============================
-    // ANIMATE NODE SEQUENCE
-    // =============================
-
-
-    pathIds.forEach(
-        (id,index)=>{
-
-
-            setTimeout(()=>{
-
-
-                const node =
-                document.querySelector(
-                    `.dt-node[data-id="${id}"]`
-                );
-
-
-                if(node){
-
-
-                    node.classList.add(
-                        "active"
-                    );
-
-
-                }
-
-
-
-                // index 0 is the root, which has no incoming
-                // line - every id after that has one.
-                if(index > 0){
-
-
-                    const branchElements =
-                    document.querySelectorAll(
-                        `.dt-branch[data-id="${id}"], .dt-branch-label[data-id="${id}"]`
-                    );
-
-
-                    branchElements.forEach(
-                        el => el.classList.add(
-                            "active"
-                        )
-                    );
-
-
-                }
-
-
-
-            },
-            index * 700
-            );
-
-
-
-        }
-
-    );
-
-
-
-
-
-    // =============================
-    // FINAL RESULT
-    // =============================
-
-
-    setTimeout(()=>{
-
-
-        highlightResult(
-            data.vulnerability,
-            pathIds[pathIds.length - 1]
-        );
-
-
-    },
-    pathIds.length * 700);
-
-
-
-}
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-    // =====================================
-    // FINAL NODE RESULT
-    // =====================================
-
-
-    function highlightResult(
-        vulnerability,
-        finalId
-    ){
-
-
-
-        if(!finalId)
-            return;
-
-
-
-        // Look this node up by the exact id that was actually
-        // reached at the end of the traversal - NOT by a shared
-        // class, since the backend always builds all 3 possible
-        // leaves and we only want to color the one that was hit.
-        const finalNode =
-        document.querySelector(
-            `.dt-node[data-id="${finalId}"]`
-        );
-
-
-
-        if(!finalNode)
-            return;
-
-
-
-        finalNode.classList.add(
-            "dt-result"
-        );
-
-
-        finalNode.dataset.result =
-        vulnerability;
-
-
-
-    }
-
-
-
-
-
-
-
-
-  
-// =====================================
-// PASSWORD CENSOR
-// =====================================
-
-function censorPassword(
-    text,
-    password
-){
-
-    if(!text)
-        return "-";
-
-
-    if(!password)
-        return text;
-
-
-
-    const regex =
-    new RegExp(
-
-        "(['\"])" +
-        escapeRegex(password) +
-        "\\1",
-
-        "g"
-
-    );
-
-
-
-    const maskedPassword =
-    "*".repeat(
-        password.length
-    );
-
-
-
-    return text.replace(
-
-        regex,
-
-        `<span
-        class="hidden-password"
-        data-password="${escapeHtmlAttr(password)}">
-        ${maskedPassword}
-        </span>`
-
-    );
-
-}
-
-
-
-
-// =====================================
-// ESCAPE REGEX
-// =====================================
-
-function escapeRegex(
-    string
-){
-
-    return string.replace(
-
-        /[.*+?^${}()|[\]\\]/g,
-
-        "\\$&"
-
-    );
-
-}
-
-
-
-
-// =====================================
-// ESCAPE HTML ATTRIBUTE
-// =====================================
-
-function escapeHtmlAttr(
-    string
-){
-
-    return string
-
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-
-    .replace(
-        /'/g,
-        "&#39;"
-    )
-
-    .replace(
-        /</g,
-        "&lt;"
-    )
-
-    .replace(
-        />/g,
-        "&gt;"
-    );
-
-}
-
-
-// =====================================
-// PASSWORD REVEAL
-// HOLD = SHOW
-// RELEASE = HIDE
-// Kept INSIDE the DecisionTree closure so it stays private and
-// does not collide with recommendation.js's own copy of this name.
-// =====================================
-
-function activatePasswordReveal(){
-
-    const hiddenPasswords =
-    document.querySelectorAll(
-        ".hidden-password"
-    );
-
-
-    hiddenPasswords.forEach(item=>{
-
-
-        if(item.dataset.listenerAttached)
-            return;
-
-
-
-        item.dataset.listenerAttached =
-        "true";
-
-
-
-        const password =
-        item.dataset.password || "";
-
-
-
-        if(password === "")
-            return;
-
-
-
-        const masked =
-        "*".repeat(
-            password.length
-        );
-
-
-
-        item.textContent =
-        masked;
-
-
-
-        function show(){
-
-            item.textContent =
-            password;
-
-        }
-
-
-
-        function hide(){
-
-            item.textContent =
-            masked;
-
-        }
-
-
-
-        item.addEventListener(
-            "pointerdown",
-            show
-        );
-
-
-        item.addEventListener(
-            "pointerup",
-            hide
-        );
-
-
-        item.addEventListener(
-            "pointerleave",
-            hide
-        );
-
-
-        item.addEventListener(
-            "pointercancel",
-            hide
-        );
-
-
-
-        item.addEventListener(
-            "touchstart",
-            show,
-            {
-                passive:true
+                    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    label.setAttribute("x", (current.x + childPos.x) / 2);
+                    label.setAttribute("y", (current.y + childPos.y) / 2);
+                    label.setAttribute("text-anchor", "middle");
+                    label.classList.add("dt-label", "dt-branch-label");
+                    label.dataset.id = childPos.id;
+                    label.textContent = edge.branch;
+                    branchContainer.appendChild(label);
+                });
             }
+            return current;
+        }
+
+        build(tree, 110, 15);
+    }
+
+    function animateTreeTraversal(data) {
+        const nodes = document.querySelectorAll(".dt-node");
+        const branches = document.querySelectorAll(".dt-branch");
+        const branchLabels = document.querySelectorAll(".dt-branch-label");
+
+        if (!nodes.length)
+            return;
+
+        // RESET ANIMATION
+        nodes.forEach(node => {
+            node.classList.remove("active");
+        });
+
+        branches.forEach(branch => {
+            branch.classList.remove("active");
+        });
+
+        branchLabels.forEach(label => {
+            label.classList.remove("active");
+        });
+
+        // GET BACKEND TREE
+        const tree = renderedTree;
+
+        if (!tree) {
+            console.warn("No visual decision tree trace found");
+            return;
+        }
+
+        /*WALK THE ACTUAL DECISION PATH
+        Every real node (decision question or leaf) was given a
+        _domId when it was rendered. Markers were never rendered,
+        so we walk straight from real node to real node using
+        getRealChildEdges(), taking whichever edge has taken===true.*/
+        const pathIds = [];
+
+        if (tree._domId) {
+            pathIds.push(tree._domId);
+        }
+
+        let current = tree;
+
+        while (current && !current.final) {
+            const edges = getRealChildEdges(current);
+            const takenEdge = edges.find(edge => edge.taken);
+
+            if (!takenEdge || !takenEdge.node._domId)
+                break;
+
+            pathIds.push(takenEdge.node._domId);
+            current = takenEdge.node;
+        }
+
+        console.log("Decision Tree Animation Path:", pathIds);
+
+        // ANIMATE NODE SEQUENCE
+        pathIds.forEach((id, index) => {
+            setTimeout(() => {
+                const node = document.querySelector(`.dt-node[data-id="${id}"]`);
+                if (node) {
+                    node.classList.add("active");
+                }
+
+                // index 0 is the root, which has no incoming, line - every id after that has one.
+                if (index > 0) {
+                    const branchElements = document.querySelectorAll(`.dt-branch[data-id="${id}"], .dt-branch-label[data-id="${id}"]`);
+                    branchElements.forEach(el => el.classList.add("active"));
+                }
+            }, index * 700);
+        });
+
+        // FINAL RESULT
+        setTimeout(() => {
+            highlightResult(data.vulnerability, pathIds[pathIds.length - 1]);
+        }, pathIds.length * 700);
+    }
+
+    // FINAL NODE RESULT
+    function highlightResult(vulnerability, finalId) {
+        if (!finalId)
+            return;
+
+        /*Look this node up by the exact id that was actually
+        reached at the end of the traversal - NOT by a shared
+        class, since the backend always builds all 3 possible
+        leaves and we only want to color the one that was hit.*/
+        const finalNode = document.querySelector(`.dt-node[data-id="${finalId}"]`);
+
+        if (!finalNode)
+            return;
+
+        finalNode.classList.add("dt-result");
+        finalNode.dataset.result = vulnerability;
+    }
+
+    // PASSWORD CENSOR
+    function censorPassword(text, password) {
+        if (!text)
+            return "-";
+
+        if (!password)
+            return text;
+
+        const regex = new RegExp("(['\"])" + escapeRegex(password) + "\\1", "g");
+        const maskedPassword = "*".repeat(password.length);
+
+        return text.replace(
+            regex,
+            `<span class="hidden-password" data-password="${escapeHtmlAttr(password)}">${maskedPassword}</span>`
         );
+    }
 
+    // ESCAPE REGEX
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
 
-        item.addEventListener(
-            "touchend",
-            hide
-        );
+    // ESCAPE HTML ATTRIBUTE
+    function escapeHtmlAttr(string) {
+        return string
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
 
+    /*PASSWORD REVEAL
+    HOLD = SHOW
+    RELEASE = HIDE
+    Kept INSIDE the DecisionTree closure so it stays private and
+    does not collide with recommendation.js's own copy of this name.*/
+    function activatePasswordReveal() {
+        const hiddenPasswords = document.querySelectorAll(".hidden-password");
 
-        item.addEventListener(
-            "touchcancel",
-            hide
-        );
+        hiddenPasswords.forEach(item => {
+            if (item.dataset.listenerAttached)
+                return;
 
+            item.dataset.listenerAttached = "true";
+            const password = item.dataset.password || "";
 
-    });
+            if (password === "")
+                return;
 
-}
+            const masked = "*".repeat(password.length);
+            item.textContent = masked;
 
+            function show() {
+                item.textContent = password;
+            }
 
- return{
+            function hide() {
+                item.textContent = masked;
+            }
 
+            item.addEventListener("pointerdown", show);
+            item.addEventListener("pointerup", hide);
+            item.addEventListener("pointerleave", hide);
+            item.addEventListener("pointercancel", hide);
 
+            item.addEventListener("touchstart", show, { passive: true });
+            item.addEventListener("touchend", hide);
+            item.addEventListener("touchcancel", hide);
+        });
+    }
+
+    return {
         initializeDecisionTree,
-
         updateDecisionTree
-
-
     };
 
-// FIX #2: the IIFE now closes AFTER the return statement, and
-// activatePasswordReveal lives inside the closure (private) instead
-// of leaking onto window as a stray global.
+    /*FIX #2: the IIFE now closes AFTER the return statement, and
+    activatePasswordReveal lives inside the closure (private) instead
+    of leaking onto window as a stray global.*/
 })();
 
-
-// =====================================
-// GLOBAL ACCESS
-// FIX #3: these were accidentally dropped when the IIFE closure
-// was repaired - without them window.updateDecisionTree is
-// undefined, so result.js has nothing to call and none of
-// decisionTree.js's logs ("Decision Tree Data:", etc.) ever fire.
-// =====================================
-
-
-window.initializeDecisionTree =
-DecisionTree.initializeDecisionTree;
-
-
-window.updateDecisionTree =
-DecisionTree.updateDecisionTree;
+/* GLOBAL ACCESS
+FIX #3: these were accidentally dropped when the IIFE closure was repaired - 
+without them window.updateDecisionTree is undefined, so result.js hasnothing to 
+call and none of decisionTree.js's logs ("Decision Tree Data:", etc.) ever fire.*/
+window.initializeDecisionTree = DecisionTree.initializeDecisionTree;
+window.updateDecisionTree = DecisionTree.updateDecisionTree;

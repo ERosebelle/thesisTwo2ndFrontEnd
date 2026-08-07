@@ -2,10 +2,10 @@
 const RecommendationAPI = "http://localhost:3000/analyze";
 
 // INITIALIZE RECOMMENDATION
-async function initializeRecommendation(){
+async function initializeRecommendation() {
     console.log("Recommendation JS Connected");
 
-    try{
+    try {
         /* "analyzedPassword" = password from Initial Test (the older one).
         "comparisonPassword" = password from Comparison Test (the newer
         one), only present when a comparison test actually happened.*/
@@ -18,13 +18,13 @@ async function initializeRecommendation(){
 
         const response = await fetch(RecommendationAPI,
             {
-                method:"POST", headers:{
-                    "Content-Type":"application/json"
+                method: "POST", headers: {
+                    "Content-Type": "application/json"
                 },
 
-                body:JSON.stringify({
+                body: JSON.stringify({
                     password: analyzedPassword,
-                    ...(previousPassword ? { previousPassword }: {})
+                    ...(previousPassword ? { previousPassword } : {})
                 })
             }
         );
@@ -35,14 +35,14 @@ async function initializeRecommendation(){
         // LOAD STRATEGIES
         const list = document.getElementById("recommendationList");
 
-        if(list){
+        if (list) {
             list.innerHTML = "";
 
             /* COMPARISON RESULT -Only appears when a comparison test was
             actually run (backend returns non-null password_comparison in that case).*/
-            if(
+            if (
                 data.password_comparison && data.password_comparison.message
-            ){
+            ) {
                 const comparisonItem = document.createElement("li");
                 comparisonItem.classList.add("comparison-message");
                 comparisonItem.dataset.status = data.password_comparison.status || "";
@@ -50,25 +50,24 @@ async function initializeRecommendation(){
                 list.appendChild(comparisonItem);
             }
 
-            if(data.strategies && data.strategies.length > 0)
-                {
+            if (data.strategies && data.strategies.length > 0) {
 
                 data.strategies.forEach(
-                    tip=>{
+                    tip => {
                         const li = document.createElement("li");
                         li.innerHTML = censorPassword(tip, analyzedPassword);
                         list.appendChild(li);
                     }
                 );
             }
-            else{
+            else {
                 list.innerHTML = "<li>No recommendations available.</li>";
             }
             activatePasswordReveal();
         }
     }
 
-    catch(error){
+    catch (error) {
         console.error("Recommendation Error:", error);
     }
 }
@@ -78,15 +77,15 @@ document.addEventListener("DOMContentLoaded", initializeRecommendation);
 
 // PASSWORD CENSOR
 function censorPassword(text, password) {
-    if(!text)
+    if (!text)
         return "-";
-    if(!password)
+    if (!password)
         return text;
 
     const regex = new RegExp("(['\"])" + escapeRegex(password) + "\\1", "g");
     const maskedPassword = "*".repeat(password.length);
 
-    return text.replace( regex,`<span class="hidden-password"
+    return text.replace(regex, `<span class="hidden-password"
         data-password="${escapeHtmlAttr(password)}">
         ${maskedPassword}
         </span>`
@@ -95,42 +94,41 @@ function censorPassword(text, password) {
 
 // ESCAPE REGEX
 function escapeRegex(string) {
-    return string.replace( /[.*+?^${}()|[\]\\]/g, "\\$&");
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // ESCAPE HTML ATTRIBUTE
 
-function escapeHtmlAttr(string)
-{
-    return string .replace( /&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+function escapeHtmlAttr(string) {
+    return string.replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 /* PASSWORD REVEAL. HOLD = SHOW, RELEASE = HIDE*/
-function activatePasswordReveal(){
+function activatePasswordReveal() {
     const hiddenPasswords = document.querySelectorAll(".hidden-password");
     hiddenPasswords.forEach(
-        item=>{
-            if(item.dataset.listenerAttached)
+        item => {
+            if (item.dataset.listenerAttached)
                 return;
 
             item.dataset.listenerAttached = "true";
             const password = item.dataset.password || "";
 
-            if(password === "")
+            if (password === "")
                 return;
 
             const masked = "*".repeat(password.length);
             item.textContent = masked;
 
-            function show(){
+            function show() {
                 item.textContent = password;
             }
 
-            function hide(){
+            function hide() {
                 item.textContent = masked;
             }
 
@@ -144,10 +142,8 @@ function activatePasswordReveal(){
                 }
             );
 
-            item.addEventListener("touchend", hide
-            );
-            item.addEventListener("touchcancel",hide
-            );
+            item.addEventListener("touchend", hide);
+            item.addEventListener("touchcancel", hide);
         }
     );
 }

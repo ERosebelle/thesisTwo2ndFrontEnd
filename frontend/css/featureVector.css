@@ -16,7 +16,6 @@
     box-sizing: border-box;
 }
 
-
 /* HEADER */
 .feature-vector-header {
     width: 100%;
@@ -236,7 +235,6 @@
 }
 
 @keyframes valueGlow {
-
     0%,
     100% {
         text-shadow: 0 0 6px rgba(56, 189, 248, .5);
@@ -253,7 +251,6 @@
 }
 
 @keyframes orbitFloat {
-
     0%,
     100% {
         transform: translate(0, 0) scale(1);

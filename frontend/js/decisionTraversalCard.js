@@ -1,9 +1,7 @@
 /*
 DECISION TRAVERSAL CARD
 decisionTraversalCard.js
-
 Independent Result-page component.
-
 Renders the backend's decision tree as a zoomed-in,
 readable hologram: square nodes carry the actual
 question / result text, YES/NO connectors stay as
@@ -11,7 +9,6 @@ lines. Every node and connector is clickable and
 toggles a floating info card, populated entirely
 from data the backend already sends - nothing here
 is a hardcoded security explanation. */
-
 
 const DecisionTraversalCard = (() => {
     const SVG_NS = "http://www.w3.org/2000/svg";
@@ -26,15 +23,15 @@ const DecisionTraversalCard = (() => {
     and wider - this is what keeps the tree bounded and
     leaves the side margins free for info cards.*/
 
-    const TREE_WIDTH   = 600;
+    const TREE_WIDTH = 600;
     const TREE_CENTER_X = TREE_WIDTH / 2;
     const LEVEL_HEIGHT = 130;
-    const NODE_WIDTH  = 128;
+    const NODE_WIDTH = 128;
     const NODE_HEIGHT = 48;
     const LEAF_OFFSET_X = 150;
     const LEAF_OFFSET_Y_RATIO = .6;
     const CARD_WIDTH = 210;
-    const CARD_GAP   = -40;
+    const CARD_GAP = -40;
     const CARD_ESTIMATED_HEIGHT = 140;
 
     let overlay = null;
@@ -62,7 +59,7 @@ const DecisionTraversalCard = (() => {
 
     // INITIALIZE
 
-    function initializeDecisionTraversalCard(){
+    function initializeDecisionTraversalCard() {
         overlay = document.getElementById("decisionTraversalOverlay");
         card = document.getElementById("decisionTraversalCard");
         closeButton = document.getElementById("decisionTraversalClose");
@@ -71,18 +68,18 @@ const DecisionTraversalCard = (() => {
 
         const body = document.getElementById("decisionTraversalBody");
         treeWrap = document.getElementById("dtcTreeWrap");
-        svg =  document.getElementById("decisionTraversalTree");
+        svg = document.getElementById("decisionTraversalTree");
         infoCard = document.getElementById("dtcInfoCard");
         infoCardTitle = document.getElementById("dtcInfoCardTitle");
         infoCardBody = document.getElementById("dtcInfoCardBody");
         infoCardClose = document.getElementById("dtcInfoCardClose");
 
-        if(!overlay || !card)
+        if (!overlay || !card)
             return;
         console.log("Decision Traversal Card JS Connected");
 
         // CLOSE BUTTON (whole card)
-        if(closeButton){
+        if (closeButton) {
             closeButton.addEventListener("click", closeCard);
         }
 
@@ -90,8 +87,8 @@ const DecisionTraversalCard = (() => {
 
         overlay.addEventListener(
             "click",
-            (event)=>{
-                if(event.target === overlay){
+            (event) => {
+                if (event.target === overlay) {
                     closeCard();
                 }
             }
@@ -100,21 +97,21 @@ const DecisionTraversalCard = (() => {
         // ESCAPE CLOSE
         document.addEventListener(
             "keydown",
-            (event)=>{
-                if(
+            (event) => {
+                if (
                     event.key === "Escape" &&
                     overlay.classList.contains("active")
-                ){
+                ) {
                     closeCard();
                 }
             }
         );
 
         // INFO CARD CLOSE BUTTON
-        if(infoCardClose){
+        if (infoCardClose) {
             infoCardClose.addEventListener(
                 "click",
-                (event)=>{
+                (event) => {
                     event.stopPropagation();
                     closeInfoCard();
                 }
@@ -122,14 +119,14 @@ const DecisionTraversalCard = (() => {
         }
 
         // CLICK ON EMPTY TREE SPACE CLOSES THE INFO CARD
-        if(treeWrap){
+        if (treeWrap) {
             treeWrap.addEventListener(
                 "click",
-                (event)=>{
+                (event) => {
                     const clickedInfoCard = infoCard && infoCard.contains(event.target);
                     const clickedClickable = event.target.closest(".dtc-clickable");
 
-                    if(!clickedInfoCard && !clickedClickable){
+                    if (!clickedInfoCard && !clickedClickable) {
                         closeInfoCard();
                     }
                 }
@@ -140,55 +137,55 @@ const DecisionTraversalCard = (() => {
         (the card is fixed to the screen; if the tree
         scrolled underneath it, it would no longer be
         beside the node it's explaining)*/
-        if(body){
+        if (body) {
             body.addEventListener("scroll", closeInfoCard);
         }
     }
 
     // OPEN - Receives the full backend analysis response
-    function openCard(data){
-        if(!overlay)
+    function openCard(data) {
+        if (!overlay)
             return;
-        if(!data){
+        if (!data) {
             showPlaceholder();
         }
-        else{
+        else {
             renderTraversal(data);
         }
         overlay.classList.add("active");
     }
 
     // CLOSE
-    function closeCard(){
-        if(!overlay)
+    function closeCard() {
+        if (!overlay)
             return;
         overlay.classList.remove("active");
         closeInfoCard();
     }
 
     // EMPTY STATE
-    function showPlaceholder(){
-        if(placeholder){
+    function showPlaceholder() {
+        if (placeholder) {
             placeholder.style.display = "flex";
         }
 
-        if(content){
+        if (content) {
             content.style.display = "none";
         }
     }
 
     // RENDER TREE + EXPLANATION SOURCE
-    function renderTraversal(data){
-        if(placeholder){
+    function renderTraversal(data) {
+        if (placeholder) {
             placeholder.style.display = "none";
         }
 
-        if(content){
+        if (content) {
             content.style.display = "flex";
         }
         renderDecisionTree(data.visual_decision_tree_trace, data.security_assessment);
     }
-    
+
     /*REMOVE BACKEND MARKER WRAPPER
     Backend structure:
     
@@ -201,38 +198,38 @@ const DecisionTraversalCard = (() => {
                 |
             real node
     */
-    function getRealChildEdges(node){
-        if(!node || !node.children
+    function getRealChildEdges(node) {
+        if (!node || !node.children
         )
             return [];
 
         return node.children
-        .filter(marker => marker && marker.children && marker.children.length)
-        .map(
-            marker => ({
-                node: marker.children[0],
-                branch: marker.branch || marker.name,
-                taken: marker.taken === true,
-                explanation: marker.explanation
-            })
-        );
+            .filter(marker => marker && marker.children && marker.children.length)
+            .map(
+                marker => ({
+                    node: marker.children[0],
+                    branch: marker.branch || marker.name,
+                    taken: marker.taken === true,
+                    explanation: marker.explanation
+                })
+            );
     }
 
     // CREATE SVG TREE
-    function renderDecisionTree(tree, technicalBreakdown){
+    function renderDecisionTree(tree, technicalBreakdown) {
         closeInfoCard();
         currentTechnicalBreakdown = technicalBreakdown || null;
-        if(!svg)
+        if (!svg)
             return;
         svg.innerHTML = "";
 
-        if(!tree){
+        if (!tree) {
             svg.setAttribute("width", TREE_WIDTH);
             svg.setAttribute("height", 0);
             return;
         }
         const layoutState = {
-            maxY:0
+            maxY: 0
         };
 
         /*Collect every edge and every node first (without
@@ -266,9 +263,8 @@ const DecisionTraversalCard = (() => {
     
     Positions are pushed into edgesOut / nodesOut so renderDecisionTree() can draw all edges first, then
     all nodes on top of them.*/
-    function collectLayout(node,x , y, layoutState, reached, parentQuestion, incomingBranch, edgesOut,nodesOut)
-    {
-        if(!node)
+    function collectLayout(node, x, y, layoutState, reached, parentQuestion, incomingBranch, edgesOut, nodesOut) {
+        if (!node)
             return;
         layoutState.maxY = Math.max(layoutState.maxY, y);
         nodesOut.push({
@@ -282,46 +278,46 @@ const DecisionTraversalCard = (() => {
 
         const edges = getRealChildEdges(node);
 
-        if(!edges.length)
+        if (!edges.length)
             return;
         const takenEdge =
-        edges.find(edge => edge.taken);
+            edges.find(edge => edge.taken);
 
         const offEdge = edges.find(edge => !edge.taken);
         const nextY = y + LEVEL_HEIGHT;
 
-        if(offEdge){
+        if (offEdge) {
             const offX = x + (offEdge.branch === "YES" ? -LEAF_OFFSET_X : LEAF_OFFSET_X);
             const offY = y + (LEVEL_HEIGHT * LEAF_OFFSET_Y_RATIO);
 
             edgesOut.push({
-                x1:x,
-                y1:y,
-                x2:offX,
-                y2:offY,
-                edge:offEdge,
-                taken:false
+                x1: x,
+                y1: y,
+                x2: offX,
+                y2: offY,
+                edge: offEdge,
+                taken: false
             });
 
             nodesOut.push({
-                node:offEdge.node,
-                x:offX,
-                y:offY,
-                reached:false,
-                parentQuestion:node.name,
-                incomingBranch:offEdge.branch
+                node: offEdge.node,
+                x: offX,
+                y: offY,
+                reached: false,
+                parentQuestion: node.name,
+                incomingBranch: offEdge.branch
             });
             layoutState.maxY = Math.max(layoutState.maxY, offY);
         }
 
-        if(takenEdge){
+        if (takenEdge) {
             edgesOut.push({
-                x1:x,
-                y1:y,
-                x2:x,
-                y2:nextY,
-                edge:takenEdge,
-                taken:true
+                x1: x,
+                y1: y,
+                x2: x,
+                y2: nextY,
+                edge: takenEdge,
+                taken: true
             });
             collectLayout(takenEdge.node, x, nextY, layoutState, true, node.name, takenEdge.branch, edgesOut, nodesOut);
         }
@@ -330,9 +326,8 @@ const DecisionTraversalCard = (() => {
     /*CREATE ONE NODE (question or result)
     Rendered via foreignObject so the real
     text can wrap inside the square panel.*/
-    function createNode( node, x, y, reached, parentQuestion, incomingBranch)
-        {
-        if(!node)
+    function createNode(node, x, y, reached, parentQuestion, incomingBranch) {
+        if (!node)
             return;
 
         const isResult = node.type === "result" || node.final === true;
@@ -343,13 +338,13 @@ const DecisionTraversalCard = (() => {
         foreignObject.setAttribute("height", NODE_HEIGHT);
         const box = document.createElement("div");
         box.className = "dtc-node-box dtc-clickable " + (isResult ? "dtc-result-box" : "dtc-question-box") +
-        (isResult && !reached ? " dtc-off-path" : "");
+            (isResult && !reached ? " dtc-off-path" : "");
         box.textContent = isResult ? (node.result || node.name) : node.name;
         box.dataset.x = x;
         box.dataset.y = y;
 
         box.addEventListener("click",
-            (event)=>{
+            (event) => {
                 event.stopPropagation();
                 toggleInfoCard(box, x,
                     buildNodePopup(node, isResult, reached, parentQuestion, incomingBranch)
@@ -361,8 +356,7 @@ const DecisionTraversalCard = (() => {
     }
 
     // CREATE ONE BRANCH (YES / NO connector)
-    function createBranch(x1, y1, x2, y2, edge,taken)
-    {
+    function createBranch(x1, y1, x2, y2, edge, taken) {
         const group = document.createElementNS(SVG_NS, "g");
         group.classList.add("dtc-branch-group", "dtc-clickable");
 
@@ -383,7 +377,7 @@ const DecisionTraversalCard = (() => {
         visibleLine.setAttribute("y2", y2);
         visibleLine.classList.add("dtc-branch-line");
 
-        if(!taken){
+        if (!taken) {
             visibleLine.classList.add("dtc-off-path");
         }
         group.appendChild(visibleLine);
@@ -403,7 +397,7 @@ const DecisionTraversalCard = (() => {
         group.dataset.y = midY;
 
         group.addEventListener("click",
-            (event)=>{
+            (event) => {
                 event.stopPropagation();
                 toggleInfoCard(group, midX, buildBranchPopup(edge));
             }
@@ -415,17 +409,16 @@ const DecisionTraversalCard = (() => {
     Return {title, paragraphs:[{label?, text}]}
     Content is always taken from backend data -
     nothing here fabricates a security explanation.*/
-    function buildNodePopup(node, isResult, reached, parentQuestion, incomingBranch)
-    {
-        if(!isResult){
+    function buildNodePopup(node, isResult, reached, parentQuestion, incomingBranch) {
+        if (!isResult) {
             const answer = node.decision;
-            const explanationText = node.explanation && answer &&  node.explanation[answer]
-            ?
-            node.explanation[answer] : "No explanation was provided for this question.";
+            const explanationText = node.explanation && answer && node.explanation[answer]
+                ?
+                node.explanation[answer] : "No explanation was provided for this question.";
             return {
                 title: node.name,
                 paragraphs: [
-                    { 
+                    {
                         text: explanationText
                     }
                 ]
@@ -433,10 +426,10 @@ const DecisionTraversalCard = (() => {
         }
 
         // RESULT NODE
-        if(reached){
+        if (reached) {
             const breakdown = currentTechnicalBreakdown;
 
-            if(!breakdown){
+            if (!breakdown) {
                 return {
                     title: `Final Result: ${node.result || node.name}`,
                     paragraphs: [
@@ -450,13 +443,13 @@ const DecisionTraversalCard = (() => {
                 title: `Final Result: ${node.result || node.name}`,
                 paragraphs: [
                     {
-                        label:"Why This Happened", text: breakdown.vulnerability_explanation
+                        label: "Why This Happened", text: breakdown.vulnerability_explanation
                     },
                     {
-                        label:"Attack Vector", text: breakdown.attack_vector
+                        label: "Attack Vector", text: breakdown.attack_vector
                     },
                     {
-                        label:"Recommended Fix", text: breakdown.remediation
+                        label: "Recommended Fix", text: breakdown.remediation
                     }
                 ]
             };
@@ -468,16 +461,16 @@ const DecisionTraversalCard = (() => {
             paragraphs: [
                 {
                     text:
-                    `Your password's actual answer to "${parentQuestion}" ` +
-                    `was ${incomingBranch === "YES" ? "NO" : "YES"}, ` +
-                    `so this outcome does not apply to your result. ` +
-                    `It's shown so you can see what would have happened otherwise.`
+                        `Your password's actual answer to "${parentQuestion}" ` +
+                        `was ${incomingBranch === "YES" ? "NO" : "YES"}, ` +
+                        `so this outcome does not apply to your result. ` +
+                        `It's shown so you can see what would have happened otherwise.`
                 }
             ]
         };
     }
 
-    function buildBranchPopup(edge){
+    function buildBranchPopup(edge) {
         return {
             title: `${edge.branch} connector`,
             paragraphs: [
@@ -488,26 +481,24 @@ const DecisionTraversalCard = (() => {
         };
     }
     // INFO CARD - OPEN / TOGGLE / CLOSE
-    function toggleInfoCard(element, x, popupData)
-    {
-        if(activeElement === element){
+    function toggleInfoCard(element, x, popupData) {
+        if (activeElement === element) {
             closeInfoCard();
             return;
         }
         openInfoCard(element, x, popupData);
     }
 
-    function openInfoCard(element, x, popupData)
-    {
-        if(!infoCard)
+    function openInfoCard(element, x, popupData) {
+        if (!infoCard)
             return;
 
-        if(activeElement){
+        if (activeElement) {
             activeElement.classList.remove("dtc-node-active", "dtc-branch-active");
         }
         activeElement = element;
         element.classList.add(
-        element.classList.contains("dtc-branch-group") ? "dtc-branch-active" : "dtc-node-active"
+            element.classList.contains("dtc-branch-group") ? "dtc-branch-active" : "dtc-node-active"
         );
         populateInfoCard(popupData);
 
@@ -519,19 +510,19 @@ const DecisionTraversalCard = (() => {
         positionInfoCard(element, x);
     }
 
-    function closeInfoCard(){
-        if(activeElement){
+    function closeInfoCard() {
+        if (activeElement) {
             activeElement.classList.remove("dtc-node-active", "dtc-branch-active");
         }
         activeElement = null;
-        if(infoCard){
+        if (infoCard) {
             infoCard.classList.remove(
                 "active"
             );
         }
     }
-    function populateInfoCard(popupData){
-        if(!infoCardTitle || !infoCardBody)
+    function populateInfoCard(popupData) {
+        if (!infoCardTitle || !infoCardBody)
             return;
         infoCardTitle.textContent = popupData.title || "Node Information";
         infoCardBody.innerHTML = "";
@@ -540,11 +531,11 @@ const DecisionTraversalCard = (() => {
             paragraph => {
                 const p = document.createElement("p");
 
-                if(paragraph.label){
+                if (paragraph.label) {
                     const label =
-                    document.createElement(
-                        "span"
-                    );
+                        document.createElement(
+                            "span"
+                        );
 
                     label.className = "dtc-info-section-label";
                     label.textContent = paragraph.label;
@@ -557,21 +548,21 @@ const DecisionTraversalCard = (() => {
         );
     }
 
-/* POSITION INFO CARD
-    Same side as the clicked node/connector -
-    left half of the tree opens a card in a
-    fixed LEFT column, right half opens a fixed
-    RIGHT column. The column position never
-    changes between clicks on the same side;
-    only the vertical position tracks the
-    clicked element. Never above, below, or
-    centered, and never covers the tree itself.*/
+    /* POSITION INFO CARD
+        Same side as the clicked node/connector -
+        left half of the tree opens a card in a
+        fixed LEFT column, right half opens a fixed
+        RIGHT column. The column position never
+        changes between clicks on the same side;
+        only the vertical position tracks the
+        clicked element. Never above, below, or
+        centered, and never covers the tree itself.*/
 
-    function positionInfoCard(element, x){
-        if(!infoCard || !card || !svg)
+    function positionInfoCard(element, x) {
+        if (!infoCard || !card || !svg)
             return;
         const elementRect = element.getBoundingClientRect();
-        const svgRect =  svg.getBoundingClientRect();
+        const svgRect = svg.getBoundingClientRect();
         const cardRect = card.getBoundingClientRect();
 
         /*Use the popup's real rendered size (it's already
@@ -587,8 +578,8 @@ const DecisionTraversalCard = (() => {
         at the exact same x every time; same for the right
         half. Only the vertical position moves, to track
         whichever node/connector was actually clicked.*/
-        let left = onLeftHalf ? svgRect.left - CARD_GAP - infoWidth:
-        svgRect.right + CARD_GAP;
+        let left = onLeftHalf ? svgRect.left - CARD_GAP - infoWidth :
+            svgRect.right + CARD_GAP;
         let top = elementRect.top + (elementRect.height / 2) - (infoHeight / 2);
 
         /*Strictly contain the popup within the visible
@@ -612,11 +603,10 @@ const DecisionTraversalCard = (() => {
         infoCard.style.top = top + "px";
     }
     return {
-        initializeDecisionTraversalCard, open:openCard, close:closeCard
+        initializeDecisionTraversalCard, open: openCard, close: closeCard
     };
 })();
 
 // GLOBAL ACCESS
-window.initializeDecisionTraversalCard =
-DecisionTraversalCard.initializeDecisionTraversalCard;
+window.initializeDecisionTraversalCard = DecisionTraversalCard.initializeDecisionTraversalCard;
 window.DecisionTraversalCard = DecisionTraversalCard;
