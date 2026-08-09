@@ -1,12 +1,15 @@
 // BACKEND ANALYSIS CONNECTION
-async function analyzePassword(password) {
+async function analyzePassword(password, previousPassword) {
     try {
         const response = await fetch("http://localhost:3000/analyze", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ password: password })
+            body: JSON.stringify({
+                password: password,
+                ...(previousPassword ? { previousPassword } : {})
+            })
         });
 
         if (!response.ok) {
@@ -19,6 +22,46 @@ async function analyzePassword(password) {
     } catch (error) {
         console.error("Backend connection error:", error);
         throw error;
+    }
+}
+
+// REUSE STORED RESULT FROM initialTest.js / comparisonTest.js
+// Returns the parsed result, or null if nothing usable is stored.
+function readStoredAnalysisResult() {
+    const stored = sessionStorage.getItem("analysisResult");
+    if (!stored) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(stored);
+    } catch (error) {
+        console.error("Stored analysis result was invalid JSON:", error);
+        return null;
+    }
+}
+
+/* CACHE THE "ORIGINAL" (BASELINE) PASSWORD'S RESULT
+Survives navigation to comparisonTest.js and back, so the baseline
+password in a comparison round never needs a second /analyze call
+just because its own sessionStorage slot got overwritten by the
+newer (comparison) password's fetch. */
+function cacheOriginalResult(password, data) {
+    localStorage.setItem("originalAnalysisResult", JSON.stringify({ password, data }));
+}
+
+function readCachedOriginalResult(password) {
+    const stored = localStorage.getItem("originalAnalysisResult");
+    if (!stored) {
+        return null;
+    }
+
+    try {
+        const parsed = JSON.parse(stored);
+        return parsed.password === password ? parsed.data : null;
+    } catch (error) {
+        console.error("Cached original result was invalid JSON:", error);
+        return null;
     }
 }
 
@@ -112,9 +155,6 @@ async function loadComponents() {
 
         if (typeof initializeFeatureVector === "function") {
             initializeFeatureVector();
-        }
-        if (typeof initializeRecommendation === "function") {
-            initializeRecommendation();
         }
         if (typeof initializeDecisionTraversalCard === "function") {
             initializeDecisionTraversalCard();
@@ -244,6 +284,7 @@ if (resetButton) {
         localStorage.removeItem("analyzedPassword");
         localStorage.removeItem("previousPassword");
         localStorage.removeItem("currentPassword");
+        localStorage.removeItem("originalAnalysisResult");
         sessionStorage.removeItem("analysisResult");
         window.location.href = "initialTest.html";
     });
@@ -267,12 +308,21 @@ async function fetchAnalysisResult() {
         if (analyzedPassword && comparisonPassword) {
             console.log("Comparison Mode");
 
-            // ✅ FIX 1: I-set ang UI variables bago tayo mag-overwrite.
             localStorage.setItem("previousPassword", analyzedPassword);
             localStorage.setItem("currentPassword", comparisonPassword);
 
-            const originalResult = await analyzePassword(analyzedPassword);
-            const comparisonResult = await analyzePassword(comparisonPassword);
+            /* comparisonTest.js already fetched this password (with
+            previousPassword attached, so password_comparison is included)
+            and stored it in sessionStorage - reuse it instead of calling
+            /analyze again. */
+            const comparisonResult = readStoredAnalysisResult() ?? await analyzePassword(comparisonPassword, analyzedPassword);
+
+            /* The original password's result is normally cached from
+            its own earlier normal-mode view (see below) - reuse it
+            instead of calling /analyze a second time for the same
+            password. Only fetch if it's genuinely not cached (e.g.
+            direct navigation edge cases). */
+            const originalResult = readCachedOriginalResult(analyzedPassword) ?? await analyzePassword(analyzedPassword);
 
             console.log("Original:", originalResult);
             console.log("Comparison:", comparisonResult);
@@ -287,12 +337,25 @@ async function fetchAnalysisResult() {
                 updateDecisionTree(comparisonResult);
             }
 
-            // ✅ FIX 2: I-promote ang current comparison password bilang bagong baseline
-            localStorage.setItem("analyzedPassword", comparisonPassword);
+            // ✅ IPASA ANG BAGON (COMPARISON) RESULT SA FEATURE VECTOR!
+            if (typeof updateFeatureVector === "function") {
+                updateFeatureVector(comparisonResult);
+            }
 
-            // Remove it so a future normal-mode visit to
-            // result.html does not re-enter comparison mode.
+            // comparisonResult already carries password_comparison
+            // (previousPassword was sent above), so no separate
+            // /analyze call is needed for the recommendation panel.
+            if (typeof updateRecommendation === "function") {
+                updateRecommendation(comparisonResult, comparisonPassword);
+            }
+
+            localStorage.setItem("analyzedPassword", comparisonPassword);
             localStorage.removeItem("comparisonPassword");
+            sessionStorage.removeItem("analysisResult");
+
+            // The current password becomes the baseline for any
+            // future comparison round - cache its result now.
+            cacheOriginalResult(comparisonPassword, comparisonResult);
 
             return;
         }
@@ -303,20 +366,36 @@ async function fetchAnalysisResult() {
             return;
         }
 
-        const data = await analyzePassword(analyzedPassword);
+        /* initialTest.js already fetched this password and stored it
+        in sessionStorage - reuse it instead of calling /analyze again. */
+        const data = readStoredAnalysisResult() ?? await analyzePassword(analyzedPassword);
+        sessionStorage.removeItem("analysisResult");
         console.log("BACKEND RESPONSE:", data);
+
+        // Cache this as the baseline in case the user compares
+        // against another password next.
+        cacheOriginalResult(analyzedPassword, data);
 
         // UPDATE CLASSIFICATION PANEL
         if (typeof updateClassification === "function") {
             updateClassification(data);
         }
 
-        // See comment in the comparison-mode branch above.
         window.latestAnalysisData = data;
 
         if (typeof updateDecisionTree === "function") {
             updateDecisionTree(data);
         }
+
+        // ✅ IPASA ANG DATA SA FEATURE VECTOR (NORMAL MODE)!
+        if (typeof updateFeatureVector === "function") {
+            updateFeatureVector(data);
+        }
+
+        if (typeof updateRecommendation === "function") {
+            updateRecommendation(data, analyzedPassword);
+        }
+
     } catch (error) {
         console.error("API ERROR:", error);
     }

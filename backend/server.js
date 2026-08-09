@@ -239,7 +239,6 @@ function classifyPassword(extractedFeatures) {
         extractedFeatures.rule_pattern_present
     ]];
 
-    console.log("FEATURES:", extractedFeatures);
     console.log("MODEL FEATURES:", modelFeatures);
     const prediction = classifier.predict(modelFeatures);
     console.log("RAW PREDICTION:", prediction);
@@ -265,7 +264,6 @@ function classifyPassword(extractedFeatures) {
         ]
     };
 
-    console.log("RESULT:", result);
     return result;
 }
 
@@ -357,12 +355,9 @@ function getStrategies(vulnerabilityType, extractedFeatures, password) {
 }
 
 /* ===== 4. DYNAMIC DECISION TREE VISUAL TRACE PATH =====
-This now builds a full, two-sided binary tree (every question always has
-a YES child AND a NO child) instead of a single chain that only contained
-whichever branch was actually taken. Each decision node also carries an
-explicit `decision: "YES" | "NO"` field, and every child node carries a
-`taken: true | false` flag. That's the piece the frontend needs in order
-to know which side of the tree to actually walk/highlight, instead of
+This now builds a full, two-sided binary tree (every question always has a YES child AND a NO child) instead of a single chain that only contained
+whichever branch was actually taken. Each decision node also carries an explicit `decision: "YES" | "NO"` field, and every child node carries a
+`taken: true | false` flag. That's the piece the frontend needs in order to know which side of the tree to actually walk/highlight, instead of
 guessing (previously it always walked children[0]).*/
 function generateVisualTreePath(vulnerabilityType, extractedFeatures, password) {
 
@@ -419,10 +414,8 @@ function generateVisualTreePath(vulnerabilityType, extractedFeatures, password) 
     }
 
     /* FEATURE SHORTHANDS
-    Pull out the already-computed extractedFeatures values we
-    want to visually explain. This does NOT change what
-    classifyPassword() predicted - it only decides which side
-    of each visual question is "taken" (matches the real value).*/
+    Pull out the already-computed extractedFeatures values we want to visually explain. This does NOT change what
+    classifyPassword() predicted - it only decides which side of each visual question is "taken" (matches the real value).*/
     const isDictionary = extractedFeatures.dictionary_present === 1;
     const isLongEnough = extractedFeatures.length >= 8;
     const hasSymbol = extractedFeatures.has_symbol === 1;

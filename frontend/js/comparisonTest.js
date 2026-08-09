@@ -336,6 +336,8 @@ if (compareButton && passwordInput) {
             compareButton.textContent = "Analyzing...";
 
             try {
+                const previousPassword = localStorage.getItem("analyzedPassword");
+
                 const response = await fetch("http://localhost:3000/analyze",
                     {
                         method: "POST",
@@ -343,7 +345,8 @@ if (compareButton && passwordInput) {
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            password: password
+                            password: password,
+                            ...(previousPassword ? { previousPassword } : {})
                         })
                     }
                 );

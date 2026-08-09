@@ -399,6 +399,7 @@ Reload naturally stays on this page.*/
 sessionStorage.removeItem("analysisResult");
 localStorage.removeItem("analyzedPassword");
 localStorage.removeItem("comparisonResult");
+localStorage.removeItem("originalAnalysisResult");
 
 if (passwordInput) {
     passwordInput.value = "";
@@ -418,6 +419,7 @@ window.addEventListener(
         sessionStorage.removeItem("analysisResult");
         localStorage.removeItem("analyzedPassword");
         localStorage.removeItem("comparisonResult");
+    localStorage.removeItem("originalAnalysisResult");
         if (passwordInput) {
             passwordInput.value = "";
         }
@@ -438,6 +440,7 @@ window.addEventListener(
             sessionStorage.removeItem("analysisResult");
             localStorage.removeItem("analyzedPassword");
             localStorage.removeItem("comparisonResult");
+    localStorage.removeItem("originalAnalysisResult");
 
             if (passwordInput) {
                 passwordInput.value = "";

@@ -1,79 +1,48 @@
-// RECOMMENDATION BACKEND CONNECTION
-const RecommendationAPI = "http://localhost:3000/analyze";
+/* RECOMMENDATION RENDERER
+Pure render function - no fetch of its own. result.js is the single place that calls /analyze, and passes the response straight in here
+(same pattern as updateClassification / updateDecisionTree / updateFeatureVector). This avoids firing a second, redundant
+/analyze request for a password result.js has already fetched. */
+function updateRecommendation(data, censoredPassword) {
+    console.log("Recommendation Data:", data);
 
-// INITIALIZE RECOMMENDATION
-async function initializeRecommendation() {
-    console.log("Recommendation JS Connected");
-
-    try {
-        /* "analyzedPassword" = password from Initial Test (the older one).
-        "comparisonPassword" = password from Comparison Test (the newer
-        one), only present when a comparison test actually happened.*/
-        const previousPasswordStored = localStorage.getItem("analyzedPassword");
-        const comparisonPasswordStored = localStorage.getItem("comparisonPassword");
-        const analyzedPassword = comparisonPasswordStored || previousPasswordStored || "Password123";
-
-        /* Only compare when a comparison test actually happened. A single Initial Test password has nothing to compare against.*/
-        const previousPassword = comparisonPasswordStored ? previousPasswordStored : null;
-
-        const response = await fetch(RecommendationAPI,
-            {
-                method: "POST", headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    password: analyzedPassword,
-                    ...(previousPassword ? { previousPassword } : {})
-                })
-            }
-        );
-
-        const data = await response.json();
-        console.log("Recommendation Response:", data);
-
-        // LOAD STRATEGIES
-        const list = document.getElementById("recommendationList");
-
-        if (list) {
-            list.innerHTML = "";
-
-            /* COMPARISON RESULT -Only appears when a comparison test was
-            actually run (backend returns non-null password_comparison in that case).*/
-            if (
-                data.password_comparison && data.password_comparison.message
-            ) {
-                const comparisonItem = document.createElement("li");
-                comparisonItem.classList.add("comparison-message");
-                comparisonItem.dataset.status = data.password_comparison.status || "";
-                comparisonItem.textContent = data.password_comparison.message;
-                list.appendChild(comparisonItem);
-            }
-
-            if (data.strategies && data.strategies.length > 0) {
-
-                data.strategies.forEach(
-                    tip => {
-                        const li = document.createElement("li");
-                        li.innerHTML = censorPassword(tip, analyzedPassword);
-                        list.appendChild(li);
-                    }
-                );
-            }
-            else {
-                list.innerHTML = "<li>No recommendations available.</li>";
-            }
-            activatePasswordReveal();
-        }
+    if (!data) {
+        console.log("No recommendation data received");
+        return;
     }
 
-    catch (error) {
-        console.error("Recommendation Error:", error);
+    // LOAD STRATEGIES
+    const list = document.getElementById("recommendationList");
+
+    if (list) {
+        list.innerHTML = "";
+
+        /* COMPARISON RESULT -Only appears when a comparison test was actually run (backend returns non-null password_comparison in that case).*/
+        if (
+            data.password_comparison && data.password_comparison.message
+        ) {
+            const comparisonItem = document.createElement("li");
+            comparisonItem.classList.add("comparison-message");
+            comparisonItem.dataset.status = data.password_comparison.status || "";
+            comparisonItem.textContent = data.password_comparison.message;
+            list.appendChild(comparisonItem);
+        }
+
+        if (data.strategies && data.strategies.length > 0) {
+
+            data.strategies.forEach(
+                tip => {
+                    const li = document.createElement("li");
+                    li.innerHTML = censorPassword(tip, censoredPassword);
+                    list.appendChild(li);
+                }
+            );
+        }
+        else {
+            list.innerHTML = "<li>No recommendations available.</li>";
+        }
+        activatePasswordReveal();
     }
 }
-
-// AUTO START
-document.addEventListener("DOMContentLoaded", initializeRecommendation);
 
 // PASSWORD CENSOR
 function censorPassword(text, password) {
