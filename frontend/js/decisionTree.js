@@ -76,7 +76,7 @@ const DecisionTree = (() => {
     function updateDecisionTree(data) {
         console.log("Decision Tree Data:", data);
         updateExplanation(data);
-        renderDecisionTree(data.visual_decision_tree_trace);
+        renderDecisionTree(data.actual_model_decision_path);
         animateTreeTraversal(data);
     }
 
@@ -132,10 +132,8 @@ const DecisionTree = (() => {
     } // <-- FIX #1: this closing brace was missing, so updateExplanation
     // never ended and everything below was nested inside it.
 
-    /* HOLOGRAM ANIMATION CONTROL
-       BACKEND-BASED PATH */
-    /* HOLOGRAM ANIMATION CONTROL
-       BACKEND-BASED DYNAMIC PATH */
+    // HOLOGRAM ANIMATION CONTROL BACKEND-BASED PATH 
+    // HOLOGRAM ANIMATION CONTROL BACKEND-BASED DYNAMIC PATH 
     function renderDecisionTree(tree) {
         const nodeContainer = document.getElementById("decisionTreeNodes");
         const branchContainer = document.getElementById("decisionTreeBranches");
@@ -151,10 +149,8 @@ const DecisionTree = (() => {
             return;
 
         /* DEPTH-AWARE LAYOUT
-        The backend tree now always has BOTH branches at every
-        decision (not just the one taken), so we size vertical/
-        horizontal spacing to the tree's real depth to keep the
-           whole thing inside the small 220x120 viewBox. */
+        The backend tree now always has BOTH branches at every decision (not just the one taken), so we size vertical/ horizontal spacing 
+        to the tree's real depth to keep the whole thing inside the small 220x120 viewBox. */
         function getDepth(node) {
             const edges = getRealChildEdges(node);
             if (!edges.length)
@@ -170,9 +166,8 @@ const DecisionTree = (() => {
             const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             const id = "n" + (idCounter++);
 
-            /* Stash the id on the node object itself so
-            animateTreeTraversal() can look up the same DOM
-               element later without re-walking by name. */
+            /* Stash the id on the node object itself so animateTreeTraversal() can look up the same DOM element later without 
+            re-walking by name. */
             node._domId = id;
 
             circle.setAttribute("cx", x);
@@ -186,25 +181,20 @@ const DecisionTree = (() => {
                 circle.classList.add("dt-root");
             }
             /* DECISION QUESTION NODE
-            Always purple. Never turns green, even once visited -
-               only the YES/NO branch markers below it turn green. */
+            Always purple. Never turns green, even once visited - only the YES/NO branch markers below it turn green. */
             else if (node.type === "decision") {
                 circle.classList.add("dt-question");
             }
             /* FINAL RESULT / LEAF NODE
-            Stays neutral (same as an unvisited node) at render time.
-            The backend always builds all 3 possible leaves, so we can't
-            know which one was actually reached until animateTreeTraversal()
-            walks the real path - highlightResult() adds the yellow "dt-result"
-               class to only that one leaf once the animation finishes. */
+            Stays neutral (same as an unvisited node) at render time. The backend always builds all 3 possible leaves, so we can't
+            know which one was actually reached until animateTreeTraversal() walks the real path - highlightResult() adds the yellow 
+            "dt-result" class to only that one leaf once the animation finishes. */
             else if (node.final) {
                 circle.classList.add("dt-node--leaf");
             }
 
-            // Anything else is a YES/NO branch marker. It gets no extra class
-            // here, so it renders as a plain (dark/unvisited) .dt-node and only
-            // turns green via the .dt-node.active rule if animateTreeTraversal()
-            // marks it as part of the actual taken path.
+           /* Anything else is a YES/NO branch marker. It gets no extra class here, so it renders as a plain (dark/unvisited) .dt-node and only
+            turns green via the .dt-node.active rule if animateTreeTraversal() marks it as part of the actual taken path. */
 
             circle.dataset.id = id;
             circle.dataset.name = node.name;
@@ -219,8 +209,7 @@ const DecisionTree = (() => {
 
             const current = createNode(node, x, y);
 
-            // Skip past the YES/NO marker objects entirely - draw
-            // straight lines from this real node to its real children.*/
+            /* Skip past the YES/NO marker objects entirely - draw straight lines from this real node to its real children.*/
             const edges = getRealChildEdges(node);
 
             if (edges.length) {
@@ -240,15 +229,14 @@ const DecisionTree = (() => {
                     line.setAttribute("y2", childPos.y);
                     line.classList.add("dt-branch");
 
-                    /* The line leading INTO a node is keyed by that node's id, so the traversal
-                    below can find "the line that leads to node X".*/
+                    /* The line leading INTO a node is keyed by that node's id, so the traversal below can find "the line that leads 
+                    to node X".*/
                     line.dataset.id = childPos.id;
                     line.dataset.choice = edge.branch;
                     branchContainer.appendChild(line);
 
                     // Small YES/NO branch label at the line's
-                    // midpoint - this is the "label, not a node"
-                    // the wrapper objects were supposed to be.
+                    // midpoint - this is the "label, not a node" the wrapper objects were supposed to be.
                     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     label.setAttribute("x", (current.x + childPos.x) / 2);
                     label.setAttribute("y", (current.y + childPos.y) / 2);
@@ -295,10 +283,8 @@ const DecisionTree = (() => {
         }
 
         /*WALK THE ACTUAL DECISION PATH
-        Every real node (decision question or leaf) was given a
-        _domId when it was rendered. Markers were never rendered,
-        so we walk straight from real node to real node using
-        getRealChildEdges(), taking whichever edge has taken===true.*/
+        Every real node (decision question or leaf) was given a _domId when it was rendered. Markers were never rendered, so we walk straight 
+        from real node to real node using getRealChildEdges(), taking whichever edge has taken===true.*/
         const pathIds = [];
 
         if (tree._domId) {
@@ -347,10 +333,8 @@ const DecisionTree = (() => {
         if (!finalId)
             return;
 
-        /*Look this node up by the exact id that was actually
-        reached at the end of the traversal - NOT by a shared
-        class, since the backend always builds all 3 possible
-        leaves and we only want to color the one that was hit.*/
+        /*Look this node up by the exact id that was actually reached at the end of the traversal - NOT by a shared class, since the 
+        backend always builds all 3 possible leaves and we only want to color the one that was hit.*/
         const finalNode = document.querySelector(`.dt-node[data-id="${finalId}"]`);
 
         if (!finalNode)
@@ -395,8 +379,7 @@ const DecisionTree = (() => {
     /*PASSWORD REVEAL
     HOLD = SHOW
     RELEASE = HIDE
-    Kept INSIDE the DecisionTree closure so it stays private and
-    does not collide with recommendation.js's own copy of this name.*/
+    Kept INSIDE the DecisionTree closure so it stays private and does not collide with recommendation.js's own copy of this name.*/
     function activatePasswordReveal() {
         const hiddenPasswords = document.querySelectorAll(".hidden-password");
 
@@ -437,14 +420,12 @@ const DecisionTree = (() => {
         updateDecisionTree
     };
 
-    /*FIX #2: the IIFE now closes AFTER the return statement, and
-    activatePasswordReveal lives inside the closure (private) instead
+    /*FIX #2: the IIFE now closes AFTER the return statement, and activatePasswordReveal lives inside the closure (private) instead
     of leaking onto window as a stray global.*/
 })();
 
 /* GLOBAL ACCESS
-FIX #3: these were accidentally dropped when the IIFE closure was repaired - 
-without them window.updateDecisionTree is undefined, so result.js hasnothing to 
-call and none of decisionTree.js's logs ("Decision Tree Data:", etc.) ever fire.*/
+FIX #3: these were accidentally dropped when the IIFE closure was repaired - without them window.updateDecisionTree is undefined, so 
+result.js hasnothing to call and none of decisionTree.js's logs ("Decision Tree Data:", etc.) ever fire.*/
 window.initializeDecisionTree = DecisionTree.initializeDecisionTree;
 window.updateDecisionTree = DecisionTree.updateDecisionTree;
