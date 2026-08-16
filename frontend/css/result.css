@@ -6,6 +6,7 @@
 
 body {
     margin: 0;
+    padding: 0;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -66,42 +67,35 @@ body::after {
 /* 2. MAIN LAYOUT & WORKSPACE */
 .result-container {
     width: 100%;
+    max-width: 1440px;
     height: 100vh;
+    padding: 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     position: relative;
     z-index: 2;
 }
 
-.result-card {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
 .result-workspace {
-    width: 100%;
-    height: 100%;
+    flex: 1;
     display: flex;
     gap: 30px;
-    padding-top: 120px;
-    padding-left: 40px;
-    padding-right: 40px;
+    min-height: 0; /* Prevents flex overflow */
 }
 
 /* 3. PAGE HEADER */
 .page-header {
-    position: absolute;
-    top: 28px;
-    left: 55px;
-    z-index: 20;
-    user-select: none;
     display: flex;
     align-items: center;
     gap: 16px;
+    user-select: none;
+    padding-bottom: 8px;
 }
 
 .header-logo {
-    width: 58px;
-    height: 58px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
     flex-shrink: 0;
     filter: drop-shadow(0 0 12px rgba(56, 189, 248, .45));
@@ -114,7 +108,7 @@ body::after {
 
 .header-text h1 {
     margin: 0;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     color: #f8fafc;
     letter-spacing: .5px;
@@ -123,296 +117,39 @@ body::after {
 }
 
 .header-text p {
-    margin: 8px 0 0;
-    font-size: 14px;
+    margin: 4px 0 0;
+    font-size: 13px;
     color: #7dd3fc;
     letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 600;
 }
 
-/*  4. NAVIGATION / RESULT MENU TABS */
-.result-menu {
+/* 4. SIDEBAR AREA */
+.sidebar-area {
+    width: 320px;
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    position: absolute;
-    top: 47px;
-    left: 360px;
-    right: 40px;
-    z-index: 5;
+    flex-direction: column;
+    gap: 20px;
+    flex-shrink: 0;
 }
 
-.menu-btn {
-    padding: 14px 28px;
-    border-radius: 18px 18px 0 0;
-    border: 1px solid rgba(56, 189, 248, .18);
-    border-bottom: none;
-    background: linear-gradient(180deg, rgba(30, 41, 59, .92), rgba(15, 23, 42, .90));
-    color: #cbd5e1;
-    backdrop-filter: blur(12px);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: .4px;
-    transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+.classification-panel {
+    flex: 1;
+    min-height: 0;
 }
 
-.menu-btn:hover {
-    color: #ffffff;
-    background: linear-gradient(180deg, rgba(51, 65, 85, .96), rgba(30, 41, 59, .95));
-    border-color: rgba(56, 189, 248, .45);
-    box-shadow: 0 0 15px rgba(56, 189, 248, .15), inset 0 2px 0 rgba(96, 165, 250, .25);
-}
-
-.menu-btn.active {
-    color: #ffffff;
-    background: linear-gradient(180deg, rgba(51, 65, 85, .98), rgba(30, 41, 59, .98));
-    border-color: rgba(56, 189, 248, .45);
-    border-bottom: 1px solid rgba(15, 23, 42, .98);
-    box-shadow: 0 0 18px rgba(56, 189, 248, .20), inset 0 2px 0 rgba(96, 165, 250, .35);
-}
-
-.menu-btn:active {
-    filter: brightness(.95);
-}
-
-/*  5. RESULT PANEL & CONTENT SECTIONS */
-.result-panel {
-    position: absolute;
-    top: 97px;
-    left: 360px;
-    right: 40px;
-    height: 420px;
-    padding: 30px;
-    border-radius: 20px 0 20px 1000px;
-    background: linear-gradient(160deg, rgba(15, 23, 42, .96), rgba(30, 41, 59, .90), rgba(51, 65, 85, .85));
-    border: 1px solid rgba(56, 189, 248, .18);
-    backdrop-filter: blur(16px);
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .45), 0 0 20px rgba(56, 189, 248, .08);
-}
-
-.result-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
-}
-
-.result-panel::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 110px;
-    background: linear-gradient(transparent, rgba(2, 6, 23, .92));
-}
-
-.result-panel .inner-shape {
-    position: absolute;
-    right: -150px;
-    bottom: -150px;
-    width: 420px;
-    height: 420px;
-    background: linear-gradient(145deg, rgba(56, 189, 248, .16), rgba(59, 130, 246, .04));
-    border-radius: 1000px 0 0 0;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.result-panel h2 {
-    position: relative;
-    z-index: 2;
-    margin: 0 0 2px;
-    color: #f8fafc;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.result-panel h2::after {
-    content: "";
-    position: absolute;
-    left: -18px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 520px;
-    height: 46px;
-    border-radius: 12px;
-    background: linear-gradient(90deg, rgba(59, 130, 246, .22) 0%, rgba(56, 189, 248, .14) 40%, rgba(56, 189, 248, .06) 70%, transparent 100%);
-    z-index: -1;
-    pointer-events: none;
-}
-
-.result-panel p {
-    position: relative;
-    z-index: 5;
-    color: #e2e8f0;
-    line-height: 1.8;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.result-panel:hover {
-    border-color: rgba(56, 189, 248, .35);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, .5), 0 0 28px rgba(56, 189, 248, .15);
-}
-
-#panelBody {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-}
-
-.result-section {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-/*  6. ACTION BUTTONS & GROUP */
-.button-group {
-    position: absolute;
-    bottom: 9px;
-    left: 360px;
-    right: 40px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 25px;
-    z-index: 5;
-}
-
-.button-group button {
-    width: 240px;
-    height: 55px;
-    border: none;
-    border-radius: 16px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .5px;
-    color: #f8fafc;
-    transition: background .25s ease, box-shadow .25s ease, transform .2s ease;
-}
-
-.reset-btn {
-    background: linear-gradient(180deg, rgba(51, 65, 85, .95), rgba(15, 23, 42, .95));
-    border: 1px solid rgba(148, 163, 184, .25);
-}
-
-.reset-btn:hover {
-    box-shadow: 0 0 18px rgba(148, 163, 184, .25);
-}
-
-.compare-btn {
-    background: linear-gradient(180deg, rgba(37, 99, 235, .95), rgba(29, 78, 216, .92));
-    border: 1px solid rgba(96, 165, 250, .35);
-}
-
-.compare-btn:hover {
-    box-shadow: 0 0 22px rgba(59, 130, 246, .35);
-}
-
-.button-group button:active {
-    transform: scale(.97);
-}
-
-/* 7. SYSTEM REMINDER */
-.system-reminder {
-    position: absolute;
-    bottom: 15px;
-    left: 350px;
-    width: 500px;
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-    color: rgba(203, 213, 225, .85);
-    font-size: 13px;
-    line-height: 1.7;
-    letter-spacing: .2px;
-    font-style: italic;
-    z-index: 20;
-}
-
-.system-reminder::before {
-    content: "ⓘ";
-    margin-right: 8px;
-    color: #38bdf8;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 600;
-}
-
-.system-reminder strong {
-    color: #f8fafc;
-    font-style: normal;
-}
-
-/* 8. BUTTON INFO TOOLTIP */
-.button-info {
-    position: fixed;
-    width: 280px;
-    padding: 20px;
-    background: linear-gradient(145deg, rgba(248, 250, 252, .98), rgba(226, 232, 240, .95));
-    color: #1e293b;
-    border-radius: 20px;
-    border: 1px solid rgba(56, 189, 248, .45);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, .45), 0 0 35px rgba(56, 189, 248, .35), inset 0 0 20px rgba(255, 255, 255, .5);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .3s ease;
-    z-index: 100;
-}
-
-.button-info.show {
-    opacity: 1;
-}
-
-.button-info h3 {
-    margin: 0 0 10px;
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: .5px;
-    color: #0369a1;
-    text-shadow: 0 0 10px rgba(56, 189, 248, .4);
-}
-
-.button-info p {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #475569;
-}
-
-/*  9. PASSWORD PREVIEW CARD */
+/* PASSWORD PREVIEW CARD */
 .password-preview-card {
-    position: absolute;
-    left: 350px;
-    bottom: 60px;
-    width: 150px;
-    height: 130px;
-    padding: 14px 16px;
-    transition: height .3s ease;
+    width: 100%;
+    padding: 16px;
     background: linear-gradient(145deg, rgba(15, 23, 42, .88), rgba(30, 41, 59, .82));
     border: 1px solid rgba(56, 189, 248, .22);
     border-radius: 14px;
     backdrop-filter: blur(12px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, .35), 0 0 15px rgba(56, 189, 248, .08);
-    z-index: 20;
+    position: relative;
     overflow: hidden;
-}
-
-.password-preview-card.comparison-mode {
-    height: 160px;
 }
 
 .password-preview-card::before {
@@ -428,18 +165,12 @@ body::after {
 .password-entry {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: -3px;
+    gap: 8px;
     width: 100%;
-    overflow: hidden;
-}
-
-.password-entry:last-child {
-    margin-bottom: 0;
 }
 
 .password-label {
-    font-size: 9px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
@@ -447,129 +178,250 @@ body::after {
 }
 
 .password-preview-card .hidden-password {
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
-    max-width: 100%;
-    height: 39px;
-    padding: 5px 10px;
+    height: 42px;
+    padding: 0 14px;
     border-radius: 8px;
     background: rgba(2, 6, 23, .55);
     border: 1px solid rgba(56, 189, 248, .15);
     color: #f8fafc;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: clip;
-    transition: .2s ease;
+    text-overflow: ellipsis;
+    transition: all .2s ease;
     letter-spacing: 2px;
 }
 
 .password-preview-card .hidden-password.revealed {
-    display: block;
-    width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    white-space: nowrap;
-    text-overflow: unset;
     letter-spacing: 0;
-    cursor: pointer;
     scrollbar-width: thin;
     scrollbar-color: #38bdf8 rgba(56, 189, 248, .08);
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Decorative Scrollbar */
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar {
-    height: 5px;
-}
-
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar-track {
-    background: rgba(56, 189, 248, .08);
-    border-radius: 100px;
-}
-
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
-    border-radius: 100px;
-    box-shadow: 0 0 8px rgba(56, 189, 248, .6);
-}
-
-.password-preview-card .hidden-password.revealed::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(90deg, #67e8f9, #38bdf8, #67e8f9);
 }
 
 .hidden-password:hover {
     border-color: rgba(56, 189, 248, .45);
+    box-shadow: 0 0 10px rgba(56, 189, 248, .15);
 }
 
 .hidden-password:active {
-    transform: scale(.96);
+    transform: scale(.98);
 }
 
-/* 10. DECISION TREE EXPLANATION CARD */
-.decision-explanation {
-    position: relative;
-    transform: translateX(20px);
-    margin-top: -1px;
-    width: 870px;
-    padding: 1px 20px;
-    border-radius: 18px;
-    background: linear-gradient(145deg, rgba(15, 23, 42, .85), rgba(30, 41, 59, .75));
+/* 5. MAIN ANALYSIS AREA */
+.analysis-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* NAVIGATION TABS */
+.result-menu {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.menu-btn {
+    padding: 12px 24px;
+    border-radius: 12px 12px 0 0;
     border: 1px solid rgba(56, 189, 248, .18);
-    box-shadow: inset 0 0 20px rgba(56, 189, 248, .05), 0 12px 30px rgba(0, 0, 0, .35);
-    overflow: hidden;
+    border-bottom: none;
+    background: linear-gradient(180deg, rgba(30, 41, 59, .92), rgba(15, 23, 42, .90));
+    color: #cbd5e1;
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    transition: all .25s ease;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
-.decision-explanation::before {
+.menu-btn:hover {
+    color: #ffffff;
+    background: linear-gradient(180deg, rgba(51, 65, 85, .96), rgba(30, 41, 59, .95));
+    border-color: rgba(56, 189, 248, .45);
+    box-shadow: 0 0 15px rgba(56, 189, 248, .15), inset 0 2px 0 rgba(96, 165, 250, .25);
+}
+
+.menu-btn.active {
+    color: #ffffff;
+    background: linear-gradient(180deg, rgba(51, 65, 85, .98), rgba(30, 41, 59, .98));
+    border-color: rgba(56, 189, 248, .45);
+    box-shadow: 0 0 18px rgba(56, 189, 248, .20), inset 0 2px 0 rgba(96, 165, 250, .35);
+}
+
+/* MAIN DISPLAY PANEL */
+.result-panel {
+    flex: 1;
+    padding: 28px;
+    border-radius: 0 16px 16px 16px;
+    background: linear-gradient(160deg, rgba(15, 23, 42, .96), rgba(30, 41, 59, .90), rgba(51, 65, 85, .85));
+    border: 1px solid rgba(56, 189, 248, .18);
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .45), 0 0 20px rgba(56, 189, 248, .08);
+}
+
+.result-panel::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, #38bdf8, #60a5fa, transparent);
+    background: linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
 }
 
-.decision-explanation h3 {
-    margin: 0 0 12px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #7dd3fc;
-    letter-spacing: .8px;
-    text-transform: uppercase;
+#panelBody {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
-#decisionExplanation {
+.result-section {
+    width: 100%;
+    height: 100%;
+}
+
+/* 6. DOCK FOOTER & ACTION BUTTONS */
+.dock-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 8px;
+}
+
+.system-reminder {
     margin: 0;
-    color: #cbd5e1;
+    color: rgba(203, 213, 225, .85);
     font-size: 13px;
-    line-height: 1.7;
-    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: .2px;
+    font-style: italic;
+    flex: 1;
 }
 
-#decisionExplanation:not(:empty) {
-    animation: explanationFade .4s ease;
+.system-reminder::before {
+    content: "ⓘ";
+    margin-right: 8px;
+    color: #38bdf8;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
 }
 
-@keyframes explanationFade {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
+.button-group {
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.button-group button {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: #f8fafc;
+    transition: all .25s ease;
+}
+
+.reset-btn {
+    background: linear-gradient(180deg, rgba(51, 65, 85, .95), rgba(15, 23, 42, .95));
+    border: 1px solid rgba(148, 163, 184, .25);
+}
+
+.reset-btn:hover {
+    box-shadow: 0 0 18px rgba(148, 163, 184, .25);
+    border-color: rgba(148, 163, 184, .45);
+}
+
+.compare-btn {
+    background: linear-gradient(180deg, rgba(37, 99, 235, .95), rgba(29, 78, 216, .92));
+    border: 1px solid rgba(96, 165, 250, .35);
+}
+
+.compare-btn:hover {
+    box-shadow: 0 0 22px rgba(59, 130, 246, .35);
+    border-color: rgba(96, 165, 250, .6);
+}
+
+.button-group button:active {
+    transform: scale(.97);
+}
+
+/* 7. BUTTON INFO TOOLTIP */
+.button-info {
+    position: fixed;
+    width: 280px;
+    padding: 18px;
+    background: linear-gradient(145deg, rgba(248, 250, 252, .98), rgba(226, 232, 240, .95));
+    color: #1e293b;
+    border-radius: 16px;
+    border: 1px solid rgba(56, 189, 248, .45);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .45), 0 0 35px rgba(56, 189, 248, .35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 100;
+}
+
+.button-info.show {
+    opacity: 1;
+}
+
+.button-info h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0369a1;
+}
+
+.button-info p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+/* 8. RESPONSIVE BREAKPOINTS */
+@media (max-width: 1024px) {
+    .result-workspace {
+        flex-direction: column;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .sidebar-area {
+        width: 100%;
+        flex-direction: row;
     }
-}
-
-/* 11. MEDIA QUERIES */
-@media (max-width: 1100px) {
-    .result-menu,
-    .result-panel,
+    .classification-panel {
+        flex: 1;
+    }
+    .password-preview-card {
+        width: 260px;
+    }
+    .dock-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
     .button-group {
-        left: 320px;
+        width: 100%;
+        justify-content: flex-end;
     }
 }

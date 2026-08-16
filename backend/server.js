@@ -31,6 +31,23 @@ try {
     console.log("⚠️ risk_model.json not found - run create_risk_dataset.js then train_risk_model.js to generate it. Risk level will be unavailable until then.");
 }
 
+// ===== LOAD RECOMMENDATION MODEL =====
+// Third, separate CART classifier trained on recommendation_dataset.csv
+// (recommendation_label: AVOID_DICTIONARY_WORDS / AVOID_PREDICTABLE_PATTERNS /
+// ADD_CHARACTER_VARIETY / INCREASE_LENGTH / KEEP_IT_UP) - see
+// create_recommendation_dataset.js / train_recommendation_model.js.
+let recommendationModel = null;
+let recommendationClassifier = null;
+try {
+    recommendationModel = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "recommendation_model.json"))
+    );
+    recommendationClassifier = DecisionTreeClassifier.load(recommendationModel);
+    console.log("✅ Recommendation model loaded");
+} catch (err) {
+    console.log("⚠️ recommendation_model.json not found - run create_recommendation_dataset.js then train_recommendation_model.js to generate it. Recommendations will fall back to a simple message until then.");
+}
+
 // ===== LOAD DATASET =====
 let trainingDataset = [];
 const datasetPath = path.join(__dirname, 'dataset.csv');
@@ -322,6 +339,47 @@ function classifyRisk(extractedFeatures) {
     return { level, explanation: explainRisk(extractedFeatures, level, riskModel.root) };
 }
 
+// ===== 2c. RECOMMENDATION CLASSIFICATION (SEPARATE TRAINED MODEL) =====
+// Predicts the SINGLE most impactful fix for this password, instead of a
+// hand-coded if/else chain on vulnerabilityType. Same 12-feature input as
+// the other two models, since recommendation_model.json was trained on the
+// same feature columns.
+function classifyRecommendation(extractedFeatures) {
+    if (!recommendationClassifier) {
+        return { label: null, steps: [] };
+    }
+
+    const modelFeatures = [[
+        extractedFeatures.length,
+        extractedFeatures.character_class_count,
+        extractedFeatures.has_lowercase,
+        extractedFeatures.has_uppercase,
+        extractedFeatures.has_digit,
+        extractedFeatures.has_symbol,
+        extractedFeatures.dictionary_present,
+        extractedFeatures.has_leetspeak,
+        extractedFeatures.numeric_suffix,
+        extractedFeatures.has_sequence,
+        extractedFeatures.has_repetition,
+        extractedFeatures.rule_pattern_present
+    ]];
+
+    const prediction = recommendationClassifier.predict(modelFeatures);
+
+    const recommendationLabelMap = {
+        0: "AVOID_DICTIONARY_WORDS",
+        1: "AVOID_PREDICTABLE_PATTERNS",
+        2: "ADD_CHARACTER_VARIETY",
+        3: "INCREASE_LENGTH",
+        4: "KEEP_IT_UP"
+    };
+
+    const label = recommendationLabelMap[prediction[0]] || null;
+    const steps = traceRiskDecisionPath(extractedFeatures, recommendationModel.root);
+
+    return { label, steps };
+}
+
 /* Builds a transparent, itemized explanation of WHY the risk model landed on
 this level, using the exact same scoring contributions calculateSecurityScore()
 uses internally (length, character diversity, dictionary/rule-pattern/sequence/
@@ -443,8 +501,64 @@ function findLearnedThreshold(node, splitColumn) {
     return findLearnedThreshold(node.left, splitColumn) ?? findLearnedThreshold(node.right, splitColumn);
 }
 
-// ===== 3. DYNAMIC REALISTIC SECURITY STRATEGIES & BREAKDOWN =====
-function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot, classificationRationale) {
+// ===== 3. RECOMMENDATION MODEL -> PLAIN-LANGUAGE STRATEGY TEXT =====
+/* This used to be a hand-written if/else chain keyed off vulnerabilityType,
+with hardcoded thresholds (12 chars, 3 classes) and dense, jargon-heavy
+copy ("combinatorial search space", "Hashcat rules engine", etc). It is now
+driven by recommendation_model.json - a THIRD, independently trained CART
+classifier (see create_recommendation_dataset.js / train_recommendation_model.js)
+that predicts the single most impactful fix for THIS password. The tree's own
+learned thresholds are quoted via findLearnedThreshold(), same pattern as the
+vulnerability and risk explanations, so nothing here is invented by hand.
+
+The copy itself is deliberately short and plain - one sentence on what's
+wrong, one sentence on what to do about it - since the goal is a user who
+can actually understand and act on it, not a security-textbook paragraph. */
+const RECOMMENDATION_LABEL_TEMPLATES = {
+    AVOID_DICTIONARY_WORDS: (f, password, treeRoot) =>
+        `🚨 This password is based on a real word ('${password}'), which is the first thing attackers try. ` +
+        `Swap it for a passphrase - 3 to 4 random, unrelated words strung together (e.g. "${suggestPassphrase(password)}") are much harder to guess.`,
+
+    AVOID_PREDICTABLE_PATTERNS: (f, password, treeRoot) => {
+        const found = [];
+        if (f.has_leetspeak) found.push("letter-to-symbol swaps (like a→@)");
+        if (f.numeric_suffix) found.push("numbers stuck at the end");
+        if (f.has_sequence) found.push("a sequence like 123 or abc");
+        if (f.has_repetition) found.push("repeated characters");
+        const whatWasFound = found.length > 0 ? found.join(", ") : "a common modification pattern";
+
+        return `🔄 We noticed ${whatWasFound} in '${password}' - these are the first tricks cracking tools try after plain words. ` +
+            `Try mixing things up in the middle of the password instead of just at the start or end.`;
+    },
+
+    ADD_CHARACTER_VARIETY: (f, password, treeRoot) => {
+        const learnedThreshold = findLearnedThreshold(treeRoot, 1);
+        const target = Math.round(learnedThreshold ?? 3);
+        return `⚠️ '${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters. ` +
+            `Mixing UPPERCASE, lowercase, numbers, and symbols (aim for at least ${target} types) makes it much harder to guess.`;
+    },
+
+    INCREASE_LENGTH: (f, password, treeRoot) => {
+        const learnedThreshold = findLearnedThreshold(treeRoot, 0);
+        const target = Math.round(learnedThreshold ?? 12);
+        return `📏 '${password}' is only ${f.length} character${f.length === 1 ? "" : "s"} long. ` +
+            `Every extra character makes it dramatically harder to crack - try to reach at least ${target} characters.`;
+    },
+
+    KEEP_IT_UP: (f, password, treeRoot) =>
+        `⭐ Nice - '${password}' is long, varied, and doesn't rely on a common word or an obvious pattern. This is a strong password, keep this habit up.`
+};
+
+// Turns a password into a simple 2-word passphrase suggestion by splitting
+// it in half - purely illustrative, not a real word-list based generator.
+function suggestPassphrase(password) {
+    const half = Math.ceil(password.length / 2);
+    const first = password.slice(0, half) || password;
+    const second = password.slice(half) || "SecureDay";
+    return `${first}-${second}-2026!`;
+}
+
+function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot, classificationRationale, recommendationResult) {
     let tips = [];
     let technicalBreakdown = {
         // Real, feature-grounded explanation (from explainClassification's
@@ -459,103 +573,39 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
 
     const currentPassword = password;
 
-    /* Length threshold (feature column 0): the current trained tree doesn't
-    actually split on length at all (it wasn't decisive enough given the
-    training data), so there's no learned number to quote here. Falling back
-    to the conventional 12-character cybersecurity guideline, labeled
-    explicitly as a general best practice rather than implied to be
-    model-derived. */
-    const learnedLengthThreshold = findLearnedThreshold(treeRoot, 0);
-    const lengthThreshold = learnedLengthThreshold ?? 12;
-    const lengthThresholdIsLearned = learnedLengthThreshold !== null;
-
-    // Character class count threshold (feature column 1) - the model DOES
-    // split on this, so this number comes straight from the trained tree.
-    const learnedClassThreshold = findLearnedThreshold(treeRoot, 1);
-    const classThreshold = learnedClassThreshold ?? 3;
-    const classThresholdIsLearned = learnedClassThreshold !== null;
-
-    // Base Rules for UI feedback (Dynamic placeholders based on user input)
-    if (currentPassword.length < lengthThreshold) {
-        const basis = lengthThresholdIsLearned
-            ? `the model's learned split threshold of ${Math.round(lengthThreshold)} characters`
-            : `the recommended ${Math.round(lengthThreshold)}-character cybersecurity standard (the model itself did not learn a length threshold from the training data, so this is a general guideline)`;
-        tips.push(`⚠️ Length Deficit: Your current length of ${currentPassword.length} characters is below ${basis}.`);
-    }
-    if (extractedFeatures.character_class_count < classThreshold) {
-        const basis = classThresholdIsLearned
-            ? `the model's learned threshold of ${Math.round(classThreshold)} character classes`
-            : `the recommended ${Math.round(classThreshold)} character classes`;
-        tips.push(`⚠️ Character Diversity: You are only using ${extractedFeatures.character_class_count} character classes, below ${basis}. Try blending upper, lower, digits, and symbols.`);
-    }
-
-    // Dynamic Sample Generation for shuffling strategy
-    const halfLength = Math.ceil(currentPassword.length / 2);
-    const shuffledSample = currentPassword.substring(halfLength) + currentPassword.substring(0, halfLength);
-
-    // Dynamic Breakdown base sa Category
+    // Simplified, plain-language attack vector / fix summary per class -
+    // shorter and jargon-free compared to the old version, still grounded
+    // in the real classification for this password.
     if (vulnerabilityType === "DICTIONARY") {
-        technicalBreakdown.attack_vector = extractedFeatures.character_class_count > 1
-            ? `This password is vulnerable to Dictionary Attacks because it matches commonly used words that attackers test first using automated cracking tools and pre-compiled wordlists. It does use ${extractedFeatures.character_class_count} character classes, but the underlying dictionary word remains the primary weakness attackers would target.`
-            : `This password is vulnerable to Dictionary Attacks because it matches commonly used words that attackers test first using automated cracking tools and pre-compiled wordlists, with no additional character variety to slow that process down.`;
-        technicalBreakdown.remediation =
-            `Transition from the single word '${currentPassword}' to the 'Passphrase Method' by combining 3 to 4 random, unrelated words.`;
-
-        tips.push(`🚨 Critical Warning: Avoid using raw, recognizable words like '${currentPassword}' as your password base.`);
-        tips.push(`💡 Recommendation: Transform it into a Passphrase. Instead of '${currentPassword}', use something expanded like '${currentPassword}SapatosKapeHalimaw' to scale up security complexity.`);
+        technicalBreakdown.attack_vector = `Attackers try common words first, and '${currentPassword}' matches one directly.`;
+        technicalBreakdown.remediation = `Replace it with a passphrase made of a few random, unrelated words.`;
+    } else if (vulnerabilityType === "RULE-BASED") {
+        technicalBreakdown.attack_vector = `'${currentPassword}' is a common word with a predictable tweak (numbers, symbols, or capitalization) - cracking tools test these tweaks automatically.`;
+        technicalBreakdown.remediation = `Break the predictable pattern - mix symbols and numbers into the middle of the password, not just the start or end.`;
+    } else if (vulnerabilityType === "BRUTE-FORCE") {
+        const isStrong = extractedFeatures.length >= 12 && extractedFeatures.character_class_count >= 3;
+        technicalBreakdown.attack_vector = isStrong
+            ? `'${currentPassword}' doesn't match a word or pattern, and it's long and varied enough to resist most guessing attempts.`
+            : `'${currentPassword}' doesn't match a word or pattern, but it's still short enough that a computer could eventually guess it through brute force.`;
+        technicalBreakdown.remediation = `Make it longer - each extra character makes brute-force guessing exponentially harder.`;
     }
 
-    else if (vulnerabilityType === "RULE-BASED") {
-        const detectedPatterns = [];
-        if (extractedFeatures.has_leetspeak) detectedPatterns.push("leetspeak substitution");
-        if (extractedFeatures.numeric_suffix) detectedPatterns.push("a numeric suffix");
-        if (extractedFeatures.has_sequence) detectedPatterns.push("a sequential character pattern");
-        if (extractedFeatures.has_repetition) detectedPatterns.push("a repeated character/substring pattern");
-
-        technicalBreakdown.attack_vector = detectedPatterns.length > 0
-            ? `Vulnerable to Hybrid/Rule-Based Attacks (e.g., Hashcat rules engine). This specific password contains ${detectedPatterns.join(", ")} - patterns that modern rule-based cracking tools test automatically after common dictionary words.`
-            : `Vulnerable to Hybrid/Rule-Based Attacks (e.g., Hashcat rules engine). Modern GPU cracking setups automatically anticipate common human-created variations on dictionary words.`;
-        technicalBreakdown.remediation =
-            `Disrupt predictable character positioning. Inject symbols and numbers unexpectedly into the middle of the string.`;
-
-        if (extractedFeatures.has_leetspeak) {
-            tips.push(`🔄 Leetspeak Exploitation: The character substitutions detected in '${currentPassword}' are fully mapped out by modern automated attack engines.`);
-        }
-        if (extractedFeatures.numeric_suffix) {
-            tips.push(`🔢 Numeric Suffix Pattern: Appending numbers or years at the very end of '${currentPassword}' is a highly predictable human pattern that tools crack first.`);
-        }
-        if (/^[A-Z][a-z]+/.test(currentPassword)) {
-            tips.push(`🔠 Title Case Bias: Capitalizing only the first letter of '${currentPassword}' follows standard linguistic habits. Try scattering uppercase letters dynamically.`);
-        }
-        tips.push(`💡 Strategy: Implement structural randomization. Instead of your current linear pattern '${currentPassword}', try shuffling or breaking the structure into something like '${shuffledSample}'.`);
+    // ===== ML-DRIVEN PRIMARY RECOMMENDATION =====
+    // recommendationResult.label was predicted by recommendation_model.json
+    // (a real, independently trained CART classifier) - NOT decided by
+    // vulnerabilityType or a hand-written if/else here.
+    if (recommendationResult && recommendationResult.label && RECOMMENDATION_LABEL_TEMPLATES[recommendationResult.label]) {
+        tips.push(
+            RECOMMENDATION_LABEL_TEMPLATES[recommendationResult.label](extractedFeatures, currentPassword, recommendationModel.root)
+        );
+    } else {
+        tips.push("⚠️ Recommendation model is unavailable right now - run create_recommendation_dataset.js then train_recommendation_model.js to enable personalized tips.");
     }
 
-    else if (vulnerabilityType === "BRUTE-FORCE") {
-        const searchSpaceIsStrong = extractedFeatures.length >= 12 && extractedFeatures.character_class_count >= 3;
-        technicalBreakdown.attack_vector = searchSpaceIsStrong
-            ? `Targeted by Combinatorial/Exhaustive Brute-Force Attacks, though with a length of ${extractedFeatures.length} characters and ${extractedFeatures.character_class_count} character classes in use, the combinatorial search space is large enough to resist most practical attacks.`
-            : `Targeted by Combinatorial/Exhaustive Brute-Force Attacks, where a computer systematically checks every mathematical combination. With only ${extractedFeatures.length} characters and ${extractedFeatures.character_class_count} character class${extractedFeatures.character_class_count === 1 ? "" : "es"} in use, this password's search space is smaller than recommended.`;
-        technicalBreakdown.remediation =
-            `Increase overall password length to push the mathematical search space beyond realistic computing capabilities.`;
-
-        if (currentPassword.length < 12) {
-            tips.push(`❌ Attack Hazard: Although random, a length of ${currentPassword.length} characters for '${currentPassword}' can still be exhausted by modern GPU cluster arrays in a relatively short timeframe.`);
-            tips.push(`💡 Action Required: Lengthen this random base. Every single character added to '${currentPassword}' multiplies the computational search difficulty exponentially.`);
-        } else {
-            tips.push(`⭐ High Complexity: The password '${currentPassword}' demonstrates excellent entropy and high computational resistance against automated guessing.`);
-        }
-        tips.push(`🛡️ Hybrid Defense: Pair high-entropy strings like '${currentPassword}' with Multi-Factor Authentication (MFA) to fully mitigate credential hazards.`);
-    }
-
-    // Extra structural alerts
-    if (extractedFeatures.has_sequence) {
-        tips.push(`🚫 Sequence Alert: The sequential layout found inside '${currentPassword}' drastically shortens the cracking algorithm search paths.`);
-    }
-    if (extractedFeatures.has_repetition) {
-        tips.push(`🔁 Repetition Alert: Consecutive identical characters in '${currentPassword}' reduce mathematical entropy.`);
-    }
-    if (/^[^A-Za-z0-9]/.test(currentPassword) || /[^A-Za-z0-9]$/.test(currentPassword)) {
-        tips.push(`📌 Placement Bias: Placing symbols strictly at the absolute start or end of '${currentPassword}' follows predictable human creation habits.`);
+    // A short, simple general-security tip always shown alongside the
+    // model's specific fix - not a substitute for it.
+    if (recommendationResult && recommendationResult.label !== "KEEP_IT_UP") {
+        tips.push("🛡️ Also consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
     }
 
     return { tips, technicalBreakdown };
@@ -945,15 +995,23 @@ app.post('/analyze', (req, res) => {
     const riskResult = classifyRisk(extractedFeatures);
     console.log("RISK:", riskResult.level);
 
+    // Recommendation, predicted by the THIRD, separate trained recommendation
+    // classifier (recommendation_model.json) - not derived from vulnerabilityType.
+    const recommendationResult = classifyRecommendation(extractedFeatures);
+    console.log("RECOMMENDATION:", recommendationResult.label);
+
     // Full 12-feature checklist + rationale - independent of how shallow the trained tree is.
     // Computed BEFORE getStrategies() now, since its classification_rationale
     // (genuinely grounded in this password's actual feature values) replaces
     // the old static per-class vulnerability_explanation template.
     const fullClassificationExplanation = explainClassification(extractedFeatures, classificationResult.label);
 
-    // Kunin ang pormal at realistic strategies at breakdown - thresholds quoted are sourced from model.root where the model actually learned them
+    // Kunin ang pormal at realistic strategies at breakdown - the primary tip
+    // is the recommendation model's own prediction; thresholds quoted are
+    // sourced from recommendation_model.json / model.root where the model
+    // actually learned them.
     const { tips, technicalBreakdown } = getStrategies(classificationResult.label, extractedFeatures,
-        password, model.root, fullClassificationExplanation.classification_rationale);
+        password, model.root, fullClassificationExplanation.classification_rationale, recommendationResult);
 
     // Decision tree trace - 100% derived from the trained model (model.json).
     const actualModelDecisionPath = generateActualModelDecisionPath(classificationResult.label, extractedFeatures, model.root);
@@ -988,6 +1046,12 @@ app.post('/analyze', (req, res) => {
         // transparent, itemized explanation of the contributing factors.
         risk_level: riskResult.level,
         risk_assessment: riskResult.explanation,
+
+        // Primary fix predicted by the third, separate recommendation
+        // classifier (recommendation_model.json) - exposed raw here so the
+        // frontend/UI can show it directly if desired, in addition to the
+        // plain-language "strategies" tips below which are built from it.
+        recommendation_label: recommendationResult.label,
 
         // Full checklist of all 12 features (independent of the tree's actual depth)
         // plus a plain-language rationale for why this password landed in this class.

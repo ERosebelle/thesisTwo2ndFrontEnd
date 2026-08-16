@@ -26,7 +26,6 @@ async function analyzePassword(password, previousPassword) {
 }
 
 // REUSE STORED RESULT FROM initialTest.js / comparisonTest.js
-// Returns the parsed result, or null if nothing usable is stored.
 function readStoredAnalysisResult() {
     const stored = sessionStorage.getItem("analysisResult");
     if (!stored) {
@@ -41,11 +40,7 @@ function readStoredAnalysisResult() {
     }
 }
 
-/* CACHE THE "ORIGINAL" (BASELINE) PASSWORD'S RESULT
-Survives navigation to comparisonTest.js and back, so the baseline
-password in a comparison round never needs a second /analyze call
-just because its own sessionStorage slot got overwritten by the
-newer (comparison) password's fetch. */
+/* CACHE THE "ORIGINAL" (BASELINE) PASSWORD'S RESULT */
 function cacheOriginalResult(password, data) {
     localStorage.setItem("originalAnalysisResult", JSON.stringify({ password, data }));
 }
@@ -76,45 +71,32 @@ function readCachedOriginalResult(password) {
     }
 })();
 
-/*Catches browser back/forward-cache (bfcache) restores that do not re-run scripts and therefore 
-would not becaught by the navigation-type check above.*/
 window.addEventListener("pageshow", function(event) {
     if (event.persisted) {
         window.location.replace("initialTest.html");
     }
 });
 
-/*Opts this page out of the browser's back/forward cache (bfcache).
-Without this, browsers may instantly repaint a cached snapshot ofthis page on back/forward navigation
-*before* any JS runs, causing a brief flash of stale content before the guard above can redirect.*/
 window.addEventListener("unload", function() {
-    // Delete the previous and current password when the tab is closed or page is unloaded
     localStorage.removeItem("previousPassword");
     localStorage.removeItem("currentPassword");
 });
+
 // LOAD COMPONENT HTML
 async function loadComponents() {
     try {
-        // CLASSIFICATION COMPONENT
         const classificationResponse = await fetch("./components/classification.html");
         const classification = await classificationResponse.text();
 
-        // DECISION TREE COMPONENT
         const decisionResponse = await fetch("./components/decisionTree.html");
         const decisionTreeComponent = await decisionResponse.text();
 
-        // RECOMMENDATION COMPONENT
         const recommendationResponse = await fetch("./components/recommendation.html");
         const recommendation = await recommendationResponse.text();
 
-        // FEATURE VECTOR COMPONENT
         const featureResponse = await fetch("./components/featureVector.html");
         const featureVector = await featureResponse.text();
 
-        /*DECISION TRAVERSAL CARD COMPONENT
-        Independent Result-page overlay - NOT part of the
-        Deci/Reco/Vecs component set, loaded separately into
-        its own body-level mount point below.*/
         const decisionTraversalCardResponse = await fetch("./components/decisionTraversalCard.html");
         const decisionTraversalCard = await decisionTraversalCardResponse.text();
 
@@ -139,8 +121,6 @@ async function loadComponents() {
             featureSection.innerHTML = featureVector;
         }
 
-        /*The traversal card mounts at body level (outside the Deci/Reco/Vecs layout), 
-        not inside any of the three result-section containers above.*/
         const decisionTraversalCardRoot = document.getElementById("decisionTraversalCardRoot");
         if (decisionTraversalCardRoot) {
             decisionTraversalCardRoot.innerHTML = decisionTraversalCard;
@@ -166,13 +146,6 @@ async function loadComponents() {
         console.error("Component loading error:", error);
     }
 }
-
-/*DECISION TRAVERSAL CARD TRIGGER
-Decision Tree only notifies that its hologram was clicked
-("decisionTree:hologramClicked"). Result.js, as the page-level
-owner/controller, decides what that means - opening the
-independent Decision Traversal Card with the latest backend
-analysis data.*/
 
 document.addEventListener("decisionTree:hologramClicked", () => {
     if (typeof DecisionTraversalCard !== "undefined" && typeof DecisionTraversalCard.open === "function") {
@@ -311,17 +284,7 @@ async function fetchAnalysisResult() {
             localStorage.setItem("previousPassword", analyzedPassword);
             localStorage.setItem("currentPassword", comparisonPassword);
 
-            /* comparisonTest.js already fetched this password (with
-            previousPassword attached, so password_comparison is included)
-            and stored it in sessionStorage - reuse it instead of calling
-            /analyze again. */
             const comparisonResult = readStoredAnalysisResult() ?? await analyzePassword(comparisonPassword, analyzedPassword);
-
-            /* The original password's result is normally cached from
-            its own earlier normal-mode view (see below) - reuse it
-            instead of calling /analyze a second time for the same
-            password. Only fetch if it's genuinely not cached (e.g.
-            direct navigation edge cases). */
             const originalResult = readCachedOriginalResult(analyzedPassword) ?? await analyzePassword(analyzedPassword);
 
             console.log("Original:", originalResult);
@@ -337,14 +300,10 @@ async function fetchAnalysisResult() {
                 updateDecisionTree(comparisonResult);
             }
 
-            // ✅ IPASA ANG BAGON (COMPARISON) RESULT SA FEATURE VECTOR!
             if (typeof updateFeatureVector === "function") {
                 updateFeatureVector(comparisonResult);
             }
 
-            // comparisonResult already carries password_comparison
-            // (previousPassword was sent above), so no separate
-            // /analyze call is needed for the recommendation panel.
             if (typeof updateRecommendation === "function") {
                 updateRecommendation(comparisonResult, comparisonPassword);
             }
@@ -353,8 +312,6 @@ async function fetchAnalysisResult() {
             localStorage.removeItem("comparisonPassword");
             sessionStorage.removeItem("analysisResult");
 
-            // The current password becomes the baseline for any
-            // future comparison round - cache its result now.
             cacheOriginalResult(comparisonPassword, comparisonResult);
 
             return;
@@ -366,17 +323,12 @@ async function fetchAnalysisResult() {
             return;
         }
 
-        /* initialTest.js already fetched this password and stored it
-        in sessionStorage - reuse it instead of calling /analyze again. */
         const data = readStoredAnalysisResult() ?? await analyzePassword(analyzedPassword);
         sessionStorage.removeItem("analysisResult");
         console.log("BACKEND RESPONSE:", data);
 
-        // Cache this as the baseline in case the user compares
-        // against another password next.
         cacheOriginalResult(analyzedPassword, data);
 
-        // UPDATE CLASSIFICATION PANEL
         if (typeof updateClassification === "function") {
             updateClassification(data);
         }
@@ -387,7 +339,6 @@ async function fetchAnalysisResult() {
             updateDecisionTree(data);
         }
 
-        // ✅ IPASA ANG DATA SA FEATURE VECTOR (NORMAL MODE)!
         if (typeof updateFeatureVector === "function") {
             updateFeatureVector(data);
         }
@@ -401,50 +352,27 @@ async function fetchAnalysisResult() {
     }
 }
 
-// PASSWORD PREVIEW DISPLAY
+// PASSWORD PREVIEW DISPLAY (UPDATED: ONLY REVEALS TESTED PASSWORD)
 function initializePasswordPreview() {
-    const previousPassword = localStorage.getItem("previousPassword") || "";
     const testedPassword = localStorage.getItem("currentPassword") || localStorage.getItem("analyzedPassword") || "";
 
     console.log("PASSWORD PREVIEW DATA", {
-        previousPassword,
         testedPassword,
         analyzedPassword: localStorage.getItem("analyzedPassword"),
         comparisonPassword: localStorage.getItem("comparisonPassword")
     });
 
-    const previousContainer = document.getElementById("previousPasswordContainer");
-    const previousLabel = document.querySelector(".previous-password-entry");
-
-    // NORMAL MODE, ONLY ONE PASSWORD
-    if (!previousPassword) {
+    if (testedPassword) {
         createPasswordReveal("testedPassword", testedPassword);
-        return;
-    }
-
-    // COMPARISON MODE PREVIOUS + CURRENT
-    if (previousContainer) {
-        previousContainer.style.display = "block";
-    }
-
-    createPasswordReveal("previousPassword", previousPassword);
-    createPasswordReveal("testedPassword", testedPassword);
-
-    if (previousLabel) {
-        const label = previousLabel.querySelector(".password-label");
-        if (label) {
-            label.textContent = "Previous Password";
-        }
     }
 }
 
-
-// HOLD TO REVEAL PASSWORD
+// CLICK TO REVEAL PASSWORD
 function createPasswordReveal(elementID, password) {
     const element = document.getElementById(elementID);
     if (!element || !password) return;
 
-    // Show only up to 7 asterisks when hidden
+    // Mask with fixed dynamic asterisks
     const masked = "*".repeat(Math.min(password.length, 13));
     let revealed = false;
 

@@ -31,69 +31,68 @@
 <body>
 
     <div class="result-container">
-        <div class="result-card">
-
-            <!-- HEADER -->
-            <div class="page-header">
-                <img src="../assets/images/logo.png" alt="System Logo" class="header-logo">
-                <div class="header-text">
-                    <h1>Password Vulnerability and Cracking Method Classification System</h1>
-                    <p>Password Analysis Result</p>
-                </div>
+        
+        <!-- HEADER -->
+        <header class="page-header">
+            <img src="../assets/images/logo.png" alt="System Logo" class="header-logo">
+            <div class="header-text">
+                <h1>Password Vulnerability and Cracking Method Classification System</h1>
+                <p>Password Analysis Result</p>
             </div>
+        </header>
 
-            <!-- WORKSPACE -->
-            <div class="result-workspace">
+        <!-- WORKSPACE -->
+        <main class="result-workspace">
 
+            <!-- SIDEBAR AREA -->
+            <aside class="sidebar-area">
                 <!-- CLASSIFICATION PANEL -->
                 <div class="classification-panel">
                     <div id="classificationSection"></div>
                 </div>
 
-                <!-- ANALYSIS AREA -->
-                <div class="analysis-area">
-                    <div class="result-menu">
-                        <button class="menu-btn active" data-section="decision">Decision Tree Path</button>
-                        <button class="menu-btn" data-section="recommendation">Recommendation</button>
-                        <button class="menu-btn" data-section="features">Feature Vector</button>
+                <!-- PASSWORD PREVIEW CARD -->
+                <div class="password-preview-card">
+                    <div class="password-entry">
+                        <span class="password-label">Tested Password</span>
+                        <div id="testedPassword" class="hidden-password">********</div>
                     </div>
+                </div>
+            </aside>
 
-                    <div class="result-panel">
-                        <div class="bg-shape"></div>
-                        <div id="panelBody">
-                            <div id="decisionSection" class="result-section"></div>
-                            <div id="recommendationSection" class="result-section"></div>
-                            <div id="featureSection" class="result-section"></div>
-                        </div>
+            <!-- MAIN ANALYSIS AREA -->
+            <section class="analysis-area">
+                <!-- TAB NAVIGATION -->
+                <nav class="result-menu">
+                    <button class="menu-btn active" data-section="decision">Decision Tree Path</button>
+                    <button class="menu-btn" data-section="recommendation">Recommendation</button>
+                    <button class="menu-btn" data-section="features">Feature Vector</button>
+                </nav>
+
+                <!-- PANEL DISPLAY -->
+                <div class="result-panel">
+                    <div class="bg-shape"></div>
+                    <div id="panelBody">
+                        <div id="decisionSection" class="result-section"></div>
+                        <div id="recommendationSection" class="result-section"></div>
+                        <div id="featureSection" class="result-section"></div>
                     </div>
                 </div>
 
-            </div>
+                <!-- BOTTOM DOCK: REMINDER & ACTIONS -->
+                <footer class="dock-footer">
+                    <p class="system-reminder">
+                        This assessment raises awareness of potential password vulnerabilities. No password can guarantee complete protection.
+                    </p>
+                    <div class="button-group">
+                        <button id="resetButton" class="reset-btn">RESET</button>
+                        <button id="compareButton" class="compare-btn">COMPARE NEW PASSWORD</button>
+                    </div>
+                </footer>
+            </section>
 
-            <p class="system-reminder">
-                This assessment raises awareness of potential password vulnerabilities. No password can guarantee complete protection.
-            </p>
+        </main>
 
-        </div>
-    </div>
-
-    <!-- PASSWORD PREVIEW -->
-    <div class="password-preview-card">
-        <div class="password-entry">
-            <span class="password-label">Tested Password</span>
-            <div id="testedPassword" class="hidden-password">********</div>
-        </div>
-
-        <div class="password-entry" id="previousPasswordContainer" style="display:none;">
-            <span class="password-label">Previous Password</span>
-            <div id="previousPassword" class="hidden-password">********</div>
-        </div>
-    </div>
-
-    <!-- ACTION BUTTONS -->
-    <div class="button-group">
-        <button id="resetButton" class="reset-btn">RESET</button>
-        <button id="compareButton" class="compare-btn">COMPARE NEW PASSWORD</button>
     </div>
 
     <!-- BUTTON INFO TOOLTIP -->
