@@ -1,10 +1,14 @@
 /* TRAIN RECOMMENDATION MODEL
 Same CART training approach as train_model.js / train_risk_model.js, but
 targeting recommendation_label (AVOID_DICTIONARY_WORDS / AVOID_PREDICTABLE_
-PATTERNS / ADD_CHARACTER_VARIETY / INCREASE_LENGTH / KEEP_IT_UP) instead of
-vulnerability type or risk. This is a THIRD, SEPARATE classifier from
-model.json and risk_model.json - server.js loads all three and runs a
-password through each independently. */
+PATTERNS / ADD_CHARACTER_VARIETY / INCREASE_LENGTH) instead of vulnerability
+type or risk. This is a THIRD, SEPARATE classifier from model.json and
+risk_model.json - server.js loads all three and runs a password through each
+independently.
+
+KEEP_IT_UP was removed as a label (4 classes instead of 5) - the system must
+always return an actionable suggestion, even for an already-strong password.
+See create_recommendation_dataset.js's pickLabel() for the fallback rule. */
 const fs = require("fs");
 const csv = require("csv-parser");
 const { DecisionTreeClassifier } = require("ml-cart");
@@ -16,8 +20,7 @@ const labelMap = {
     "AVOID_DICTIONARY_WORDS": 0,
     "AVOID_PREDICTABLE_PATTERNS": 1,
     "ADD_CHARACTER_VARIETY": 2,
-    "INCREASE_LENGTH": 3,
-    "KEEP_IT_UP": 4
+    "INCREASE_LENGTH": 3
 };
 
 const datasetFile = "recommendation_dataset.csv";

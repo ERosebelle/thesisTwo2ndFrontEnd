@@ -1,359 +1,766 @@
-/* DECISION TREE decisionTree.js */
 const DecisionTree = (() => {
     let renderedTree = null;
 
-    /* UNWRAP YES/NO MARKER OBJECTS
-    server.js wraps every real child (a decision node or a 
-    leaf) inside a {name:"YES"/"NO", taken, children:[realChild]}
-    marker object. Markers are NOT real tree nodes - they only
-    carry metadata about a branch (which side it is, and whether
-    it was the one actually taken). This walks past them and
-    returns the real children directly, along with that metadata,
-    so nothing ever has to render or traverse the markers
-    themselves.*/
     function getRealChildEdges(node) {
-        if (!node || !node.children || !node.children.length)
+        if (
+            !node ||
+            !Array.isArray(node.children) ||
+            !node.children.length
+        ) {
             return [];
+        }
 
         return node.children
-            .filter(marker =>
-                marker &&
-                marker.children &&
-                marker.children.length
+            .filter(
+                marker =>
+                    marker &&
+                    Array.isArray(marker.children) &&
+                    marker.children.length
             )
             .map(marker => ({
                 node: marker.children[0],
-                branch: marker.branch || marker.name,
+                branch:
+                    marker.branch ||
+                    marker.name ||
+                    "",
                 taken: marker.taken === true
-            }));
+            }))
+            .filter(edge => edge.node);
     }
 
-    /* INITIALIZE DECISION TREE
-       Called after component HTML loads */
     function initializeDecisionTree() {
-        console.log("Decision Tree JS Connected");
         attachHologramClickNotifier();
     }
 
-    /* HOLOGRAM CLICK NOTIFIER
-    The hologram is a trigger only. Decision Tree does NOT
-    know about, and never opens, the Decision Traversal Card.
-    It only dispatches a DOM event on the document - result.js
-    (the Result page owner/controller) listens for that event
-       and decides what to do with it (open decisionTraversalCard.js) */
     function attachHologramClickNotifier() {
-        const hologram = document.querySelector(".decision-tree-hologram");
+        const hologram =
+            document.querySelector(
+                ".decision-tree-hologram"
+            );
 
-        if (!hologram)
+        if (!hologram) {
             return;
+        }
 
-        /* Guard against double-binding if initializeDecisionTree()
-           is ever called more than once for the same component load. */
-        if (hologram.dataset.clickNotifierAttached)
+        if (
+            hologram.dataset.clickNotifierAttached ===
+            "true"
+        ) {
             return;
+        }
 
-        hologram.dataset.clickNotifierAttached = "true";
+        hologram.dataset.clickNotifierAttached =
+            "true";
 
         function notifyHologramClicked() {
             document.dispatchEvent(
-                new CustomEvent("decisionTree:hologramClicked")
+                new CustomEvent(
+                    "decisionTree:hologramClicked"
+                )
             );
         }
 
-        hologram.addEventListener("click", notifyHologramClicked);
+        hologram.addEventListener(
+            "click",
+            notifyHologramClicked
+        );
 
-        /* The hologram already has role="button" tabindex="0" in
-           the markup, so keyboard users need Enter/Space support too. */
-        hologram.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                notifyHologramClicked();
+        hologram.addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key === "Enter" ||
+                    event.key === " "
+                ) {
+                    event.preventDefault();
+                    notifyHologramClicked();
+                }
             }
-        });
+        );
     }
 
-    // UPDATE DECISION TREE RECEIVES BACKEND DATA FROM RESULT.JS
     function updateDecisionTree(data) {
-        console.log("Decision Tree Data:", data);
-        updateExplanation(data);
-        renderDecisionTree(data.actual_model_decision_path);
-        animateTreeTraversal(data);
-    }
-
-    // UPDATE BACKEND EXPLANATION
-    function updateExplanation(data) {
-        const explanation = document.getElementById("decisionExplanation");
-
-        if (!explanation) {
-            console.error("Decision explanation missing");
+        if (!data) {
             return;
         }
 
-        const backendExplanation = data.security_assessment?.vulnerability_explanation || "";
+        window.latestAnalysisData = data;
 
-        console.log("SECURITY ASSESSMENT:", data.security_assessment);
+        const tree =
+            data.actual_model_decision_path;
 
-        if (backendExplanation) {
-            explanation.innerHTML = censorPassword(backendExplanation, data.password);
+        if (!tree) {
+            return;
+        }
 
-            const attackVector = document.getElementById("attackVector");
-            const remediation = document.getElementById("remediation");
+        updateExplanation(data);
+        renderDecisionTree(tree);
+        animateTreeTraversal(data);
+    }
 
-            attackVector.innerHTML = censorPassword(data.security_assessment.attack_vector, data.password);
-            remediation.innerHTML = censorPassword(data.security_assessment.remediation, data.password);
+    function updateExplanation(data) {
+        const explanation =
+            document.getElementById(
+                "decisionExplanation"
+            );
+
+        const attackVector =
+            document.getElementById(
+                "attackVector"
+            );
+
+        const remediation =
+            document.getElementById(
+                "remediation"
+            );
+
+        if (!explanation) {
+            return;
+        }
+
+        const assessment =
+            data.security_assessment || {};
+
+        const vulnerabilityExplanation =
+            assessment.vulnerability_explanation ||
+            "";
+
+        if (vulnerabilityExplanation) {
+            explanation.innerHTML =
+                censorPassword(
+                    vulnerabilityExplanation,
+                    data.password
+                );
+
+            if (attackVector) {
+                attackVector.innerHTML =
+                    censorPassword(
+                        assessment.attack_vector ||
+                        "",
+                        data.password
+                    );
+            }
+
+            if (remediation) {
+                remediation.innerHTML =
+                    censorPassword(
+                        assessment.remediation ||
+                        "",
+                        data.password
+                    );
+            }
 
             activatePasswordReveal();
             return;
         }
 
-        switch (data.vulnerability) {
-            case "DICTIONARY":
-                explanation.innerHTML = censorPassword("The Decision Tree identified...", data.password);
-                break;
-            case "RULE-BASED":
-                explanation.innerHTML = censorPassword(
-                    "The Decision Tree identified rule-based vulnerability because extracted features reveal predictable combinations such as words, numbers, symbols, capitalization, or mutation patterns commonly generated by attackers.",
+        const fallbackMessages = {
+            DICTIONARY:
+                "The Decision Tree identified a dictionary-based vulnerability.",
+
+            "RULE-BASED":
+                "The Decision Tree identified a predictable password pattern.",
+
+            "BRUTE-FORCE":
+                "The Decision Tree identified a password that may be vulnerable to brute-force guessing."
+        };
+
+        explanation.innerHTML =
+            censorPassword(
+                fallbackMessages[
+                    data.vulnerability
+                ] ||
+                "The Decision Tree could not determine the classification path.",
+                data.password
+            );
+
+        if (attackVector) {
+            attackVector.innerHTML =
+                censorPassword(
+                    assessment.attack_vector ||
+                    "",
                     data.password
                 );
-                break;
-            case "BRUTE-FORCE":
-                explanation.innerHTML = censorPassword(
-                    "The Decision Tree identified brute-force vulnerability because no strong dictionary or predictable rule patterns were detected. The remaining classification path indicates exhaustive guessing as the applicable attack strategy.",
-                    data.password
-                );
-                break;
-            default:
-                explanation.innerHTML = censorPassword(
-                    "The Decision Tree could not determine the classification path.",
-                    data.password
-                );
-                activatePasswordReveal();
         }
-    } // <-- FIX #1: this closing brace was missing, so updateExplanation
-    // never ended and everything below was nested inside it.
 
-    // HOLOGRAM ANIMATION CONTROL BACKEND-BASED PATH 
-    // HOLOGRAM ANIMATION CONTROL BACKEND-BASED DYNAMIC PATH 
+        if (remediation) {
+            remediation.innerHTML =
+                censorPassword(
+                    assessment.remediation ||
+                    "",
+                    data.password
+                );
+        }
+
+        activatePasswordReveal();
+    }
+
     function renderDecisionTree(tree) {
-        const nodeContainer = document.getElementById("decisionTreeNodes");
-        const branchContainer = document.getElementById("decisionTreeBranches");
+        const nodeContainer =
+            document.getElementById(
+                "decisionTreeNodes"
+            );
 
-        if (!nodeContainer || !branchContainer)
+        const branchContainer =
+            document.getElementById(
+                "decisionTreeBranches"
+            );
+
+        const svg =
+            document.querySelector(
+                ".dt-tree-svg"
+            );
+
+        if (
+            !nodeContainer ||
+            !branchContainer ||
+            !svg
+        ) {
             return;
+        }
 
         renderedTree = tree;
+
         nodeContainer.innerHTML = "";
         branchContainer.innerHTML = "";
 
-        if (!tree)
-            return;
+        svg.setAttribute(
+            "viewBox",
+            "0 0 220 100"
+        );
 
-        /* DEPTH-AWARE LAYOUT
-        The backend tree now always has BOTH branches at every decision (not just the one taken), so we size vertical/ horizontal spacing 
-        to the tree's real depth to keep the whole thing inside the small 220x120 viewBox. */
-        function getDepth(node) {
-            const edges = getRealChildEdges(node);
-            if (!edges.length)
-                return 1;
-            return 1 + Math.max(...edges.map(edge => getDepth(edge.node)));
-        }
+        svg.setAttribute(
+            "preserveAspectRatio",
+            "xMidYMid meet"
+        );
 
-        const depth = getDepth(tree);
-        const verticalStep = Math.min(40, 200 / Math.max(depth - 1, 1));
         let idCounter = 0;
 
-        function createNode(node, x, y) {
-            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            const id = "n" + (idCounter++);
-
-            /* Stash the id on the node object itself so animateTreeTraversal() can look up the same DOM element later without 
-            re-walking by name. */
-            node._domId = id;
-
-            circle.setAttribute("cx", x);
-            circle.setAttribute("cy", y);
-            circle.setAttribute("r", node.final ? 5 : 4);
-            circle.classList.add("dt-node");
-
-            /* ROOT NODE
-               Always purple. Never turns green, even once visited. */
-            if (node === tree) {
-                circle.classList.add("dt-root");
-            }
-            /* DECISION QUESTION NODE
-            Always purple. Never turns green, even once visited - only the YES/NO branch markers below it turn green. */
-            else if (node.type === "decision") {
-                circle.classList.add("dt-question");
-            }
-            /* FINAL RESULT / LEAF NODE
-            Stays neutral (same as an unvisited node) at render time. The backend always builds all 3 possible leaves, so we can't
-            know which one was actually reached until animateTreeTraversal() walks the real path - highlightResult() adds the yellow 
-            "dt-result" class to only that one leaf once the animation finishes. */
-            else if (node.final) {
-                circle.classList.add("dt-node--leaf");
+        function getDepth(
+            node,
+            visited = new Set()
+        ) {
+            if (!node || visited.has(node)) {
+                return 0;
             }
 
-           /* Anything else is a YES/NO branch marker. It gets no extra class here, so it renders as a plain (dark/unvisited) .dt-node and only
-            turns green via the .dt-node.active rule if animateTreeTraversal() marks it as part of the actual taken path. */
+            visited.add(node);
 
-            circle.dataset.id = id;
-            circle.dataset.name = node.name;
-            nodeContainer.appendChild(circle);
+            const edges =
+                getRealChildEdges(node);
 
-            return { x, y, id };
+            if (!edges.length) {
+                return 1;
+            }
+
+            return (
+                1 +
+                Math.max(
+                    ...edges.map(edge =>
+                        getDepth(
+                            edge.node,
+                            new Set(visited)
+                        )
+                    )
+                )
+            );
         }
 
-        function build(node, x, y, level = 0) {
-            if (!node)
-                return;
+        const depth =
+            getDepth(tree);
 
-            const current = createNode(node, x, y);
+        const verticalStep =
+            Math.min(
+                30,
+                88 /
+                Math.max(
+                    depth - 1,
+                    1
+                )
+            );
 
-            /* Skip past the YES/NO marker objects entirely - draw straight lines from this real node to its real children.*/
-            const edges = getRealChildEdges(node);
+        function createNode(
+            node,
+            x,
+            y
+        ) {
+            const circle =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "circle"
+                );
 
-            if (edges.length) {
-                const gap = 45;
+            const id =
+                `n${idCounter++}`;
 
-                edges.forEach((edge, index) => {
-                    let childX = x + ((index - (edges.length - 1) / 2) * gap);
-                    childX = Math.min(214, Math.max(6, childX));
-                    const childY = y + verticalStep;
+            node._domId = id;
 
-                    const childPos = build(edge.node, childX, childY, level + 1);
+            circle.setAttribute(
+                "cx",
+                x
+            );
 
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", current.x);
-                    line.setAttribute("y1", current.y);
-                    line.setAttribute("x2", childPos.x);
-                    line.setAttribute("y2", childPos.y);
-                    line.classList.add("dt-branch");
+            circle.setAttribute(
+                "cy",
+                y
+            );
 
-                    /* The line leading INTO a node is keyed by that node's id, so the traversal below can find "the line that leads 
-                    to node X".*/
-                    line.dataset.id = childPos.id;
-                    line.dataset.choice = edge.branch;
-                    branchContainer.appendChild(line);
+            circle.setAttribute(
+                "r",
+                node.final
+                    ? "4.5"
+                    : "3.5"
+            );
 
-                    // Small YES/NO branch label at the line's
-                    // midpoint - this is the "label, not a node" the wrapper objects were supposed to be.
-                    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    label.setAttribute("x", (current.x + childPos.x) / 2);
-                    label.setAttribute("y", (current.y + childPos.y) / 2);
-                    label.setAttribute("text-anchor", "middle");
-                    label.classList.add("dt-label", "dt-branch-label");
-                    label.dataset.id = childPos.id;
-                    label.textContent = edge.branch;
-                    branchContainer.appendChild(label);
-                });
+            circle.setAttribute(
+                "vector-effect",
+                "non-scaling-stroke"
+            );
+
+            circle.classList.add(
+                "dt-node"
+            );
+
+            circle.dataset.id =
+                id;
+
+            if (node === tree) {
+                circle.classList.add(
+                    "dt-root"
+                );
+            } else if (
+                node.type ===
+                "decision"
+            ) {
+                circle.classList.add(
+                    "dt-question"
+                );
+            } else if (
+                node.final
+            ) {
+                circle.classList.add(
+                    "dt-node--leaf"
+                );
             }
+
+            circle.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+
+                    document.dispatchEvent(
+                        new CustomEvent(
+                            "decisionTree:nodeClicked",
+                            {
+                                detail: {
+                                    node,
+                                    tree
+                                }
+                            }
+                        )
+                    );
+                }
+            );
+
+            nodeContainer.appendChild(
+                circle
+            );
+
+            return {
+                x,
+                y,
+                id
+            };
+        }
+
+        function createBranch(
+            x1,
+            y1,
+            x2,
+            y2,
+            childId,
+            choice
+        ) {
+            const line =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "line"
+                );
+
+            line.setAttribute(
+                "x1",
+                x1
+            );
+
+            line.setAttribute(
+                "y1",
+                y1
+            );
+
+            line.setAttribute(
+                "x2",
+                x2
+            );
+
+            line.setAttribute(
+                "y2",
+                y2
+            );
+
+            line.setAttribute(
+                "vector-effect",
+                "non-scaling-stroke"
+            );
+
+            line.classList.add(
+                "dt-branch"
+            );
+
+            line.dataset.id =
+                childId;
+
+            line.dataset.choice =
+                choice;
+
+            line.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+
+                    document.dispatchEvent(
+                        new CustomEvent(
+                            "decisionTree:branchClicked",
+                            {
+                                detail: {
+                                    branch:
+                                        choice,
+                                    nodeId:
+                                        childId,
+                                    tree
+                                }
+                            }
+                        )
+                    );
+                }
+            );
+
+            branchContainer.appendChild(
+                line
+            );
+        }
+
+        function build(
+            node,
+            x,
+            y,
+            visited = new Set()
+        ) {
+            if (
+                !node ||
+                visited.has(node)
+            ) {
+                return null;
+            }
+
+            const nextVisited =
+                new Set(visited);
+
+            nextVisited.add(node);
+
+            const current =
+                createNode(
+                    node,
+                    x,
+                    y
+                );
+
+            const edges =
+                getRealChildEdges(
+                    node
+                );
+
+            if (!edges.length) {
+                return current;
+            }
+
+            const gap =
+                Math.min(
+                    42,
+                    90 /
+                    Math.max(
+                        edges.length,
+                        1
+                    )
+                );
+
+            edges.forEach(
+                (
+                    edge,
+                    index
+                ) => {
+                    let childX;
+
+                    if (
+                        edges.length ===
+                        1
+                    ) {
+                        childX = x;
+                    } else {
+                        childX =
+                            x +
+                            (
+                                (
+                                    index -
+                                    (
+                                        edges.length -
+                                        1
+                                    ) / 2
+                                ) *
+                                gap
+                            );
+                    }
+
+                    childX =
+                        Math.min(
+                            214,
+                            Math.max(
+                                6,
+                                childX
+                            )
+                        );
+
+                    const childY =
+                        y +
+                        verticalStep;
+
+                    const childPosition =
+                        build(
+                            edge.node,
+                            childX,
+                            childY,
+                            nextVisited
+                        );
+
+                    if (!childPosition) {
+                        return;
+                    }
+
+                    createBranch(
+                        current.x,
+                        current.y,
+                        childPosition.x,
+                        childPosition.y,
+                        childPosition.id,
+                        edge.branch
+                    );
+                }
+            );
+
             return current;
         }
 
-        build(tree, 110, 15);
+        build(
+            tree,
+            110,
+            8
+        );
     }
 
     function animateTreeTraversal(data) {
-        const nodes = document.querySelectorAll(".dt-node");
-        const branches = document.querySelectorAll(".dt-branch");
-        const branchLabels = document.querySelectorAll(".dt-branch-label");
+        const nodes =
+            document.querySelectorAll(
+                ".dt-node"
+            );
 
-        if (!nodes.length)
-            return;
+        const branches =
+            document.querySelectorAll(
+                ".dt-branch"
+            );
 
-        // RESET ANIMATION
-        nodes.forEach(node => {
-            node.classList.remove("active");
-        });
-
-        branches.forEach(branch => {
-            branch.classList.remove("active");
-        });
-
-        branchLabels.forEach(label => {
-            label.classList.remove("active");
-        });
-
-        // GET BACKEND TREE
-        const tree = renderedTree;
-
-        if (!tree) {
-            console.warn("No visual decision tree trace found");
+        if (!nodes.length) {
             return;
         }
 
-        /*WALK THE ACTUAL DECISION PATH
-        Every real node (decision question or leaf) was given a _domId when it was rendered. Markers were never rendered, so we walk straight 
-        from real node to real node using getRealChildEdges(), taking whichever edge has taken===true.*/
+        nodes.forEach(
+            node => {
+                node.classList.remove(
+                    "active"
+                );
+
+                node.classList.remove(
+                    "dt-result"
+                );
+            }
+        );
+
+        branches.forEach(
+            branch => {
+                branch.classList.remove(
+                    "active"
+                );
+            }
+        );
+
+        const tree =
+            renderedTree;
+
+        if (!tree) {
+            return;
+        }
+
         const pathIds = [];
 
         if (tree._domId) {
-            pathIds.push(tree._domId);
+            pathIds.push(
+                tree._domId
+            );
         }
 
         let current = tree;
+        const visited = new Set();
 
-        while (current && !current.final) {
-            const edges = getRealChildEdges(current);
-            const takenEdge = edges.find(edge => edge.taken);
+        while (
+            current &&
+            !current.final &&
+            !visited.has(current)
+        ) {
+            visited.add(current);
 
-            if (!takenEdge || !takenEdge.node._domId)
+            const edges =
+                getRealChildEdges(
+                    current
+                );
+
+            const takenEdge =
+                edges.find(
+                    edge =>
+                        edge.taken
+                );
+
+            if (
+                !takenEdge ||
+                !takenEdge.node
+            ) {
                 break;
+            }
 
-            pathIds.push(takenEdge.node._domId);
-            current = takenEdge.node;
+            if (
+                !takenEdge.node._domId
+            ) {
+                break;
+            }
+
+            pathIds.push(
+                takenEdge.node._domId
+            );
+
+            current =
+                takenEdge.node;
         }
 
-        console.log("Decision Tree Animation Path:", pathIds);
+        pathIds.forEach(
+            (
+                id,
+                index
+            ) => {
+                setTimeout(
+                    () => {
+                        const node =
+                            document.querySelector(
+                                `.dt-node[data-id="${CSS.escape(id)}"]`
+                            );
 
-        // ANIMATE NODE SEQUENCE
-        pathIds.forEach((id, index) => {
-            setTimeout(() => {
-                const node = document.querySelector(`.dt-node[data-id="${id}"]`);
-                if (node) {
-                    node.classList.add("active");
-                }
+                        if (node) {
+                            node.classList.add(
+                                "active"
+                            );
+                        }
 
-                // index 0 is the root, which has no incoming, line - every id after that has one.
-                if (index > 0) {
-                    const branchElements = document.querySelectorAll(`.dt-branch[data-id="${id}"], .dt-branch-label[data-id="${id}"]`);
-                    branchElements.forEach(el => el.classList.add("active"));
-                }
-            }, index * 700);
-        });
+                        if (
+                            index >
+                            0
+                        ) {
+                            const branch =
+                                document.querySelector(
+                                    `.dt-branch[data-id="${CSS.escape(id)}"]`
+                                );
 
-        // FINAL RESULT
-        setTimeout(() => {
-            highlightResult(data.vulnerability, pathIds[pathIds.length - 1]);
-        }, pathIds.length * 700);
+                            if (branch) {
+                                branch.classList.add(
+                                    "active"
+                                );
+                            }
+                        }
+                    },
+                    index * 500
+                );
+            }
+        );
+
+        setTimeout(
+            () => {
+                highlightResult(
+                    data.vulnerability,
+                    pathIds[
+                        pathIds.length - 1
+                    ]
+                );
+            },
+            pathIds.length * 500
+        );
     }
 
-    // FINAL NODE RESULT
-    function highlightResult(vulnerability, finalId) {
-        if (!finalId)
+    function highlightResult(
+        vulnerability,
+        finalId
+    ) {
+        if (!finalId) {
             return;
+        }
 
-        /*Look this node up by the exact id that was actually reached at the end of the traversal - NOT by a shared class, since the 
-        backend always builds all 3 possible leaves and we only want to color the one that was hit.*/
-        const finalNode = document.querySelector(`.dt-node[data-id="${finalId}"]`);
+        const finalNode =
+            document.querySelector(
+                `.dt-node[data-id="${CSS.escape(finalId)}"]`
+            );
 
-        if (!finalNode)
+        if (!finalNode) {
             return;
+        }
 
-        finalNode.classList.add("dt-result");
-        finalNode.dataset.result = vulnerability;
+        finalNode.classList.add(
+            "dt-result"
+        );
+
+        finalNode.dataset.result =
+            vulnerability || "";
     }
 
-    // PASSWORD CENSOR
-    function censorPassword(text, password) {
-        if (!text)
+    function censorPassword(
+        text,
+        password
+    ) {
+        if (!text) {
             return "-";
+        }
 
-        if (!password)
+        if (!password) {
             return text;
+        }
 
-        const regex = new RegExp("(['\"])" + escapeRegex(password) + "\\1", "g");
-        const maskedPassword = "*".repeat(password.length);
+        const regex =
+            new RegExp(
+                "(['\"])" +
+                escapeRegex(
+                    password
+                ) +
+                "\\1",
+                "g"
+            );
+
+        const maskedPassword =
+            "*".repeat(
+                password.length
+            );
 
         return text.replace(
             regex,
@@ -361,71 +768,137 @@ const DecisionTree = (() => {
         );
     }
 
-    // ESCAPE REGEX
-    function escapeRegex(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    function escapeRegex(
+        string
+    ) {
+        return String(string).replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+        );
     }
 
-    // ESCAPE HTML ATTRIBUTE
-    function escapeHtmlAttr(string) {
-        return string
-            .replace(/&/g, "&amp;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
+    function escapeHtmlAttr(
+        string
+    ) {
+        return String(string)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#39;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            );
     }
 
-    /*PASSWORD REVEAL
-    HOLD = SHOW
-    RELEASE = HIDE
-    Kept INSIDE the DecisionTree closure so it stays private and does not collide with recommendation.js's own copy of this name.*/
     function activatePasswordReveal() {
-        const hiddenPasswords = document.querySelectorAll(".hidden-password");
+        const hiddenPasswords =
+            document.querySelectorAll(
+                ".hidden-password"
+            );
 
-        hiddenPasswords.forEach(item => {
-            if (item.dataset.listenerAttached)
-                return;
+        hiddenPasswords.forEach(
+            item => {
+                if (
+                    item.dataset
+                        .listenerAttached
+                ) {
+                    return;
+                }
 
-            item.dataset.listenerAttached = "true";
-            const password = item.dataset.password || "";
+                item.dataset
+                    .listenerAttached =
+                    "true";
 
-            if (password === "")
-                return;
+                const password =
+                    item.dataset.password ||
+                    "";
 
-            const masked = "*".repeat(password.length);
-            item.textContent = masked;
+                if (!password) {
+                    return;
+                }
 
-            function show() {
-                item.textContent = password;
+                const masked =
+                    "*".repeat(
+                        password.length
+                    );
+
+                item.textContent =
+                    masked;
+
+                const show =
+                    () => {
+                        item.textContent =
+                            password;
+                    };
+
+                const hide =
+                    () => {
+                        item.textContent =
+                            masked;
+                    };
+
+                item.addEventListener(
+                    "pointerdown",
+                    show
+                );
+
+                item.addEventListener(
+                    "pointerup",
+                    hide
+                );
+
+                item.addEventListener(
+                    "pointerleave",
+                    hide
+                );
+
+                item.addEventListener(
+                    "pointercancel",
+                    hide
+                );
+
+                item.addEventListener(
+                    "touchstart",
+                    show,
+                    {
+                        passive: true
+                    }
+                );
+
+                item.addEventListener(
+                    "touchend",
+                    hide
+                );
+
+                item.addEventListener(
+                    "touchcancel",
+                    hide
+                );
             }
-
-            function hide() {
-                item.textContent = masked;
-            }
-
-            item.addEventListener("pointerdown", show);
-            item.addEventListener("pointerup", hide);
-            item.addEventListener("pointerleave", hide);
-            item.addEventListener("pointercancel", hide);
-
-            item.addEventListener("touchstart", show, { passive: true });
-            item.addEventListener("touchend", hide);
-            item.addEventListener("touchcancel", hide);
-        });
+        );
     }
 
     return {
         initializeDecisionTree,
         updateDecisionTree
     };
-
-    /*FIX #2: the IIFE now closes AFTER the return statement, and activatePasswordReveal lives inside the closure (private) instead
-    of leaking onto window as a stray global.*/
 })();
 
-/* GLOBAL ACCESS
-FIX #3: these were accidentally dropped when the IIFE closure was repaired - without them window.updateDecisionTree is undefined, so 
-result.js hasnothing to call and none of decisionTree.js's logs ("Decision Tree Data:", etc.) ever fire.*/
-window.initializeDecisionTree = DecisionTree.initializeDecisionTree;
-window.updateDecisionTree = DecisionTree.updateDecisionTree;
+window.initializeDecisionTree =
+    DecisionTree.initializeDecisionTree;
+
+window.updateDecisionTree =
+    DecisionTree.updateDecisionTree;

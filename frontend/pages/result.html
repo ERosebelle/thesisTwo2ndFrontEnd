@@ -1,109 +1,301 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="../assets/images/logo.png">
-    <title>Password Analysis Result</title>
+<meta charset="UTF-8">
 
-    <!-- MAIN CSS -->
-    <link rel="stylesheet" href="../css/result.css">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <!-- COMPONENT CSS -->
-    <link rel="stylesheet" href="../css/classification.css">
-    <link rel="stylesheet" href="../css/decisionTree.css">
-    <link rel="stylesheet" href="../css/recommendation.css">
-    <link rel="stylesheet" href="../css/featureVector.css">
-    <link rel="stylesheet" href="../css/decisionTraversalCard.css">
-    <link rel="stylesheet" href="../css/summaryCard.css">
+<title>Password Analysis Result</title>
 
-    <!-- COMPONENT JAVASCRIPT (Required first) -->
-    <script src="../js/summaryCard.js" defer></script>
-    <script src="../js/classification.js" defer></script>
-    <script src="../js/decisionTree.js" defer></script>
-    <script src="../js/recommendation.js" defer></script>
-    <script src="../js/featureVector.js" defer></script>
-    <script src="../js/decisionTraversalCard.js" defer></script>
+<link
+    rel="icon"
+    type="image/png"
+    href="../assets/images/logo.png"
+>
 
-    <!-- PAGE CONTROLLER -->
-    <script src="../js/result.js" defer></script>
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+    crossorigin
+>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+>
+
+<link rel="stylesheet" href="../css/result.css">
+<link rel="stylesheet" href="../css/classification.css">
+<link rel="stylesheet" href="../css/decisionTree.css">
+<link rel="stylesheet" href="../css/decisionTraversalCard.css">
+<link rel="stylesheet" href="../css/featureVector.css">
+<link rel="stylesheet" href="../css/tutorial.css">
+<link rel="stylesheet" href="../css/comparison.css">
+<link rel="stylesheet" href="../css/recommendation.css">
+
 </head>
+
 <body>
 
-    <div class="result-container">
-        
-        <!-- HEADER -->
-        <header class="page-header">
-            <img src="../assets/images/logo.png" alt="System Logo" class="header-logo">
-            <div class="header-text">
-                <h1>Password Vulnerability and Cracking Method Classification System</h1>
-                <p>Password Analysis Result</p>
+<main class="result-container">
+
+    <header class="page-header">
+
+        <img
+            src="../assets/images/logo.png"
+            alt="System Logo"
+            class="header-logo"
+        >
+
+        <div class="header-text">
+
+            <h1>
+                Password Vulnerability and Cracking Method Classification System
+            </h1>
+
+            <p>
+                Password Analysis Result
+            </p>
+
+        </div>
+
+    </header>
+
+    <section class="dashboard">
+
+        <aside class="sidebar">
+
+            <button
+                class="sidebar-item"
+                type="button"
+                data-section="0"
+            >
+                <img
+                    src="../assets/images/result summary.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Result Summary
+                </span>
+            </button>
+
+            <button
+                class="sidebar-item"
+                type="button"
+                data-section="1"
+            >
+                <img
+                    src="../assets/images/tree.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Decision Tree
+                </span>
+            </button>
+
+            <button
+                class="sidebar-item"
+                type="button"
+                data-section="2"
+            >
+                <img
+                    src="../assets/images/recommendation.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Recommendations
+                </span>
+            </button>
+
+            <button
+                class="sidebar-item"
+                type="button"
+                data-section="3"
+            >
+                <img
+                    src="../assets/images/feature.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Feature Vector
+                </span>
+            </button>
+
+            <button
+                class="sidebar-item"
+                type="button"
+                data-section="4"
+            >
+                <img
+                    src="../assets/images/comparison.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Comparison
+                </span>
+            </button>
+
+            <button
+                class="sidebar-item tutorial-button"
+                type="button"
+                id="tutorialButton"
+            >
+                <img
+                    src="../assets/images/tutorial.png"
+                    alt=""
+                    class="sidebar-icon"
+                >
+
+                <span class="sidebar-text">
+                    Tutorial
+                </span>
+            </button>
+
+        </aside>
+
+        <section class="content-panel">
+
+            <div id="contentRoot">
+
+                <section
+                    class="result-section"
+                    id="summarySection"
+                    data-section="0"
+                ></section>
+
+                <section
+                    class="result-section"
+                    id="decisionTreeSection"
+                    data-section="1"
+                ></section>
+
+                <section
+                    class="result-section"
+                    id="recommendationSection"
+                    data-section="2"
+                ></section>
+
+                <section
+                    class="result-section"
+                    id="featureVectorSection"
+                    data-section="3"
+                ></section>
+
+                <section
+                    class="result-section"
+                    id="comparisonSection"
+                    data-section="4"
+                ></section>
+
+                <section
+                    class="result-section"
+                    id="classificationSection"
+                ></section>
+
             </div>
-        </header>
 
-        <!-- WORKSPACE -->
-        <main class="result-workspace">
+        </section>
 
-            <!-- SIDEBAR AREA -->
-            <aside class="sidebar-area">
-                <!-- CLASSIFICATION PANEL -->
-                <div class="classification-panel">
-                    <div id="classificationSection"></div>
+    </section>
+
+    <footer class="action-bar">
+
+        <div class="important-note">
+
+            <span class="important-icon">
+                ℹ
+            </span>
+
+            <div class="important-text">
+
+                <strong>
+                    Important Notice
+                </strong>
+
+                <p>
+                    This assessment raises awareness of potential password
+                    vulnerabilities. No password can guarantee complete
+                    protection.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="action-buttons">
+
+            <div class="button-tooltip-wrapper">
+
+                <div class="tooltip">
+                    Ends the current password analysis session and clears all
+                    displayed results. The system does not permanently store
+                    passwords or analysis data from this session.
                 </div>
 
-                <!-- PASSWORD PREVIEW CARD -->
-                <div class="password-preview-card">
-                    <div class="password-entry">
-                        <span class="password-label">Tested Password</span>
-                        <div id="testedPassword" class="hidden-password">********</div>
-                    </div>
-                </div>
-            </aside>
+                <button
+                    class="reset-btn"
+                    type="button"
+                    id="resetButton"
+                >
+                    Reset
+                </button>
 
-            <!-- MAIN ANALYSIS AREA -->
-            <section class="analysis-area">
-                <!-- TAB NAVIGATION -->
-                <nav class="result-menu">
-                    <button class="menu-btn active" data-section="decision">Decision Tree Path</button>
-                    <button class="menu-btn" data-section="recommendation">Recommendation</button>
-                    <button class="menu-btn" data-section="features">Feature Vector</button>
-                </nav>
+            </div>
 
-                <!-- PANEL DISPLAY -->
-                <div class="result-panel">
-                    <div class="bg-shape"></div>
-                    <div id="panelBody">
-                        <div id="decisionSection" class="result-section"></div>
-                        <div id="recommendationSection" class="result-section"></div>
-                        <div id="featureSection" class="result-section"></div>
-                    </div>
+            <div class="button-tooltip-wrapper">
+
+                <div class="tooltip">
+                    Analyze another password and compare it with your
+                    previously analyzed password. The system highlights
+                    differences in vulnerabilities, feature values,
+                    security strength, and overall risk level.
                 </div>
 
-                <!-- BOTTOM DOCK: REMINDER & ACTIONS -->
-                <footer class="dock-footer">
-                    <p class="system-reminder">
-                        This assessment raises awareness of potential password vulnerabilities. No password can guarantee complete protection.
-                    </p>
-                    <div class="button-group">
-                        <button id="resetButton" class="reset-btn">RESET</button>
-                        <button id="compareButton" class="compare-btn">COMPARE NEW PASSWORD</button>
-                    </div>
-                </footer>
-            </section>
+                <button
+                    class="compare-btn"
+                    type="button"
+                    id="compareButton"
+                >
+                    Compare Password
+                </button>
 
-        </main>
+            </div>
 
-    </div>
+        </div>
 
-    <!-- BUTTON INFO TOOLTIP -->
-    <div class="button-info" id="buttonInfo">
-        <h3 id="buttonInfoTitle">Button Information</h3>
-        <p id="buttonInfoText">Hover over a button to see its function.</p>
-    </div>
+    </footer>
 
-    <!-- OVERLAY COMPONENT ROOTS -->
-    <div id="decisionTraversalCardRoot"></div>
-    <div id="summaryCardRoot"></div>
+</main>
+
+<script src="../js/tutorial.js"></script>
+<script src="../js/featureVector.js"></script>
+<script src="../js/decisionTraversalCard.js"></script>
+<script src="../js/decisionTree.js"></script>
+<script src="../js/recommendation.js"></script>
+<script src="../js/comparison.js"></script>
+<script src="../js/classification.js"></script>
+<script src="../js/result.js"></script>
 
 </body>
+
 </html>

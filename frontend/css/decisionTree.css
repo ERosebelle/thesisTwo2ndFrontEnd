@@ -1,420 +1,1743 @@
-/* DECISION TREE HOLOGRAM
-   LEFT VISUAL AREA */
-.decision-tree-hologram{
-    position:absolute;
-    left:200px;
-    top:30%;
-    transform:  translateY(-50%);
-    width:280px;
-    height:220px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:transparent;
-    pointer-events:auto;
-    cursor:pointer;
-    z-index:5;
+/* =========================================================
+   DECISION TREE OVERVIEW
+   ========================================================= */
+
+.decision-tree-overview {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 24px;
+    box-sizing: border-box;
 }
 
-/* SVG CONTAINER */
-.dt-tree-svg{
-    width:100%;
-    height:100%;
-    overflow:visible;
-    transform-origin:center;
-    animation:
-    dtBreathe 6s ease-in-out infinite;
-}
 
-@keyframes dtBreathe{
-    0%,100%{
-        opacity:.8;
-        transform:scale(.95);
-    }
-    50%{
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+/* =========================================================
+   LEFT SIDE — TREE VISUAL
+   ========================================================= */
 
-/* TREE BRANCH LINES */
+.decision-tree-visual {
+    position: relative;
+    width: 46%;
+    min-width: 0;
+    min-height: 300px;
 
-.dt-branch{
-    stroke:#64748b;
-    stroke-width:1.5;
-    opacity:.5;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-/* Untaken branches stay neutral/inactive by default - only the
-   branch actually taken (marked .active during traversal) should
-   stand out, regardless of whether it was YES or NO. */
-.dt-branch.active{
-    stroke:#22c55e;
-    stroke-width:2;
-    opacity:1;
-    filter: drop-shadow(0 0 6px #22c55e);
-}
+    border: 1px solid rgba(56, 189, 248, .12);
+    border-radius: 18px;
 
-/* TREE NODES */
-
-
-/* DEFAULT NODE
-   inactive / not visited */
-
-.dt-node{
-    fill:#0f172a;
-    stroke:#475569;
-    stroke-width:1.5;
-    r:5;
-    filter: drop-shadow( 0 0 4px rgba(71,85,105,.5));
-    transition:.3s ease;
-}
-
-/* QUESTION NODES
-   Root + decision questions */
-.dt-question{
-    fill:#9333ea;
-    stroke:#e9d5ff;
-    stroke-width:2;
-    filter: drop-shadow(0 0 8px #9333ea);
-}
-
-/* VISITED DECISION PATH
-   YES / NO nodes entered */
-.dt-node.active{
-    fill:#22c55e;
-    stroke:white;
-    stroke-width:2;
-    filter:drop-shadow(0 0 10px #22c55e);
-    animation: nodeGlow 2s ease-in-out infinite;
-}
-
-@keyframes nodeGlow{
-    0%,100%{
-        r:5;
-        opacity:.85;
-    }
-    50%{
-        r:7;
-        opacity:1;
-    }
-}
-
-/* FINAL CLASSIFICATION RESULT */
-.dt-node--leaf{
-    fill:#0f172a;
-    stroke:#475569;
-    stroke-width:1.5;
-    r:6;
-}
-
-.dt-result{
-    fill:#facc15;
-    stroke:white;
-    stroke-width:2;
-    r:7;
-    filter: drop-shadow(0 0 12px #facc15);
-}
-
-/* optional: different final labels */
-.dt-node[data-result="DICTIONARY"]{
-    fill:#facc15;
-}
-
-.dt-node[data-result="RULE-BASED"]{
-    fill:#facc15;
-}
-
-.dt-node[data-result="BRUTE-FORCE"]{
-    fill:#facc15;
-}
-
-.dt-node[data-result="BRUTE-FORCE"]{
-    fill:#ef4444;
-    filter: drop-shadow(0 0 8px #ef4444);
-}
-
-/* TRAVELING PARTICLE
-   (SVG animateMotion dot) */
-
-.dt-particle{
-    fill:#ffffff;
-    r:2.5;
-    filter:drop-shadow(0 0 8px #38bdf8);
-}
-
-/*LABELS */
-.dt-label{
-    fill:white;
-    font-size:7px;
-    font-family:"Segoe UI", sans-serif;
-    opacity:.75;
-    pointer-events:none;
-}
-
-/* YES/NO branch labels - the text replacement for the old
-wrapper-object circles. Dim/neutral until that branch is the
-one actually taken during traversal. */
-
-.dt-branch-label{
-    fill:#94a3b8;
-    opacity:.6;
-}
-
-.dt-branch-label.active{
-    fill:#22c55e;
-    opacity:1;
-}
-
-/* HOLOGRAM GRID EFFECT */
-.decision-tree-hologram::before{
-    content:"";
-    position:absolute;
-    inset:-20px;
     background:
-    radial-gradient(circle,rgba(56,189,248,.15),transparent 65%);
-    filter:blur(12px);
-    animation: holoGlow 4s infinite;
+        radial-gradient(
+            circle at center,
+            rgba(56, 189, 248, .045),
+            transparent 65%
+        );
+
+    overflow: hidden;
+
+    cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
 }
 
-@keyframes holoGlow{
-    0%,100%{
-        opacity:.4;
+
+/* =========================================================
+   HOLOGRAM GRID
+   ========================================================= */
+
+.decision-tree-visual::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(56, 189, 248, .035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(56, 189, 248, .035) 1px,
+            transparent 1px
+        );
+
+    background-size: 28px 28px;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   TREE HOLOGRAM
+   ========================================================= */
+
+.decision-tree-hologram {
+    position: absolute;
+
+    left: 50%;
+    top: 45%;
+
+    width: 82%;
+    height: 72%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform: translate(-50%, -50%);
+
+    cursor: pointer;
+    outline: none;
+
+    box-sizing: border-box;
+
+    z-index: 2;
+}
+
+
+.decision-tree-hologram::before {
+    content: "";
+
+    position: absolute;
+
+    width: 170px;
+    height: 170px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(56, 189, 248, .10) 0%,
+            rgba(56, 189, 248, .035) 42%,
+            transparent 72%
+        );
+
+    filter: blur(14px);
+
+    pointer-events: none;
+
+    animation: treeAmbientGlow 4s ease-in-out infinite;
+}
+
+
+@keyframes treeAmbientGlow {
+    0%,
+    100% {
+        opacity: .5;
+        transform: scale(.94);
     }
-    50%{
-        opacity:.8;
+
+    50% {
+        opacity: .9;
+        transform: scale(1.05);
     }
 }
 
-/* ROOT NODE */
-.dt-root{
-    fill:#a855f7;
-    stroke:#ffffff;
-    stroke-width:2;
-    filter: drop-shadow(0 0 10px #a855f7);
+
+/* =========================================================
+   OVERVIEW SVG
+   ========================================================= */
+
+.dt-tree-svg {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: 320px;
+    max-height: 220px;
+
+    overflow: visible;
+
+    position: relative;
+    z-index: 2;
 }
 
-/* QUESTION NODES and RESULT NODE */
-.dt-result{
-    stroke:white;
-    stroke-width:2;
+
+.dt-branches,
+.dt-nodes {
+    overflow: visible;
 }
 
-/* TRAVERSAL ACTIVE */
 
-.dt-root.active{
-    fill:#a855f7;
-}
+/* =========================================================
+   OVERVIEW BRANCHES
+   ========================================================= */
 
-/* Question nodes are entered as part of every traversal, but
-   per spec they should stay purple, never turn green. */
-.dt-question.active{
-    fill:#9333ea;
-    stroke:#e9d5ff;
-}
+.dt-branch {
+    stroke: #334155;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    opacity: .65;
 
-/* The reached leaf gets both .active (from the normal path
-   animation) and .dt-result (added by highlightResult()) - make
-   sure yellow wins over the generic green "visited" color. */
-.dt-result.active{
-    fill:#facc15;
-    stroke:white;
-    animation: resultPulse 1.5s infinite;
-}
-
-@keyframes resultPulse{
-    0%,100%{
-        r:6;
-    }
-    50%{
-        r:9;
-    }
-}
-
-/* DECISION TREE EXPLANATION PANEL*/
-.decision-explanation{
-    position:absolute;
-    right:25px;
-    top:5px;
-    width:40%;
-    height:340px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    overflow-y:auto;
-    overflow-x:hidden;
-    padding-right:10px;
-}
-
-/* PANEL TITLE */
-.decision-explanation h3{
-    margin:10;
-    color:#e0f2fe;
-    font-size:18px;
-    font-weight:800;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    text-shadow: 0 0 8px rgba(56,189,248,.45);
-}
-
-.decision-info-box{
-    position:relative;
-    padding:18px;
-    background: linear-gradient( 90deg, rgba(15,23,42,.72),rgba(15,23,42,.22));
-    border-left:2px solid rgba(56,189,248,.45);
-    backdrop-filter:blur(6px);
-    overflow:visible;
-    flex-shrink:0;
     transition:
-        transform .35s ease,
-        border-color .35s ease,
-        box-shadow .35s ease,
-        background .35s ease;
+        stroke .35s ease,
+        opacity .35s ease,
+        filter .35s ease,
+        stroke-width .35s ease;
 }
 
-/* TOP ENERGY LINE*/
-.decision-info-box::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    height:1px;
-    background:
-    linear-gradient(90deg,transparent,#38bdf8,transparent);
-    opacity:.45;
+
+.dt-branch.active {
+    stroke: #22D3EE;
+    opacity: 1;
+    stroke-width: 2;
+
+    filter:
+        drop-shadow(0 0 2px #22D3EE)
+        drop-shadow(0 0 6px rgba(34, 211, 238, .75))
+        drop-shadow(0 0 14px rgba(34, 211, 238, .4));
 }
 
-/* ENERGY SCANNER */
-.decision-info-box::after{
-    content:"";
-    position:absolute;
-    left:-120%;
-    top:0;
-    width:60%;
-    height:100%;
-    background:
-    linear-gradient(
-        120deg,
-        transparent,
-        rgba(56,189,248,.35),
-        transparent
-    );
-    transition:left .9s ease;
+
+/* =========================================================
+   OVERVIEW NODES
+   ========================================================= */
+
+.dt-node {
+    fill: #334155;
+    stroke: #64748B;
+    stroke-width: 1;
+    opacity: .7;
+
+    transition:
+        fill .35s ease,
+        stroke .35s ease,
+        opacity .35s ease,
+        filter .35s ease;
 }
 
-/* DRAWER HOVER */
-.decision-info-box:hover{
-    transform:translateX(8px);
-    border-left:3px solid #38bdf8;
-    background:
-    linear-gradient(90deg, rgba(56,189,248,.12), rgba(15,23,42,.28));
-    box-shadow:-12px 0 35px rgba(56,189,248,.18);
+
+.dt-root {
+    fill: #A855F7;
+    stroke: #D8B4FE;
+    stroke-width: 1.2;
+    opacity: 1;
+
+    filter:
+        drop-shadow(0 0 4px #A855F7)
+        drop-shadow(0 0 10px rgba(168, 85, 247, .8))
+        drop-shadow(0 0 20px rgba(168, 85, 247, .4));
 }
 
-.decision-info-box:hover::after{
-    left:130%;
+
+.dt-question {
+    fill: #60A5FA;
+    stroke: #BFDBFE;
+    opacity: .95;
+
+    filter:
+        drop-shadow(0 0 3px #60A5FA)
+        drop-shadow(0 0 7px rgba(96, 165, 250, .55));
 }
 
-/* DRAWER TITLES */
-.decision-info-box h4{
-    margin:0 0 10px 0;
-    color:#38bdf8;
-    font-size:13px;
-    font-weight:800;
-    letter-spacing:1.4px;
-    text-transform:uppercase;
+
+.dt-node--leaf {
+    fill: #334155;
+    stroke: #64748B;
+    opacity: .75;
 }
 
-/* DRAWER TEXT */
-.decision-info-box p{
-    margin:0;
-    color:#cbd5e1;
-    font-size:14px;
-    line-height:1.7;
+
+.dt-node.active {
+    fill: #22D3EE;
+    stroke: #67E8F9;
+    opacity: 1;
+
+    filter:
+        drop-shadow(0 0 3px #22D3EE)
+        drop-shadow(0 0 8px #22D3EE)
+        drop-shadow(0 0 17px rgba(34, 211, 238, .6));
 }
 
-/* CLICK HINT */
-.decision-click-hint{
-    position:absolute;
-    right:677px;
-    top:3px;      /* just below the 340px explanation panel */
-    width:40%;      /* match the explanation panel */
-    text-align:right;
-    color:#64748b;
-    font-size:12px;
-    font-style:italic;
-    letter-spacing:.8px;
-    animation:hintPulse 3s infinite;
-    pointer-events:none;
+
+.dt-root.active {
+    fill: #A855F7;
+    stroke: #E9D5FF;
+
+    filter:
+        drop-shadow(0 0 4px #A855F7)
+        drop-shadow(0 0 10px #A855F7)
+        drop-shadow(0 0 20px rgba(168, 85, 247, .5));
 }
 
-@keyframes hintPulse{
-    0%,100%{
-        opacity:.45;
-    }
-    50%{
-        opacity:1;
-    }
+
+.dt-question.active {
+    fill: #60A5FA;
+    stroke: #DBEAFE;
+
+    filter:
+        drop-shadow(0 0 3px #60A5FA)
+        drop-shadow(0 0 8px #60A5FA)
+        drop-shadow(0 0 16px rgba(96, 165, 250, .5));
 }
 
-/* HOLOGRAM PANEL SCROLLBAR */
-.decision-explanation{
-    scrollbar-width:thin;
-    scrollbar-color:#38bdf8 rgba(15,23,42,.35);
+
+.dt-node.dt-result {
+    fill: #FACC15;
+    stroke: #FEF08A;
+    opacity: 1;
+
+    filter:
+        drop-shadow(0 0 4px #FACC15)
+        drop-shadow(0 0 9px #FACC15)
+        drop-shadow(0 0 19px rgba(250, 204, 21, .6));
 }
 
-/* width */
-.decision-explanation::-webkit-scrollbar{
-    width:10px;
+
+/* =========================================================
+   OVERVIEW HOVER
+   ========================================================= */
+
+.decision-tree-hologram:hover .dt-root {
+    filter:
+        drop-shadow(0 0 5px #A855F7)
+        drop-shadow(0 0 12px rgba(168, 85, 247, .9))
+        drop-shadow(0 0 22px rgba(168, 85, 247, .5));
 }
 
-/* track */
-.decision-explanation::-webkit-scrollbar-track{
-    background: linear-gradient(180deg,rgba(15,23,42,.90),rgba(30,41,59,.45));
-    border-radius:999px;
+
+.decision-tree-hologram:hover .dt-question {
+    filter:
+        drop-shadow(0 0 3px #60A5FA)
+        drop-shadow(0 0 8px rgba(96, 165, 250, .7));
 }
 
-/* thumb */
-.decision-explanation::-webkit-scrollbar-thumb{
-    background: linear-gradient(180deg,#7dd3fc 0%,#38bdf8 35%,#2563eb 100%);
-    border-radius:999px;
-    border:2px solid rgba(15,23,42,.75);
+
+.decision-tree-hologram:focus-visible,
+.decision-tree-visual:focus-visible {
+    outline: 1px solid #22D3EE;
+    outline-offset: 4px;
+    border-radius: 16px;
+}
+
+
+/* =========================================================
+   CLICK NOTE
+   ========================================================= */
+
+.decision-tree-click-note {
+    position: absolute;
+
+    left: 50%;
+    bottom: 18px;
+
+    transform: translateX(-50%);
+
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    color: #7DD3FC;
+
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .35px;
+
+    text-align: center;
+
+    opacity: .9;
+
+    user-select: none;
+
+    text-shadow:
+        0 0 7px rgba(56, 189, 248, .45);
+
+    pointer-events: none;
+
+    z-index: 5;
+}
+
+
+.decision-tree-click-icon {
+    color: #22D3EE;
+
+    font-size: 10px;
+
+    text-shadow:
+        0 0 6px rgba(34, 211, 238, .8);
+}
+
+
+/* =========================================================
+   RIGHT SIDE — SECURITY ASSESSMENT
+   ========================================================= */
+
+.decision-explanation {
+    width: 51%;
+
+    min-width: 0;
+    min-height: 300px;
+
+    padding: 18px;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(56, 189, 248, .20);
+    border-radius: 18px;
+
+    background: rgba(15, 23, 42, .72);
+
+    backdrop-filter: blur(16px);
+
     box-shadow:
-        0 0 6px rgba(56,189,248,.7),
-        0 0 14px rgba(56,189,248,.45);
+        0 12px 35px rgba(0, 0, 0, .20),
+        0 0 25px rgba(56, 189, 248, .05);
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   ASSESSMENT HEADER
+   ========================================================= */
+
+.decision-assessment-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    margin-bottom: 15px;
+}
+
+
+.decision-assessment-icon {
+    flex-shrink: 0;
+
+    color: #38BDF8;
+
+    font-size: 19px;
+
+    text-shadow:
+        0 0 8px rgba(56, 189, 248, .6);
+}
+
+
+.decision-assessment-header h3 {
+    color: #F8FAFC;
+
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .3px;
+
+    margin: 0;
+}
+
+
+.decision-assessment-header p {
+    color: #94A3B8;
+
+    font-size: 11px;
+
+    margin: 3px 0 0;
+}
+
+
+/* =========================================================
+   INFO BOX
+   ========================================================= */
+
+.decision-info-box {
+    background: rgba(30, 41, 59, .48);
+
+    border: 1px solid rgba(148, 163, 184, .12);
+
+    border-radius: 12px;
+
+    padding: 12px 14px;
+
+    margin-bottom: 9px;
+
+    box-sizing: border-box;
+
+    backdrop-filter: blur(8px);
 
     transition:
         background .25s ease,
-        box-shadow .25s ease,
+        border-color .25s ease,
         transform .25s ease;
 }
 
-/* hover */
-.decision-explanation::-webkit-scrollbar-thumb:hover{
-    background:linear-gradient(180deg,#bae6fd,#38bdf8,#1d4ed8);
+
+.decision-info-box:hover {
+    background: rgba(30, 41, 59, .62);
+
+    border-color: rgba(56, 189, 248, .22);
+
+    transform: translateX(-2px);
+}
+
+
+.decision-info-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 6px;
+}
+
+
+.decision-info-title span {
+    color: #22D3EE;
+
+    font-size: 10px;
+
+    text-shadow:
+        0 0 7px rgba(34, 211, 238, .6);
+}
+
+
+.decision-info-box h4 {
+    color: #7DD3FC;
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2px;
+
+    margin: 0;
+}
+
+
+.decision-info-box p {
+    color: #CBD5E1;
+
+    font-size: 11px;
+    line-height: 1.55;
+
+    margin: 0;
+}
+
+
+.hidden-password {
+    color: #22D3EE;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    text-shadow:
+        0 0 6px rgba(34, 211, 238, .5);
+}
+
+
+/* =========================================================
+   DECISION TRAVERSAL MODAL
+   ========================================================= */
+
+.decision-traversal-card {
+    position: fixed !important;
+
+    inset: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    box-sizing: border-box;
+
+    background: rgba(2, 6, 23, .82);
+
+    backdrop-filter: blur(10px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    z-index: 99999 !important;
+
+    transition:
+        opacity .25s ease,
+        visibility .25s ease;
+}
+
+
+.decision-traversal-card.active,
+.decision-traversal-card.show {
+    display: flex !important;
+
+    visibility: visible !important;
+
+    opacity: 1 !important;
+
+    pointer-events: auto !important;
+}
+
+
+.decision-traversal-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(56, 189, 248, .06),
+            transparent 65%
+        );
+
+    pointer-events: auto;
+
+    z-index: 0;
+}
+
+
+.decision-traversal-panel {
+    position: relative;
+
+    width: min(1180px, 94vw);
+    height: min(760px, 90vh);
+
+    min-width: 0;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 23, 42, .98),
+            rgba(8, 15, 30, .98)
+        );
+
+    border: 1px solid rgba(56, 189, 248, .24);
+
+    border-radius: 22px;
+
     box-shadow:
-        0 0 10px #38bdf8,
-        0 0 24px rgba(56,189,248,.8);
+        0 30px 90px rgba(0, 0, 0, .65),
+        0 0 45px rgba(56, 189, 248, .08);
+
+    overflow: hidden;
+
+    z-index: 1;
+
+    animation:
+        decisionTraversalPanelIn .25s ease-out;
 }
 
-/* click */
-.decision-explanation::-webkit-scrollbar-thumb:active{
-    background:#38bdf8;
+
+@keyframes decisionTraversalPanelIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   MODAL HEADER
+   ========================================================= */
+
+.decision-traversal-header {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px 26px 18px;
+
+    border-bottom: 1px solid rgba(148, 163, 184, .10);
+}
+
+
+.decision-traversal-eyebrow {
+    display: block;
+
+    color: #22D3EE;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    margin-bottom: 5px;
+
+    text-shadow:
+        0 0 8px rgba(34, 211, 238, .5);
+}
+
+
+.decision-traversal-header h2 {
+    color: #F8FAFC;
+
+    font-size: 21px;
+    font-weight: 700;
+
+    margin: 0;
+}
+
+
+#decisionTraversalSubtitle {
+    color: #94A3B8;
+
+    font-size: 11px;
+
+    margin: 5px 0 0;
+}
+
+
+.decision-traversal-close {
+    flex-shrink: 0;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    color: #CBD5E1;
+
+    background: rgba(30, 41, 59, .65);
+
+    border: 1px solid rgba(148, 163, 184, .16);
+
+    border-radius: 9px;
+
+    font-size: 23px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+
+.decision-traversal-close:hover {
+    color: #F8FAFC;
+
+    background: rgba(56, 189, 248, .12);
+
+    border-color: rgba(56, 189, 248, .35);
+
+    transform: scale(1.04);
+}
+
+
+/* =========================================================
+   MODAL CONTENT
+   ========================================================= */
+
+.decision-traversal-content {
+    flex: 1;
+
+    min-height: 0;
+
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) 310px;
+
+    gap: 18px;
+
+    padding: 18px 22px;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   TREE DETAIL WRAPPER
+   ========================================================= */
+
+.decision-tree-detail-wrapper {
+    position: relative;
+
+    min-width: 0;
+    min-height: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(56, 189, 248, .045),
+            transparent 68%
+        );
+
+    border: 1px solid rgba(56, 189, 248, .12);
+
+    border-radius: 16px;
+
+    overflow: hidden;
+}
+
+
+.decision-tree-detail-wrapper::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(56, 189, 248, .025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(56, 189, 248, .025) 1px,
+            transparent 1px
+        );
+
+    background-size: 30px 30px;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   DETAIL TREE
+   ========================================================= */
+
+#decisionTreeDetail {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: auto;
+
+    box-sizing: border-box;
+
+    z-index: 2;
+}
+
+
+.decision-tree-detail {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-height: 0;
+
+    overflow: auto;
+
+    box-sizing: border-box;
+}
+
+
+.decision-tree-detail-wrapper
+#decisionTreeDetail {
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        rgba(56, 189, 248, .35)
+        transparent;
+}
+
+
+.decision-tree-detail-wrapper
+#decisionTreeDetail::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+
+.decision-tree-detail-wrapper
+#decisionTreeDetail::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.decision-tree-detail-wrapper
+#decisionTreeDetail::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, .30);
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   DETAIL SVG
+   ========================================================= */
+
+.decision-tree-detail-svg {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 600px;
+    min-height: 420px;
+
+    overflow: visible;
+
+    pointer-events: none;
+
+    z-index: 1;
+}
+
+
+#decisionTreeDetailBranches {
+    overflow: visible;
+}
+
+
+#decisionTreeDetailBranches line {
+    stroke: #334155;
+
+    stroke-width: 2;
+
+    stroke-linecap: round;
+
+    opacity: .75;
+
+    pointer-events: stroke;
+
+    cursor: pointer;
+
+    transition:
+        stroke .25s ease,
+        stroke-width .25s ease,
+        opacity .25s ease,
+        filter .25s ease;
+}
+
+
+#decisionTreeDetailBranches line:hover {
+    stroke: #38BDF8;
+
+    stroke-width: 3;
+
+    opacity: 1;
+
+    filter:
+        drop-shadow(0 0 5px #38BDF8);
+}
+
+
+#decisionTreeDetailBranches line.active {
+    stroke: #22D3EE;
+
+    stroke-width: 3;
+
+    opacity: 1;
+
+    filter:
+        drop-shadow(0 0 4px #22D3EE)
+        drop-shadow(0 0 10px rgba(34, 211, 238, .7));
+}
+
+
+/* =========================================================
+   DETAIL NODES CONTAINER
+   ========================================================= */
+
+.decision-tree-detail-nodes {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 600px;
+    min-height: 420px;
+
+    z-index: 3;
+
+    pointer-events: none;
+}
+
+
+.decision-tree-detail-nodes > * {
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   GENERATED DECISION NODES
+   ========================================================= */
+
+.decision-node-container {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: max-content;
+
+    box-sizing: border-box;
+}
+
+
+.decision-shape {
+    position: relative;
+
+    min-width: 120px;
+    max-width: 180px;
+
+    min-height: 48px;
+
+    padding: 10px 16px;
+
+    color: #DBEAFE;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37, 99, 235, .38),
+            rgba(30, 64, 175, .20)
+        );
+
+    border: 1px solid rgba(96, 165, 250, .55);
+
+    border-radius: 12px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-align: center;
+
+    cursor: pointer;
+
     box-shadow:
-        0 0 14px #38bdf8;
+        0 0 10px rgba(96, 165, 250, .12);
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
 }
 
-/* top & bottom buttons */
-.decision-explanation::-webkit-scrollbar-button{
-    display:none;
+
+.decision-shape:hover {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37, 99, 235, .55),
+            rgba(30, 64, 175, .30)
+        );
+
+    border-color: #93C5FD;
+
+    box-shadow:
+        0 0 8px rgba(96, 165, 250, .35),
+        0 0 20px rgba(96, 165, 250, .15);
+
+    transform: translateY(-2px);
 }
 
-/* corner */
-.decision-explanation::-webkit-scrollbar-corner{
-    background:transparent;
+
+/* =========================================================
+   GENERATED BRANCHES
+   ========================================================= */
+
+.decision-children {
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: center;
+
+    gap: 28px;
+
+    margin-top: 26px;
 }
 
-/* DECISION TRAVERSAL CARD
-Moved out of this file - the card is an independent Resultpage component now,
-not part of the Decision Tree component. See: frontend/css/decisionTraversalCard.css*/
+
+.decision-branch {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-width: 80px;
+}
+
+
+.decision-line {
+    position: absolute;
+
+    top: -26px;
+
+    width: 2px;
+    height: 26px;
+
+    padding: 0;
+
+    background: #334155;
+
+    border: 0;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+
+.decision-line:hover {
+    background: #38BDF8;
+
+    box-shadow:
+        0 0 8px rgba(56, 189, 248, .65);
+}
+
+
+.decision-branch-label {
+    position: relative;
+
+    padding: 4px 10px;
+
+    color: #94A3B8;
+
+    background: rgba(30, 41, 59, .75);
+
+    border: 1px solid rgba(148, 163, 184, .14);
+
+    border-radius: 7px;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    cursor: pointer;
+
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+
+.decision-branch-label:hover {
+    color: #7DD3FC;
+
+    background: rgba(56, 189, 248, .10);
+
+    border-color: rgba(56, 189, 248, .35);
+}
+
+
+.decision-branch-label[data-taken="true"] {
+    color: #22D3EE;
+
+    border-color: rgba(34, 211, 238, .30);
+
+    background: rgba(34, 211, 238, .08);
+
+    text-shadow:
+        0 0 6px rgba(34, 211, 238, .45);
+}
+
+
+/* =========================================================
+   RESULT NODE
+   ========================================================= */
+
+.decision-result-shape {
+    min-width: 120px;
+
+    padding: 12px 18px;
+
+    color: #FEF08A;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(202, 138, 4, .32),
+            rgba(120, 53, 15, .18)
+        );
+
+    border: 1px solid rgba(250, 204, 21, .55);
+
+    border-radius: 50px;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 12px rgba(250, 204, 21, .10);
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+
+.decision-result-shape:hover {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(202, 138, 4, .48),
+            rgba(120, 53, 15, .28)
+        );
+
+    border-color: #FEF08A;
+
+    box-shadow:
+        0 0 8px rgba(250, 204, 21, .4),
+        0 0 20px rgba(250, 204, 21, .15);
+
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   GENERIC NODE
+   ========================================================= */
+
+.decision-generic-node {
+    padding: 9px 14px;
+
+    color: #CBD5E1;
+
+    background: rgba(51, 65, 85, .75);
+
+    border: 1px solid rgba(148, 163, 184, .25);
+
+    border-radius: 9px;
+
+    font-size: 10px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   EXPLANATION PANEL
+   ========================================================= */
+
+.decision-tree-explanation {
+    min-width: 0;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(15, 23, 42, .72);
+
+    border: 1px solid rgba(56, 189, 248, .15);
+
+    border-radius: 16px;
+
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        rgba(56, 189, 248, .30)
+        transparent;
+}
+
+
+.decision-tree-explanation::-webkit-scrollbar {
+    width: 5px;
+}
+
+
+.decision-tree-explanation::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.decision-tree-explanation::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, .30);
+
+    border-radius: 10px;
+}
+
+
+.decision-tree-explanation-empty {
+    margin: auto;
+
+    text-align: center;
+
+    max-width: 230px;
+}
+
+
+.decision-tree-explanation-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 13px;
+
+    color: #22D3EE;
+
+    border: 1px solid rgba(34, 211, 238, .30);
+
+    border-radius: 50%;
+
+    background: rgba(34, 211, 238, .06);
+
+    font-size: 17px;
+
+    text-shadow:
+        0 0 8px rgba(34, 211, 238, .5);
+}
+
+
+.decision-tree-explanation-empty h3 {
+    color: #E2E8F0;
+
+    font-size: 14px;
+
+    margin: 0 0 7px;
+}
+
+
+.decision-tree-explanation-empty p {
+    color: #64748B;
+
+    font-size: 10px;
+
+    line-height: 1.55;
+
+    margin: 0;
+}
+
+
+/* =========================================================
+   EXPLANATION CONTENT
+   ========================================================= */
+
+.decision-tree-explanation-content {
+    color: #CBD5E1;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+.decision-tree-explanation-content[hidden] {
+    display: none !important;
+}
+
+
+.decision-tree-explanation-type {
+    display: inline-block;
+
+    padding: 4px 8px;
+
+    margin-bottom: 9px;
+
+    color: #22D3EE;
+
+    background: rgba(34, 211, 238, .07);
+
+    border: 1px solid rgba(34, 211, 238, .18);
+
+    border-radius: 5px;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+
+#decisionTreeExplanationTitle {
+    color: #F8FAFC;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    margin: 0 0 10px;
+}
+
+
+#decisionTreeExplanationText {
+    color: #CBD5E1;
+
+    font-size: 11px;
+    line-height: 1.65;
+
+    margin: 0;
+}
+
+
+.decision-tree-explanation-value {
+    margin-top: 14px;
+
+    padding: 10px 12px;
+
+    color: #7DD3FC;
+
+    background: rgba(30, 41, 59, .60);
+
+    border: 1px solid rgba(148, 163, 184, .12);
+
+    border-radius: 9px;
+
+    font-size: 10px;
+}
+
+
+.decision-tree-explanation-value[hidden] {
+    display: none !important;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.decision-traversal-footer {
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 13px 22px;
+
+    border-top: 1px solid rgba(148, 163, 184, .10);
+}
+
+
+.decision-tree-legend {
+    display: flex;
+
+    align-items: center;
+
+    gap: 17px;
+}
+
+
+.decision-tree-legend-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #64748B;
+
+    font-size: 9px;
+}
+
+
+.decision-tree-legend-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+
+.decision-tree-legend-dot.decision {
+    background: #60A5FA;
+
+    box-shadow:
+        0 0 6px rgba(96, 165, 250, .55);
+}
+
+
+.decision-tree-legend-dot.result {
+    background: #FACC15;
+
+    box-shadow:
+        0 0 6px rgba(250, 204, 21, .55);
+}
+
+
+.decision-tree-legend-line {
+    width: 18px;
+    height: 2px;
+
+    background: #475569;
+
+    border-radius: 2px;
+}
+
+
+.decision-traversal-done {
+    padding: 8px 17px;
+
+    color: #CBD5E1;
+
+    background: rgba(30, 41, 59, .70);
+
+    border: 1px solid rgba(148, 163, 184, .18);
+
+    border-radius: 8px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+
+.decision-traversal-done:hover {
+    color: #F8FAFC;
+
+    background: rgba(56, 189, 248, .10);
+
+    border-color: rgba(56, 189, 248, .35);
+}
+
+
+/* =========================================================
+   IMPORTANT MODAL OVERRIDES
+   ========================================================= */
+
+#decisionTraversalCard {
+    position: fixed !important;
+
+    inset: 0 !important;
+
+    visibility: hidden;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    display: none;
+
+    z-index: 99999 !important;
+}
+
+
+#decisionTraversalCard.active,
+#decisionTraversalCard.show {
+    display: flex !important;
+
+    visibility: visible !important;
+
+    opacity: 1 !important;
+
+    pointer-events: auto !important;
+}
+
+
+#decisionTraversalCard .decision-traversal-panel {
+    position: relative !important;
+
+    z-index: 100000 !important;
+
+    visibility: visible !important;
+
+    opacity: 1 !important;
+}
+
+
+#decisionTraversalCard .decision-traversal-overlay {
+    position: absolute !important;
+
+    inset: 0 !important;
+
+    z-index: 0 !important;
+}
+
+
+#decisionTraversalCard
+.decision-tree-detail-wrapper {
+    position: relative !important;
+
+    z-index: 2 !important;
+}
+
+
+#decisionTraversalCard
+.decision-tree-detail-nodes {
+    position: relative !important;
+
+    z-index: 3 !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .decision-traversal-content {
+        grid-template-columns: minmax(0, 1fr) 260px;
+    }
+}
+
+
+@media (max-width: 900px) {
+
+    .decision-tree-overview {
+        flex-direction: column;
+
+        gap: 18px;
+    }
+
+    .decision-tree-visual {
+        width: 100%;
+
+        min-height: 280px;
+    }
+
+    .decision-explanation {
+        width: 100%;
+
+        min-height: auto;
+    }
+
+    .dt-tree-svg {
+        width: 80%;
+
+        max-width: 300px;
+
+        max-height: 210px;
+    }
+
+    .decision-traversal-content {
+        grid-template-columns: 1fr;
+
+        overflow-y: auto;
+    }
+
+    .decision-tree-detail-wrapper {
+        min-height: 400px;
+    }
+
+    .decision-tree-explanation {
+        min-height: 180px;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .decision-tree-visual {
+        min-height: 240px;
+    }
+
+    .decision-tree-hologram {
+        width: 90%;
+
+        height: 70%;
+    }
+
+    .dt-tree-svg {
+        width: 85%;
+
+        max-width: 260px;
+    }
+
+    .decision-tree-click-note {
+        font-size: 10px;
+
+        bottom: 12px;
+    }
+
+    .decision-explanation {
+        padding: 14px;
+    }
+
+    .decision-traversal-card {
+        padding: 10px;
+    }
+
+    .decision-traversal-panel {
+        width: 100%;
+        height: 96vh;
+
+        border-radius: 16px;
+    }
+
+    .decision-traversal-header {
+        padding: 16px;
+    }
+
+    .decision-traversal-header h2 {
+        font-size: 17px;
+    }
+
+    #decisionTraversalSubtitle {
+        font-size: 10px;
+    }
+
+    .decision-traversal-content {
+        padding: 10px;
+
+        gap: 10px;
+    }
+
+    .decision-tree-detail-wrapper {
+        min-height: 330px;
+    }
+
+    .decision-tree-explanation {
+        padding: 14px;
+    }
+
+    .decision-traversal-footer {
+        padding: 10px 14px;
+    }
+
+    .decision-tree-legend {
+        gap: 9px;
+    }
+
+    .decision-tree-legend-item {
+        font-size: 8px;
+    }
+}

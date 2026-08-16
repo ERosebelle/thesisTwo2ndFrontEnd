@@ -25,12 +25,13 @@ function parseCsv(text) {
 }
 
 // Labels, in priority order (used to break ties when two deficits are equal).
+// KEEP_IT_UP was removed - the system must always return an actionable
+// suggestion, even for an already-strong password (see pickLabel below).
 const LABELS = [
     "AVOID_DICTIONARY_WORDS",   // 0
     "AVOID_PREDICTABLE_PATTERNS", // 1
     "ADD_CHARACTER_VARIETY",   // 2
-    "INCREASE_LENGTH",         // 3
-    "KEEP_IT_UP"               // 4
+    "INCREASE_LENGTH"          // 3
 ];
 
 const LENGTH_TARGET = 12;   // same 12-char standard already used in getStrategies()
@@ -58,7 +59,16 @@ function pickLabel(deficits) {
     ranked.sort((a, b) => b.value - a.value);
 
     if (ranked[0].value === 0) {
-        return "KEEP_IT_UP";
+        // No deficit in ANY of the four dimensions - the password already
+        // clears every threshold. The system must still return an
+        // actionable suggestion (KEEP_IT_UP was removed as a label), so it
+        // defaults to INCREASE_LENGTH here: unlike character_class_count
+        // (which caps out at 4 - there's nothing left to add once all four
+        // types are present) or the two binary pattern/dictionary flags
+        // (already satisfied, nothing more to give), length has NO upper
+        // cap on how much extra protection it adds. It's the one dimension
+        // where "good" can always still become "better".
+        return "INCREASE_LENGTH";
     }
     return ranked[0].label;
 }

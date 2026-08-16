@@ -1,20 +1,40 @@
-<!-- CLASSIFICATION PANEL COMPONENT -->
-<h2>Classification Result</h2>
+<div class="result-summary">
 
-<div class="classification-item">
-    <span class="label">Vulnerability Found:</span>
-    <span id="VulnerabilityFound" class="value">Loading...</span>
-</div>
+    <div class="summary-card classification-card">
 
-<div class="classification-item">
-    <span class="label">Risk Level:</span>
-    <span id="riskLevel" class="value">Loading...</span>
-</div>
+        <div class="card-label">VULNERABILITY</div>
 
-<!-- CLICKABLE SUMMARY CARD-->
-<div id="summaryBox" class="summary-box">
-    <h3>Summary</h3>
-    <div id="summaryText">
-        <p>Waiting for password analysis...</p>
+        <div id="VulnerabilityFound" class="classification-value">
+            Loading...
+        </div>
+
+        <div class="risk-divider"></div>
+
+        <div class="card-label">RISK LEVEL</div>
+
+        <div id="riskLevel" class="risk-value">
+            Loading...
+        </div>
+
+        <div class="security-score">
+            <span>Security Score</span>
+            <strong id="securityScore">--</strong>
+        </div>
+
     </div>
+
+    <div class="summary-card explanation-card">
+
+        <div class="card-label">ANALYSIS</div>
+
+        <h2 id="summaryTitle">
+            Analysis Explanation
+        </h2>
+
+        <div id="summaryText" class="summary-text">
+            <p>Waiting for password analysis...</p>
+        </div>
+
+    </div>
+
 </div>

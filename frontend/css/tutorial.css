@@ -1,0 +1,690 @@
+.tutorial-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(2, 6, 23, .72);
+    backdrop-filter: blur(8px);
+
+    z-index: 9998;
+}
+
+.tutorial-overlay[hidden],
+.tutorial-card[hidden],
+.tutorial-confirm-overlay[hidden],
+.tutorial-confirm-card[hidden],
+.tutorial-step[hidden] {
+    display: none !important;
+}
+
+
+/* =========================================================
+   TUTORIAL CARD
+   ========================================================= */
+
+.tutorial-card {
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: min(1050px, calc(100vw - 80px));
+    height: min(760px, calc(100vh - 80px));
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 28px;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(59,130,246,.12),
+            transparent 40%
+        ),
+        linear-gradient(
+            160deg,
+            #172033,
+            #0b1220
+        );
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.55),
+        0 0 60px rgba(59,130,246,.08);
+
+    animation: tutorialOpen .35s ease;
+
+    z-index: 9999;
+}
+
+
+/* =========================================================
+   CLOSE
+   ========================================================= */
+
+.tutorial-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.05);
+
+    color: #dbeafe;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+
+    z-index: 2;
+}
+
+.tutorial-close:hover {
+    background: rgba(59,130,246,.18);
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.tutorial-header {
+    flex-shrink: 0;
+
+    padding: 30px 48px 20px;
+
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.tutorial-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 6px 13px;
+
+    border-radius: 999px;
+
+    background: rgba(59,130,246,.12);
+
+    color: #93c5fd;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+
+.tutorial-header h2 {
+    margin-top: 1px;
+    margin-bottom: 6px;
+
+    color: #ffffff;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.tutorial-header p {
+    max-width: 760px;
+
+    color: #cbd5e1;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+.tutorial-body {
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 24px 48px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        #3b82f6
+        rgba(15,23,42,.5);
+}
+
+.tutorial-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+.tutorial-body::-webkit-scrollbar-track {
+    background: rgba(15,23,42,.5);
+    border-radius: 10px;
+}
+
+.tutorial-body::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 10px;
+}
+
+.tutorial-body::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+}
+
+
+/* =========================================================
+   TUTORIAL STEP
+   ========================================================= */
+
+.tutorial-step {
+    width: 100%;
+
+    display: none;
+
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.tutorial-step.active {
+    display: flex;
+}
+
+
+/* =========================================================
+   FIXED MEDIA AREA
+   ========================================================= */
+
+.tutorial-media {
+    position: relative;
+
+    width: 100%;
+    height: 300px;
+
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 18px;
+
+    background: transparent;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   IMAGE AREA
+   ========================================================= */
+
+.tutorial-media.image-placeholder {
+    width: 100%;
+    height: 300px;
+
+    min-height: 300px;
+    max-height: 300px;
+
+    background: transparent;
+
+    border: none;
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.tutorial-media img {
+    display: block;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    max-width: none !important;
+    max-height: none !important;
+
+    object-fit: cover;
+
+    border: none;
+    border-radius: 18px;
+}
+
+
+/* =========================================================
+   VIDEO
+   ========================================================= */
+
+.tutorial-media.video-placeholder {
+    width: 100%;
+    height: 300px;
+
+    min-height: 300px;
+    max-height: 300px;
+
+    aspect-ratio: auto;
+
+    background: transparent;
+
+    border: none;
+}
+
+.tutorial-media video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: none;
+
+    object-fit: cover;
+
+    background: transparent;
+
+    border: none;
+    border-radius: 18px;
+}
+
+
+/* =========================================================
+   REMOVE PLACEHOLDER BACKGROUND / SIZE
+   ========================================================= */
+
+.placeholder-content {
+    display: none;
+}
+
+
+/* =========================================================
+   TEXT CONTENT
+   ========================================================= */
+
+.tutorial-content {
+    flex: 0 0 auto;
+
+    min-height: 0;
+
+    color: #e2e8f0;
+
+    font-family: "Manrope", sans-serif;
+
+    overflow: visible;
+}
+
+.tutorial-content h3 {
+    margin: 0 0 6px;
+
+    color: #ffffff;
+
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.tutorial-content p {
+    margin: 0;
+
+    max-width: 900px;
+
+    font-size: 13px;
+    line-height: 1.6;
+
+    color: #cbd5e1;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.tutorial-footer {
+    height: 72px;
+
+    flex-shrink: 0;
+
+    padding: 0 48px;
+
+    border-top: 1px solid rgba(255,255,255,.06);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tutorial-prev,
+.tutorial-next {
+    min-width: 115px;
+    height: 42px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: rgba(255,255,255,.05);
+
+    color: #f8fafc;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        background .25s ease,
+        opacity .25s ease;
+}
+
+.tutorial-prev:hover:not(:disabled),
+.tutorial-next:hover {
+    transform: translateY(-2px);
+}
+
+.tutorial-prev:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.tutorial-next {
+    background: #2563eb;
+}
+
+.tutorial-next:hover {
+    background: #3b82f6;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.tutorial-progress {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.tutorial-progress span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: rgba(148,163,184,.35);
+
+    cursor: pointer;
+
+    transition: .25s ease;
+}
+
+.tutorial-progress span.active {
+    width: 25px;
+
+    border-radius: 999px;
+
+    background: #3b82f6;
+}
+
+
+/* =========================================================
+   CONFIRMATION OVERLAY
+   ========================================================= */
+
+.tutorial-confirm-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(2,6,23,.55);
+    backdrop-filter: blur(4px);
+
+    z-index: 10001;
+}
+
+
+/* =========================================================
+   CONFIRMATION CARD
+   ========================================================= */
+
+.tutorial-confirm-card {
+    width: min(430px, calc(100vw - 60px));
+
+    padding: 26px;
+
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30,41,59,.98),
+            rgba(15,23,42,.98)
+        );
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.45);
+
+    text-align: center;
+}
+
+.tutorial-confirm-card h3 {
+    margin: 0 0 10px;
+
+    color: #ffffff;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.tutorial-confirm-card p {
+    margin: 0;
+
+    color: #cbd5e1;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.tutorial-confirm-actions {
+    display: flex;
+    justify-content: center;
+
+    gap: 14px;
+
+    margin-top: 24px;
+}
+
+.tutorial-confirm-actions button {
+    min-width: 105px;
+    height: 42px;
+
+    border: none;
+    border-radius: 11px;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        opacity .25s ease;
+}
+
+.tutorial-confirm-actions button:hover {
+    transform: translateY(-2px);
+}
+
+#tutorialStay {
+    background: #334155;
+    color: #ffffff;
+}
+
+#tutorialSkip {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes tutorialOpen {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -48%)
+            scale(.96);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .tutorial-card {
+        width: calc(100vw - 30px);
+        height: calc(100vh - 30px);
+
+        border-radius: 20px;
+    }
+
+    .tutorial-header {
+        padding: 24px 28px 18px;
+    }
+
+    .tutorial-header h2 {
+        font-size: 23px;
+    }
+
+    .tutorial-body {
+        padding: 20px 28px;
+    }
+
+    .tutorial-media,
+    .tutorial-media.image-placeholder,
+    .tutorial-media.video-placeholder {
+        height: 250px;
+        min-height: 250px;
+        max-height: 250px;
+    }
+
+    .tutorial-content h3 {
+        font-size: 19px;
+    }
+
+    .tutorial-content p {
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .tutorial-footer {
+        padding: 0 28px;
+    }
+
+}
+
+
+/* =========================================================
+   SHORT SCREENS
+   ========================================================= */
+
+@media (max-height: 750px) {
+
+    .tutorial-card {
+        height: calc(100vh - 30px);
+    }
+
+    .tutorial-header {
+        padding-top: 20px;
+        padding-bottom: 14px;
+    }
+
+    .tutorial-header h2 {
+        font-size: 25px;
+    }
+
+    .tutorial-header p {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .tutorial-body {
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+
+    .tutorial-media,
+    .tutorial-media.image-placeholder,
+    .tutorial-media.video-placeholder {
+        height: 230px;
+        min-height: 230px;
+        max-height: 230px;
+    }
+
+    .tutorial-content h3 {
+        font-size: 19px;
+    }
+
+    .tutorial-content p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .tutorial-footer {
+        height: 64px;
+    }
+
+}

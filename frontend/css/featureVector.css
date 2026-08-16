@@ -1,22 +1,19 @@
-/* FEATURE VECTOR ANALYSIS - COMPONENT VERSION */
 .feature-page {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     box-sizing: border-box;
 }
 
 .feature-vector-section {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     box-sizing: border-box;
 }
 
-/* HEADER */
 .feature-vector-header {
     width: 100%;
     margin: 0 0 3px;
@@ -34,7 +31,6 @@
     text-shadow: 0 0 10px rgba(56, 189, 248, .40);
 }
 
-/*  DESCRIPTION */
 .feature-vector-description {
     width: 100%;
     margin: -7px 0 0;
@@ -45,46 +41,54 @@
     box-sizing: border-box;
 }
 
-/* DIVIDER */
 .feature-vector-divider {
     width: 100%;
     height: 1px;
-    margin: 18px 0 9px;
-    background: linear-gradient(90deg, rgba(56, 189, 248, .55), rgba(56, 189, 248, .18), transparent);
+    margin: 18px 0 20px;
+    background: linear-gradient(
+        90deg,
+        rgba(56, 189, 248, .55),
+        rgba(56, 189, 248, .18),
+        transparent
+    );
 }
 
-/* TABLE HOLDER */
 .feature-table-container {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    gap: 18px;
-    width: 70%;
-    /* Overall width of both tables */
-    margin: 0 0 0 auto;
-    /* Pushes the whole group to the right */
+    gap: 24px;
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
     box-sizing: border-box;
 }
 
-/* CARD */
 .feature-table-card {
-    flex: 0 0 47%;
-    /* Each table occupies 47% of the container */
+    flex: 1 1 0;
+    max-width: 500px;
     position: relative;
     overflow: hidden;
-    padding: 12px 14px;
-    /* Smaller card height */
-    border-radius: 12px;
-    background: linear-gradient(160deg, rgba(15, 23, 42, .96), rgba(30, 41, 59, .94),
-            rgba(51, 65, 85, .88));
-
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: linear-gradient(
+        160deg,
+        rgba(15, 23, 42, .96),
+        rgba(30, 41, 59, .94),
+        rgba(51, 65, 85, .88)
+    );
     border: 1px solid rgba(56, 189, 248, .20);
     backdrop-filter: blur(8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, .30), 0 0 12px rgba(56, 189, 248, .06);
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, .30),
+        0 0 12px rgba(56, 189, 248, .06);
     box-sizing: border-box;
+    transition:
+        transform .35s ease,
+        box-shadow .35s ease,
+        border-color .35s ease;
 }
 
-/* TOP LIGHT BAR */
 .feature-table-card::before {
     content: "";
     position: absolute;
@@ -93,10 +97,17 @@
     width: 100%;
     height: 3px;
     background:
-        linear-gradient(90deg, #38bdf8, #60a5fa, #38bdf8);
+        linear-gradient(
+            90deg,
+            transparent,
+            #38bdf8,
+            #60a5fa,
+            transparent
+        );
+    background-size: 200% 100%;
+    animation: energyMove 3s linear infinite;
 }
 
-/* CARD TITLE */
 .feature-table-card h3 {
     margin: 0 0 10px;
     font-size: 13px;
@@ -105,7 +116,6 @@
     letter-spacing: .4px;
 }
 
-/* TABLE */
 .feature-table {
     width: 100%;
     table-layout: fixed;
@@ -119,32 +129,20 @@
     text-transform: uppercase;
     letter-spacing: .6px;
     color: #94a3b8;
-    border-bottom:
-        1px solid rgba(148, 163, 184, .25);
+    border-bottom: 1px solid rgba(148, 163, 184, .25);
 }
 
 .feature-table td {
-    padding: 7px 1px !important;
+    padding: 7px 8px !important;
     font-size: 13px;
     color: #e2e8f0;
-    border-bottom:
-        1px solid rgba(148, 163, 184, .12);
+    border-bottom: 1px solid rgba(148, 163, 184, .12);
 }
 
 .feature-table tr:last-child td {
     border-bottom: none;
 }
 
-.feature-table tbody tr {
-    transition: .2s ease;
-}
-
-.feature-table tbody tr:hover {
-    background: rgba(56, 189, 248, .08);
-}
-
-
-/* COLUMN WIDTHS */
 .feature-table th:first-child,
 .feature-table td:first-child {
     width: 62%;
@@ -157,11 +155,32 @@
     font-weight: 700;
 }
 
+.feature-table tbody tr {
+    position: relative;
+    transition: .3s ease;
+}
 
-/* VALUE STATES */
+.feature-table tbody tr:hover {
+    background: linear-gradient(
+        90deg,
+        rgba(56, 189, 248, .15),
+        transparent
+    );
+    transform: translateX(5px);
+}
+
+.feature-table-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(56, 189, 248, .5);
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .5),
+        0 0 30px rgba(56, 189, 248, .25);
+}
+
 .present {
     color: #38bdf8;
     text-shadow: 0 0 6px rgba(56, 189, 248, .7);
+    animation: valueGlow 2s infinite;
 }
 
 .absent {
@@ -172,8 +191,6 @@
     color: #f8fafc;
 }
 
-/*  DECORATIVE GLOWW */
-
 .feature-table-card::after {
     content: "";
     position: absolute;
@@ -181,20 +198,14 @@
     bottom: -60px;
     width: 100px;
     height: 100px;
-    background: linear-gradient(145deg, rgba(56, 189, 248, .10), transparent);
+    background: linear-gradient(
+        145deg,
+        rgba(56, 189, 248, .10),
+        transparent
+    );
     border-radius: 50%;
     pointer-events: none;
-}
-
-/* FEATURE VECTOR - SECURITY ANIMATION */
-/* MOVING ENERGY BAR*/
-
-.feature-table-card::before {
-    background:
-        linear-gradient(90deg, transparent, #38bdf8, #60a5fa, transparent);
-    background-size: 200% 100%;
-    animation:
-        energyMove 3s linear infinite;
+    animation: orbitFloat 5s ease-in-out infinite;
 }
 
 @keyframes energyMove {
@@ -207,33 +218,6 @@
     }
 }
 
-/*CARD BREATHING GLOW */
-.feature-table-card {
-    transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
-}
-
-.feature-table-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(56, 189, 248, .5);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, .5), 0 0 30px rgba(56, 189, 248, .25);
-}
-
-/* DATA ROW SCAN */
-.feature-table tbody tr {
-    position: relative;
-    transition: .3s ease;
-}
-
-.feature-table tbody tr:hover {
-    background: linear-gradient(90deg, rgba(56, 189, 248, .15), transparent);
-    transform: translateX(5px);
-}
-
-/*  VALUE PULSE */
-.present {
-    animation: valueGlow 2s infinite;
-}
-
 @keyframes valueGlow {
     0%,
     100% {
@@ -243,11 +227,6 @@
     50% {
         text-shadow: 0 0 18px rgba(56, 189, 248, 1);
     }
-}
-
-/* FLOATING ORBIT */
-.feature-table-card::after {
-    animation: orbitFloat 5s ease-in-out infinite;
 }
 
 @keyframes orbitFloat {
@@ -263,6 +242,14 @@
     }
 }
 
-/* NOTE: .result-panel / #panelBody / .result-section are owned exclusively by result.css.
-Feature Vector now scrolls internally via .feature-vector-section(see top of file)
-instead of resizing the shared parent shell.*/
+@media (max-width: 900px) {
+    .feature-table-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .feature-table-card {
+        width: 100%;
+        max-width: 650px;
+    }
+}

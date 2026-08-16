@@ -1,55 +1,66 @@
-<!-- DECISION TRAVERSAL CARD , Interactive, informative hologram.
-Distinct from the small decorative hologram in decisionTree.html. This one exists to be READ:
-square nodes carry real question/result text, and every node/connector is clickable to reveal the
-backend's explanation for that specific step. -->
-<div class="decision-traversal-overlay" id="decisionTraversalOverlay">
-    <div class="decision-traversal-card" id="decisionTraversalCard" role="dialog" aria-modal="true"
-        aria-labelledby="decisionTraversalTitle">
+<div
+    id="decisionTraversalCard"
+    class="decision-traversal-card"
+    hidden
+>
+    <div class="decision-traversal-card-content">
 
-        <!-- HEADER -->
-        <div class="decision-traversal-header">
-            <h2 id="decisionTraversalTitle"> Decision Tree Explorer </h2>
-            <button id="decisionTraversalClose" class="decision-traversal-close" aria-label="Close"> &times; </button>
+        <button
+            type="button"
+            id="decisionTraversalClose"
+            class="decision-traversal-close"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <h2 id="decisionTraversalTitle">
+            Detailed Decision Tree Traversal
+        </h2>
+
+
+        <div
+            id="decisionTraversalContent"
+            class="decision-traversal-content"
+        >
+            <p>
+                This space provides detailed information about the flow of the Decision Tree.
+                Each shape and line contains an explanation of its role in the decision path.
+                Click a shape or line to view its explanation, and click it again to exit the explanation.
+            </p>
         </div>
 
-        <!--  BODY (scrolls vertically; tree can be -->
-        <div class="decision-traversal-body" id="decisionTraversalBody">
 
-            <!-- EMPTY STATE -->
-            <div id="decisionTraversalPlaceholder" class="decision-traversal-placeholder"> No decision tree available. </div>
+        <div class="decision-traversal-main">
 
-            <!-- MAIN CONTENT -->
-            <div id="decisionTraversalContent" class="decision-traversal-content" style="display:none;">
-                <p class="dtc-intro">
-                    Every question below was checked against your
-                    password. Click any question, result, or YES / NO
-                    connector to see why.
-                </p>
 
-                <!-- TREE AREA - Side padding here is intentional -
-                it's reserved space for the info card to pop out beside whatever was clicked. -->
-                <div class="dtc-tree-wrap" id="dtcTreeWrap">
-                    <svg id="decisionTraversalTree" class="dtc-tree-svg" xmlns="http://www.w3.org/2000/svg">
-                    </svg>
+            <!-- LEFT FIXED INFORMATION PANEL -->
 
-                    <!-- FLOATING INFO CARD = Repositioned beside whichever node /
-                    connector was clicked. Only one exists; it moves and its content is swapped. -->
-                    <div class="dtc-info-card" id="dtcInfoCard">
-                        <div class="dtc-info-card-header">
-                            <span id="dtcInfoCardTitle"> Node Information </span>
-                            <button id="dtcInfoCardClose" class="dtc-info-card-close" aria-label="Close"> &times; </button>
-                        </div>
+            <aside
+                id="decisionTraversalLeftInfo"
+                class="decision-traversal-info-slot left"
+            ></aside>
 
-                        <div id="dtcInfoCardBody" class="dtc-info-card-body">
-                            <p>
-                                Select a node or connector to view
-                                details.
-                            </p>
 
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- TREE -->
+
+            <div
+                id="decisionTraversalTree"
+                class="decision-traversal-tree"
+            ></div>
+
+
+            <!-- RIGHT FIXED INFORMATION PANEL -->
+
+            <aside
+                id="decisionTraversalRightInfo"
+                class="decision-traversal-info-slot right"
+            ></aside>
+
+
         </div>
+
+
     </div>
 </div>

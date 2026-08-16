@@ -9,9 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // ===== LOAD ML MODEL =====
-const model = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "model.json"))
-);
+const model = JSON.parse(fs.readFileSync(path.join(__dirname, "model.json")));
 
 const classifier = DecisionTreeClassifier.load(model);
 console.log("✅ ML model loaded");
@@ -22,9 +20,7 @@ console.log("✅ ML model loaded");
 let riskModel = null;
 let riskClassifier = null;
 try {
-    riskModel = JSON.parse(
-        fs.readFileSync(path.join(__dirname, "risk_model.json"))
-    );
+    riskModel = JSON.parse(fs.readFileSync(path.join(__dirname, "risk_model.json")));
     riskClassifier = DecisionTreeClassifier.load(riskModel);
     console.log("✅ Risk model loaded");
 } catch (err) {
@@ -34,7 +30,7 @@ try {
 // ===== LOAD RECOMMENDATION MODEL =====
 // Third, separate CART classifier trained on recommendation_dataset.csv
 // (recommendation_label: AVOID_DICTIONARY_WORDS / AVOID_PREDICTABLE_PATTERNS /
-// ADD_CHARACTER_VARIETY / INCREASE_LENGTH / KEEP_IT_UP) - see
+// ADD_CHARACTER_VARIETY / INCREASE_LENGTH - 4 classes) - see
 // create_recommendation_dataset.js / train_recommendation_model.js.
 let recommendationModel = null;
 let recommendationClassifier = null;
@@ -96,6 +92,18 @@ try {
     console.log("❌ Failed to load Tagalog dictionary");
 }
 
+// ===== PASSPHRASE WORD POOL (for suggestPassphrase, built once at startup) =====
+// A short, easy-to-type word length range (4-7 letters), alphabetic only (no
+// stray entries with apostrophes/numbers that some word-list dictionaries
+// include). Built once here instead of on every suggestPassphrase() call,
+// since scanning the full ~370k-word englishSet each time would be wasteful.
+const passphraseWordPool = Array.from(englishSet).filter(
+    word => word.length >= 4 && word.length <= 7 && /^[a-z]+$/.test(word)
+);
+if (passphraseWordPool.length === 0) {
+    console.log("⚠️ Passphrase word pool is empty - suggestPassphrase() will fall back to generic words.");
+}
+
 // ===== LOAD CSV DATASET =====
 fs.createReadStream(datasetPath)
     .pipe(csv())
@@ -124,38 +132,130 @@ function extractFeatures(password) {
         .replace(/!/g, 'i');
 
     // ===== DICTIONARY DETECTION WITH RATIO SAFETY GUARD =====
+    // Split into alphabetic runs first (digits, hyphens, symbols, parentheses
+    // all act as separators) BEFORE checking for dictionary words. This is
+    // what lets passphrase-style passwords like "Hello-World-2026!" or
+    // "HelloP@ssw0-rd123(2026)-2026!" still be recognized as dictionary-based
+    // even when punctuation/numbers split the words apart or inflate the
+    // total length - previously only the SINGLE longest match was measured
+    // against the FULL password length, so any separator diluted the ratio
+    // below threshold even when the password was built entirely out of real
+    // words.
     let dictionaryDetected = 0;
 
-    // 1. FAST: Exact match (Laging 100% tama)
+    // 1. FAST: Exact match on the whole normalized string (Laging 100% tama)
     if (englishSet.has(leetNormalized) || tagalogSet.has(leetNormalized)) {
         dictionaryDetected = 1;
     } else {
-        // 2. CONTROLLED substring check na may density threshold
-        let longestMatchLength = 0;
+        const alphaTokens = leetNormalized.split(/[^a-z]+/).filter(Boolean);
 
-        for (let word of englishSet) {
-            if (word.length >= 4 && leetNormalized.includes(word)) {
-                if (word.length > longestMatchLength) {
-                    longestMatchLength = word.length;
+        // exactMatchCount: a WHOLE token (or whole adjacent-token merge)
+        // equals a real dictionary word - a strong signal, since a random
+        // string coincidentally forming an ENTIRE separate word is rare.
+        // longestSingleMatch: the single longest match found anywhere
+        // (whole-token OR substring-within-token/merge) - used only for the
+        // individual ratio/length safety check below, kept separate from any
+        // cumulative sum since summing several coincidental SUBSTRING hits
+        // together can cross a "looks safe" length threshold purely by
+        // chance in a long-enough random string (verified case: a 43-char
+        // random string coincidentally contained both "sasa" and "safar" as
+        // substrings, which together summed past the old threshold).
+        let exactMatchCount = 0;
+        let longestSingleMatch = 0;
+
+        for (const token of alphaTokens) {
+            if (token.length < 4) continue;
+
+            // Exact token match first (whole word between separators)
+            if (englishSet.has(token) || tagalogSet.has(token)) {
+                exactMatchCount++;
+                longestSingleMatch = Math.max(longestSingleMatch, token.length);
+                continue;
+            }
+
+            // Fallback: substring check WITHIN this token only (handles a
+            // dictionary word glued to extra letters inside one run, e.g.
+            // "helloo" or "xhelloz") - counted only toward longestSingleMatch,
+            // NOT exactMatchCount, since "contains a word" is a much weaker
+            // signal than "IS a word".
+            let longestInToken = 0;
+
+            for (let word of englishSet) {
+                if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
+                    longestInToken = word.length;
                 }
             }
-        }
 
-        if (longestMatchLength === 0) {
-            for (let word of tagalogSet) {
-                if (word.length >= 4 && leetNormalized.includes(word)) {
-                    if (word.length > longestMatchLength) {
-                        longestMatchLength = word.length;
+            if (longestInToken === 0) {
+                for (let word of tagalogSet) {
+                    if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
+                        longestInToken = word.length;
                     }
                 }
             }
+
+            if (longestInToken >= 4) {
+                longestSingleMatch = Math.max(longestSingleMatch, longestInToken);
+            }
         }
 
-        // Sinasala ang mga accidental 4-letter matches sa loob ng mahahabang random strings
-        if (longestMatchLength >= 4) {
-            const wordRatio = longestMatchLength / originalPassword.length;
+        // Also try merging each pair of ADJACENT tokens (i.e. pretend the
+        // one separator between them wasn't there) - catches a dictionary
+        // word split mid-word by a single hyphen/digit, e.g. "passwo" +
+        // "rd" from "passw0-rd" -> "password".
+        for (let i = 0; i < alphaTokens.length - 1; i++) {
+            const left = alphaTokens[i];
+            const right = alphaTokens[i + 1];
+            const merged = left + right;
+            if (merged.length < 4) continue;
 
-            if (wordRatio >= 0.35 || longestMatchLength >= 6) {
+            if (englishSet.has(merged) || tagalogSet.has(merged)) {
+                exactMatchCount++;
+                longestSingleMatch = Math.max(longestSingleMatch, merged.length);
+                continue;
+            }
+
+            // Substring check on the merge too - counted only toward
+            // longestSingleMatch, same reasoning as the single-token pass
+            // above. Only counts a match that genuinely SPANS the token
+            // boundary (not already fully contained inside `left` or
+            // `right` alone) to avoid double-counting a match already
+            // found during the single-token pass.
+            let longestInMerge = 0;
+            for (let word of englishSet) {
+                if (word.length >= 4 && word.length > longestInMerge &&
+                    merged.includes(word) && !left.includes(word) && !right.includes(word)) {
+                    longestInMerge = word.length;
+                }
+            }
+            if (longestInMerge === 0) {
+                for (let word of tagalogSet) {
+                    if (word.length >= 4 && word.length > longestInMerge &&
+                        merged.includes(word) && !left.includes(word) && !right.includes(word)) {
+                        longestInMerge = word.length;
+                    }
+                }
+            }
+            if (longestInMerge >= 4) {
+                longestSingleMatch = Math.max(longestSingleMatch, longestInMerge);
+            }
+        }
+
+        if (exactMatchCount >= 2) {
+            // Two or more SEPARATE, WHOLE-TOKEN dictionary words (genuine
+            // passphrase-style, e.g. "Hello" + "World") - flag it regardless
+            // of how much punctuation/digits/length dilute the ratio.
+            dictionaryDetected = 1;
+        } else if (longestSingleMatch > 0) {
+            // At most one strong signal (a single exact match, or only
+            // substring-level matches) - apply the density guard using the
+            // SINGLE longest match, so a short accidental substring inside a
+            // long random string isn't flagged as dictionary-based, and
+            // several small coincidental substrings can't sum past the
+            // threshold together.
+            const wordRatio = longestSingleMatch / originalPassword.length;
+
+            if (wordRatio >= 0.35 || longestSingleMatch >= 6) {
                 dictionaryDetected = 1;
             }
         }
@@ -371,11 +471,19 @@ function classifyRecommendation(extractedFeatures) {
         1: "AVOID_PREDICTABLE_PATTERNS",
         2: "ADD_CHARACTER_VARIETY",
         3: "INCREASE_LENGTH",
-        4: "KEEP_IT_UP"
+        // Safety net only: if recommendation_model.json hasn't been
+        // retrained yet with the new 4-class dataset (see
+        // create_recommendation_dataset.js), the OLD model can still predict
+        // index 4 (formerly KEEP_IT_UP). That label was removed, so map it
+        // to INCREASE_LENGTH instead of leaving it undefined - the system
+        // must always return an actionable suggestion. Once retrained, the
+        // new model never outputs index 4, so this line becomes harmless
+        // dead code rather than a crash risk.
+        4: "INCREASE_LENGTH"
     };
 
     const label = recommendationLabelMap[prediction[0]] || null;
-    const steps = traceRiskDecisionPath(extractedFeatures, recommendationModel.root);
+    const steps = buildManualFeatureSteps(extractedFeatures);
 
     return { label, steps };
 }
@@ -385,27 +493,26 @@ this level, using the exact same scoring contributions calculateSecurityScore()
 uses internally (length, character diversity, dictionary/rule-pattern/sequence/
 repetition penalties) - so the explanation is traceable to real, computed
 numbers rather than a canned sentence per class. */
-/* ===== RISK MODEL DECISION TRACE (100% MODEL-DEPENDENT) =====
-Walks the ACTUAL trained risk tree (riskModel.root) along the path THIS
-password's features actually took, collecting each real learned split
-(feature, threshold, which side was taken) until reaching a leaf. This is
-the risk-level equivalent of generateActualModelDecisionPath() for the
-vulnerability classifier - nothing here is hand-authored; every step is a
-split the risk CART model genuinely learned from risk_dataset.csv. */
-function traceRiskDecisionPath(extractedFeatures, treeRoot) {
+/* ===== RISK EXPLANATION STEP LIST (MANUAL / RULE-BASED, ALL 12 FEATURES) =====
+This used to walk the ACTUAL trained risk tree (riskModel.root), which meant
+the explanation could stop after just 2-3 splits - correct, but a very short
+and incomplete-feeling walkthrough given that 12 features were extracted for
+this password. The FINAL risk_level shown to the user still comes 100% from
+the real trained risk classifier's prediction (see classifyRisk() above) -
+this function only changes how that result is EXPLAINED: instead of showing
+just the handful of splits the tree happened to use, it walks all 12
+extracted features, in a fixed order, using the same feature extraction the
+model itself was trained on. Nothing here overrides the model's prediction -
+it only makes the "why" behind it complete instead of truncated. */
+function buildManualFeatureSteps(extractedFeatures) {
     const steps = [];
-    let current = treeRoot;
 
-    while (current && current.left && current.right) {
-        const meta = FEATURE_COLUMNS[current.splitColumn];
-        if (!meta) {
-            // Unknown column index - stop tracing safely rather than guess.
-            break;
-        }
+    for (const key of DECISION_TREE_ORDER) {
+        const meta = FEATURE_COLUMNS.find((f) => f.key === key);
+        if (!meta) continue;
 
+        const threshold = MANUAL_TREE_THRESHOLDS[meta.key] ?? 1;
         const actualValue = extractedFeatures[meta.key];
-        const threshold = current.splitValue;
-        // Matches ml-cart's own predict() routing: value < threshold -> left, else -> right.
         const tookRight = actualValue >= threshold;
 
         steps.push({
@@ -416,19 +523,17 @@ function traceRiskDecisionPath(extractedFeatures, treeRoot) {
             direction: tookRight ? "higher" : "lower",
             explanation: tookRight ? meta.explain.YES : meta.explain.NO
         });
-
-        current = tookRight ? current.right : current.left;
     }
 
     return steps;
 }
 
 /* Turns the real traced steps into a plain-language paragraph - this is what
-makes the risk explanation genuinely "the model's own reasoning" rather than
-a parallel hand-coded formula description. */
+makes the risk explanation genuinely complete and grounded in this specific
+password's features, rather than a parallel hand-coded formula description. */
 function buildRiskModelRationale(steps, level) {
     if (steps.length === 0) {
-        return `The risk model reached a ${level} risk rating immediately, without needing to check any of the password's features.`;
+        return `The risk assessment reached a ${level} risk rating without any features to check.`;
     }
 
     const stepSentences = steps.map((step, i) => {
@@ -436,12 +541,12 @@ function buildRiskModelRationale(steps, level) {
         const comparisonWord = step.direction === "higher" ? "at or above" : "below";
         const roundedThreshold = Math.round(step.threshold * 100) / 100;
 
-        return `${ordinal}, the model checked "${step.label}": your password's value (${step.actualValue}) is ${comparisonWord} its learned threshold of ${roundedThreshold}.`;
+        return `${ordinal}, "${step.label}" was checked: your password's value (${step.actualValue}) is ${comparisonWord} the reference threshold of ${roundedThreshold}.`;
     });
 
-    return `The risk model evaluated this password through ${steps.length} learned decision${steps.length === 1 ? "" : "s"} from risk_model.json. ` +
+    return `The risk assessment walked through all ${steps.length} extracted password features. ` +
         stepSentences.join(" ") +
-        ` This path led to a final rating of ${level} risk.`;
+        ` Combined, these feature checks support the trained risk model's final rating of ${level} risk.`;
 }
 
 function explainRisk(features, level, treeRoot) {
@@ -467,10 +572,11 @@ function explainRisk(features, level, treeRoot) {
 
     const score = calculateSecurityScore(features);
 
-    // 100% model-dependent: trace the ACTUAL risk_model.json tree for this
-    // password and build the summary from those real steps, instead of a
-    // parallel hand-coded formula description.
-    const modelSteps = traceRiskDecisionPath(features, treeRoot);
+    // Full 12-feature manual walkthrough (buildManualFeatureSteps), instead
+    // of only whatever handful of splits the trained tree happened to use.
+    // The risk_level itself (`level`, passed in) still comes 100% from the
+    // real trained risk classifier.
+    const modelSteps = buildManualFeatureSteps(features);
     const summary = buildRiskModelRationale(modelSteps, level);
 
     return {
@@ -480,26 +586,23 @@ function explainRisk(features, level, treeRoot) {
         model_decision_steps: modelSteps,
         // Supplementary, formula-based breakdown (calculateSecurityScore) -
         // still useful as an itemized score explanation, but distinct from
-        // the model's own reasoning above.
+        // the feature walkthrough above.
         contributing_factors: contributions
     };
 }
 
-/* Searches the trained tree for the first node that splits on the given
-feature column and returns its learned threshold, or null if that feature
-was never actually used as a split anywhere in the tree (meaning the model
-didn't find it decisive enough to split on, given gainThreshold). Used so
-recommendation text quotes numbers the model actually learned instead of
-values a developer picked by hand. */
-function findLearnedThreshold(node, splitColumn) {
-    if (!node || !node.left || !node.right) {
-        return null;
-    }
-    if (node.splitColumn === splitColumn) {
-        return node.splitValue;
-    }
-    return findLearnedThreshold(node.left, splitColumn) ?? findLearnedThreshold(node.right, splitColumn);
-}
+/* Fixed, manually-chosen reference thresholds used ONLY for narrating the
+step-by-step explanation (buildManualFeatureSteps / buildManualDecisionPath)
+and for the "how many more characters/types would help" numbers in the
+recommendation templates below. These are NOT learned from any trained
+model - they're plain, common-sense security guidelines chosen by hand
+(12+ characters, using at least 3 of the 4 character classes). Every binary
+feature (has_uppercase, dictionary_present, etc.) simply checks "is it
+present" (threshold 1), so it doesn't need an entry here. */
+const MANUAL_TREE_THRESHOLDS = {
+    length: 12,
+    character_class_count: 3
+};
 
 // ===== 3. RECOMMENDATION MODEL -> PLAIN-LANGUAGE STRATEGY TEXT =====
 /* This used to be a hand-written if/else chain keyed off vulnerabilityType,
@@ -507,55 +610,127 @@ with hardcoded thresholds (12 chars, 3 classes) and dense, jargon-heavy
 copy ("combinatorial search space", "Hashcat rules engine", etc). It is now
 driven by recommendation_model.json - a THIRD, independently trained CART
 classifier (see create_recommendation_dataset.js / train_recommendation_model.js)
-that predicts the single most impactful fix for THIS password. The tree's own
-learned thresholds are quoted via findLearnedThreshold(), same pattern as the
-vulnerability and risk explanations, so nothing here is invented by hand.
+that predicts the single most impactful fix for THIS password. The target
+numbers quoted ("aim for X characters", "aim for X character types") come
+from MANUAL_TREE_THRESHOLDS above - fixed, human-chosen guideline values -
+since with a manual/rule-based explanation there's no per-node learned
+split to pull a threshold from anymore.
 
-The copy itself is deliberately short and plain - one sentence on what's
-wrong, one sentence on what to do about it - since the goal is a user who
-can actually understand and act on it, not a security-textbook paragraph. */
+Each label below has SEVERAL phrasing variants (picked at random per request)
+instead of one fixed sentence, so two passwords landing on the same label
+don't read as an identical, copy-pasted response. Each variant still pulls in
+the same real, per-password feature data - the variety is in the sentence
+structure, not in inventing new facts.
+*/
+
+// Picks one random entry from an array of phrasing variants.
+function pickVariant(variants) {
+    return variants[Math.floor(Math.random() * variants.length)];
+}
+
 const RECOMMENDATION_LABEL_TEMPLATES = {
-    AVOID_DICTIONARY_WORDS: (f, password, treeRoot) =>
-        `🚨 This password is based on a real word ('${password}'), which is the first thing attackers try. ` +
-        `Swap it for a passphrase - 3 to 4 random, unrelated words strung together (e.g. "${suggestPassphrase(password)}") are much harder to guess.`,
+    AVOID_DICTIONARY_WORDS: (f, password, treeRoot) => {
+        const passphrase = suggestPassphrase();
+        const stacked = [];
+        if (f.has_leetspeak) stacked.push("letter-to-symbol swaps");
+        if (f.numeric_suffix) stacked.push("a number tacked on the end");
+        const stackedNote = stacked.length > 0
+            ? ` Even with ${stacked.join(" and ")}, the underlying word is still the first thing a cracking tool checks.`
+            : "";
+
+        return pickVariant([
+            `🚨 '${password}' is built around a real word, which is the very first thing attackers try.${stackedNote} ` +
+                `A passphrase like "${passphrase}" - unrelated words strung together - is far harder to guess.`,
+            `🚨 Dictionary attacks check real words before anything else, and '${password}' is one.${stackedNote} ` +
+                `Try replacing it with something like "${passphrase}" instead - random, unrelated words beat a single word every time.`,
+            `🚨 The core of '${password}' matches a word cracking tools already have in their list.${stackedNote} ` +
+                `Consider a multi-word passphrase such as "${passphrase}" - length and unpredictability matter more than using a "real" word.`
+        ]);
+    },
 
     AVOID_PREDICTABLE_PATTERNS: (f, password, treeRoot) => {
         const found = [];
         if (f.has_leetspeak) found.push("letter-to-symbol swaps (like a→@)");
-        if (f.numeric_suffix) found.push("numbers stuck at the end");
+        if (f.numeric_suffix) found.push("a number stuck at the end");
         if (f.has_sequence) found.push("a sequence like 123 or abc");
         if (f.has_repetition) found.push("repeated characters");
         const whatWasFound = found.length > 0 ? found.join(", ") : "a common modification pattern";
 
-        return `🔄 We noticed ${whatWasFound} in '${password}' - these are the first tricks cracking tools try after plain words. ` +
-            `Try mixing things up in the middle of the password instead of just at the start or end.`;
+        return pickVariant([
+            `🔄 '${password}' contains ${whatWasFound} - these are the first tricks cracking tools test right after plain words. ` +
+                `Try placing your symbols and numbers in the middle of the password instead of just at the start or end.`,
+            `🔄 We noticed ${whatWasFound} in '${password}'. Automated tools try these exact tweaks first, so they add less protection than they feel like they do. ` +
+                `Mixing changes into the middle of the password, not just the edges, makes it noticeably harder to predict.`,
+            `🔄 The pattern in '${password}' (${whatWasFound}) is one of the first things a password cracker checks after trying the plain word. ` +
+                `Breaking up the predictable part - rather than just appending to it - would make a bigger difference.`
+        ]);
     },
 
     ADD_CHARACTER_VARIETY: (f, password, treeRoot) => {
-        const learnedThreshold = findLearnedThreshold(treeRoot, 1);
-        const target = Math.round(learnedThreshold ?? 3);
-        return `⚠️ '${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters. ` +
-            `Mixing UPPERCASE, lowercase, numbers, and symbols (aim for at least ${target} types) makes it much harder to guess.`;
+        const target = MANUAL_TREE_THRESHOLDS.character_class_count;
+
+        const missing = [];
+        if (!f.has_uppercase) missing.push("uppercase letters");
+        if (!f.has_lowercase) missing.push("lowercase letters");
+        if (!f.has_digit) missing.push("numbers");
+        if (!f.has_symbol) missing.push("symbols");
+        const missingNote = missing.length > 0
+            ? ` Right now it's missing: ${missing.join(", ")}.`
+            : "";
+
+        return pickVariant([
+            `⚠️ '${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters.${missingNote} ` +
+                `Aim for at least ${target} types (uppercase, lowercase, numbers, symbols) to make guessing much harder.`,
+            `⚠️ Character variety in '${password}' is limited to ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"}.${missingNote} ` +
+                `Mixing in the missing types pushes the total combinations an attacker has to try up dramatically.`,
+            `⚠️ With only ${f.character_class_count} character type${f.character_class_count === 1 ? "" : "s"} in use, '${password}' has less variety than it could.${missingNote} ` +
+                `Passwords that combine at least ${target} types are significantly more resistant to guessing.`
+        ]);
     },
 
     INCREASE_LENGTH: (f, password, treeRoot) => {
-        const learnedThreshold = findLearnedThreshold(treeRoot, 0);
-        const target = Math.round(learnedThreshold ?? 12);
-        return `📏 '${password}' is only ${f.length} character${f.length === 1 ? "" : "s"} long. ` +
-            `Every extra character makes it dramatically harder to crack - try to reach at least ${target} characters.`;
-    },
+        const target = MANUAL_TREE_THRESHOLDS.length;
+        const remaining = Math.max(0, target - f.length);
+        const remainingNote = remaining > 0
+            ? ` That's ${remaining} more character${remaining === 1 ? "" : "s"} to reach a safer length.`
+            : ` It already meets the usual ${target}-character guideline, but there's no upper limit on how much extra length helps.`;
 
-    KEEP_IT_UP: (f, password, treeRoot) =>
-        `⭐ Nice - '${password}' is long, varied, and doesn't rely on a common word or an obvious pattern. This is a strong password, keep this habit up.`
+        return pickVariant([
+            `📏 '${password}' is ${f.length} character${f.length === 1 ? "" : "s"} long.${remainingNote} ` +
+                `Every extra character makes brute-force guessing exponentially harder.`,
+            `📏 At ${f.length} character${f.length === 1 ? "" : "s"}, '${password}' has room to grow.${remainingNote} ` +
+                `Length adds more protection per character than almost any other change you can make.`,
+            `📏 '${password}' currently sits at ${f.length} character${f.length === 1 ? "" : "s"}.${remainingNote} ` +
+                `Stretching it out - even by adding a short unrelated word or phrase - meaningfully raises how long it would take to crack.`
+        ]);
+    }
 };
 
-// Turns a password into a simple 2-word passphrase suggestion by splitting
-// it in half - purely illustrative, not a real word-list based generator.
-function suggestPassphrase(password) {
-    const half = Math.ceil(password.length / 2);
-    const first = password.slice(0, half) || password;
-    const second = password.slice(half) || "SecureDay";
-    return `${first}-${second}-2026!`;
+// Builds a genuinely random passphrase suggestion - picks 3 DISTINCT random
+// words from the loaded English dictionary (never anything derived from the
+// password being analyzed), capitalizes each, joins with hyphens, and adds a
+// random 2-digit number + symbol. Every call produces a different result.
+function suggestPassphrase() {
+    const FALLBACK_WORDS = ["purple", "harbor", "lantern"];
+    const symbols = ['!', '@', '#', '$', '%', '&', '*'];
+
+    let words;
+    if (passphraseWordPool.length >= 3) {
+        const picked = new Set();
+        while (picked.size < 3) {
+            const candidate = passphraseWordPool[Math.floor(Math.random() * passphraseWordPool.length)];
+            picked.add(candidate);
+        }
+        words = Array.from(picked);
+    } else {
+        words = FALLBACK_WORDS;
+    }
+
+    const capitalized = words.map(w => w.charAt(0).toUpperCase() + w.slice(1));
+    const randomNumber = Math.floor(Math.random() * 90) + 10; // 2-digit, 10-99
+    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+    return `${capitalized.join('-')}-${randomNumber}${randomSymbol}`;
 }
 
 function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot, classificationRationale, recommendationResult) {
@@ -603,8 +778,10 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
     }
 
     // A short, simple general-security tip always shown alongside the
-    // model's specific fix - not a substitute for it.
-    if (recommendationResult && recommendationResult.label !== "KEEP_IT_UP") {
+    // model's specific fix - not a substitute for it. (Used to be
+    // conditional on the label not being KEEP_IT_UP; that label no longer
+    // exists, so this now always runs whenever there's a recommendation.)
+    if (recommendationResult && recommendationResult.label) {
         tips.push("🛡️ Also consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
     }
 
@@ -624,7 +801,7 @@ classifyPassword() / classifyRisk(), since splitColumn is a numeric index into t
 const FEATURE_COLUMNS = [
     {
         key: "length",
-        question: (t) => `Password length >= ${Math.round(t)}?`,
+        question: (t) => `Length >= ${Math.round(t)}?`,
         explain: {
             YES: "The password reached the length threshold the model learned to associate with lower risk. Longer passwords increase the search space.",
             NO: "The password is shorter than the length threshold the model learned. Shorter passwords are easier to guess or brute-force."
@@ -632,7 +809,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "character_class_count",
-        question: (t) => `Character class count >= ${Math.round(t)}?`,
+        question: (t) => `Character Class Count >= ${Math.round(t)}?`,
         explain: {
             YES: "The password mixes enough character categories (upper/lower/digits/symbols) to match the pattern the model associates with lower risk.",
             NO: "The password uses fewer character categories than the threshold the model learned, limiting the possible combinations an attacker has to try."
@@ -640,7 +817,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_lowercase",
-        question: () => "Contains lowercase letters?",
+        question: () => "Lowercase Letters",
         explain: {
             YES: "Lowercase characters were detected, increasing character variety.",
             NO: "No lowercase characters were detected."
@@ -648,7 +825,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_uppercase",
-        question: () => "Contains uppercase letters?",
+        question: () => "Uppercase Letters",
         explain: {
             YES: "Uppercase characters were detected. However, predictable capitalization can still be guessed.",
             NO: "No uppercase characters were detected."
@@ -656,7 +833,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_digit",
-        question: () => "Contains digits?",
+        question: () => "Digits",
         explain: {
             YES: "Numbers were detected. Digits increase complexity but predictable placement may reduce security.",
             NO: "No digits were detected."
@@ -664,7 +841,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_symbol",
-        question: () => "Contains symbols?",
+        question: () => "Symbols",
         explain: {
             YES: "Special symbols were detected, increasing possible combinations.",
             NO: "No symbols were detected."
@@ -672,7 +849,8 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "dictionary_present",
-        question: () => "Dictionary word present?",
+        question: () => "Dictionary Word",
+        branchLabels: ["Present", "Not Present"],
         explain: {
             YES: "A recognizable dictionary word was detected. Attackers commonly test known words first using wordlists.",
             NO: "No dictionary word was detected. The password does not directly match common words."
@@ -680,7 +858,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_leetspeak",
-        question: () => "Leetspeak substitution present?",
+        question: () => "Leetspeak",
         explain: {
             YES: "Leetspeak substitutions were detected, which attackers commonly include in rule-based attacks.",
             NO: "No leetspeak substitution was detected."
@@ -688,7 +866,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "numeric_suffix",
-        question: () => "Numeric suffix present?",
+        question: () => "Numeric Suffix",
         explain: {
             YES: "A number suffix was detected after a dictionary word, a common password habit.",
             NO: "No predictable numeric suffix was detected."
@@ -696,7 +874,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_sequence",
-        question: () => "Sequential pattern present?",
+        question: () => "Sequential Pattern",
         explain: {
             YES: "Sequential patterns like abc or 123 were detected.",
             NO: "No sequential pattern was detected."
@@ -704,7 +882,7 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "has_repetition",
-        question: () => "Repeated character pattern present?",
+        question: () => "Repetition Pattern",
         explain: {
             YES: "Repeated characters were detected, reducing randomness.",
             NO: "No repeated character pattern was detected."
@@ -712,12 +890,38 @@ const FEATURE_COLUMNS = [
     },
     {
         key: "rule_pattern_present",
-        question: () => "Rule-based pattern present?",
+        question: () => "Rule-Based Pattern",
         explain: {
             YES: "Predictable patterns were detected, such as sequences, repetition, suffix numbers, or substitutions.",
             NO: "No common human-created pattern was detected."
         }
     }
+];
+
+// ===== FIXED WALK ORDER FOR THE MANUAL DECISION TREE =====
+// This is the order the 12 questions get asked in, in the visual walkthrough
+// (buildManualDecisionPath / buildManualFeatureSteps) - NOT the order
+// features are indexed in for the trained models above (that indexing stays
+// fixed since splitColumn in model.json/risk_model.json refers to it
+// numerically, so it can't change). This order instead follows a natural
+// investigative flow, matching how a person would actually reason through a
+// password: is it built on a real word at all -> how was that word
+// disguised/modified (leetspeak, numeric suffix, sequence, repetition) ->
+// what raw character composition does it have -> aggregate/summary checks
+// last (character class count, length, rule pattern present).
+const DECISION_TREE_ORDER = [
+    "dictionary_present",
+    "has_leetspeak",
+    "numeric_suffix",
+    "has_sequence",
+    "has_repetition",
+    "has_lowercase",
+    "has_uppercase",
+    "has_digit",
+    "has_symbol",
+    "character_class_count",
+    "length",
+    "rule_pattern_present"
 ];
 
 /* ===== FULL 12-FEATURE CLASSIFICATION EXPLANATION =====
@@ -848,46 +1052,26 @@ function explainClassification(extractedFeatures, vulnerabilityType) {
     return { feature_checklist, classification_rationale };
 }
 
-/* ===== DECISION TREE VISUAL TRACE (100% MODEL-DEPENDENT) =====
-Walks the ACTUAL trained tree (model.root). A node is a leaf when it has no
-left/right children (ml-cart stops expanding once gain drops below
-gainThreshold, even if splitColumn/splitValue metadata is still present on
-that node). Every question, threshold, and result here is something the
-model genuinely learned - nothing here is hand-authored. This is the sole
-source for the UI's Decision Tree Explorer / hologram. */
-function generateActualModelDecisionPath(vulnerabilityType, extractedFeatures, treeRoot) {
+/* ===== DECISION TREE VISUAL TRACE (MANUAL / RULE-BASED, ALL 12 FEATURES) =====
+This used to walk the ACTUAL trained tree (model.root) node by node. That was
+100% faithful to what the model learned, but ml-cart's CART trainer stops
+splitting once further features stop adding meaningful information gain
+(gainThreshold) - on this dataset the real tree only ever asked about 3 of
+the 12 extracted features before reaching a leaf. Visually that reads as an
+abrupt, unfinished-looking tree even though the prediction itself is correct.
 
-    function decisionNode(question, feature, yesChild, noChild, answer, explanation, breakdown) {
-        return {
-            name: question,
-            type: "decision",
-            feature: feature,
-            value: answer === "YES" ? 1 : 0,
-            decision: answer,
-            explanation: {
-                YES: explanation.YES,
-                NO: explanation.NO
-            },
-            breakdown: breakdown || null,
-            children: [
-                {
-                    name: "YES",
-                    branch: "YES",
-                    taken: answer === "YES",
-                    explanation: explanation.YES,
-                    children: yesChild ? [yesChild] : []
-                },
-                {
-                    name: "NO",
-                    branch: "NO",
-                    taken: answer === "NO",
-                    explanation: explanation.NO,
-                    children: noChild ? [noChild] : []
-                }
-            ]
-        };
-    }
-
+This version instead builds a FIXED, 12-question walkthrough, one node per
+extracted feature, always in the same order (FEATURE_COLUMNS), using the
+exact same feature extraction (extractFeatures()) that was fed to the real
+model. It is a manual/rule-based tree in the sense that the STRUCTURE
+(which question comes next) and the reference thresholds (MANUAL_TREE_THRESHOLDS)
+are fixed by hand rather than learned - but the ANSWER to every question
+(the actual feature value) and the FINAL result at the leaf both still come
+from the real thing: extractFeatures() and the trained classifier's
+prediction (classifyPassword()) respectively. Nothing about the underlying
+decision is invented; only the shape of the explanation is now complete
+instead of cut short. */
+function buildManualDecisionPath(extractedFeatures, finalLabel) {
     function leaf(label) {
         return {
             name: label,
@@ -897,60 +1081,70 @@ function generateActualModelDecisionPath(vulnerabilityType, extractedFeatures, t
         };
     }
 
-    // Class order matches labelMap in train_model.js (0=DICTIONARY, 1=RULE-BASED, 2=BRUTE-FORCE).
-    const CLASSIFICATION_LABELS = ["DICTIONARY", "RULE-BASED", "BRUTE-FORCE"];
+    function decisionNode(meta, answer, breakdown, nextChild) {
+        const threshold = MANUAL_TREE_THRESHOLDS[meta.key] ?? 1;
+        // Per-feature branch wording - e.g. dictionary_present reads as
+        // "Present / Not Present" instead of a generic "Yes / No", matching
+        // how each question naturally gets answered.
+        const [yesLabel, noLabel] = meta.branchLabels || ["Yes", "No"];
 
-    /* Off-path leaves should NOT just repeat vulnerabilityType (the real
-    prediction) - that would falsely claim the untaken branch leads to the
-    same result. ml-cart's leaf `distribution` arrays aren't reliably a
-    fixed 3-wide array (some leaves collapse to fewer entries when only a
-    subset of classes reached that leaf during training), so we only trust
-    an argmax decode when the array is unambiguously the full 3-class
-    width; otherwise we show a neutral, non-committal label rather than
-    guess wrong. */
-    function bestEffortOffPathLabel(node) {
-        if (node && Array.isArray(node.distribution) && Array.isArray(node.distribution[0])
-            && node.distribution[0].length === CLASSIFICATION_LABELS.length) {
-            const dist = node.distribution[0];
-            let maxI = 0;
-            for (let i = 1; i < dist.length; i++) {
-                if (dist[i] > dist[maxI]) maxI = i;
-            }
-            return CLASSIFICATION_LABELS[maxI];
-        }
-        return "OTHER OUTCOME";
+        return {
+            name: meta.question(threshold),
+            type: "decision",
+            feature: meta.key,
+            value: answer === "YES" ? 1 : 0,
+            decision: answer,
+            explanation: { YES: meta.explain.YES, NO: meta.explain.NO },
+            breakdown: breakdown || null,
+            children: [
+                {
+                    name: yesLabel,
+                    branch: "YES",
+                    taken: answer === "YES",
+                    explanation: meta.explain.YES,
+                    children: answer === "YES" ? [nextChild] : []
+                },
+                {
+                    name: noLabel,
+                    branch: "NO",
+                    taken: answer === "NO",
+                    explanation: meta.explain.NO,
+                    children: answer === "NO" ? [nextChild] : []
+                }
+            ]
+        };
     }
 
-    function walk(node, onTakenPath) {
-        if (!node || !node.left || !node.right) {
-            return leaf(onTakenPath ? vulnerabilityType : bestEffortOffPathLabel(node));
-        }
+    // Walk DECISION_TREE_ORDER back-to-front so the resulting node, once
+    // fully built, has the FIRST question in that order (Dictionary Word) as
+    // the root and the real classification result as the deepest leaf - all
+    // 12 questions are asked, in that fixed order, every single time,
+    // regardless of how shallow the model's own trained tree happened to be:
+    //
+    //   Dictionary Word
+    //         |
+    //     Present / Not Present
+    //         |
+    //     Leetspeak
+    //         |
+    //       Yes / No
+    //         |
+    //     Numeric Suffix
+    //        ...
+    let node = leaf(finalLabel);
+    for (let i = DECISION_TREE_ORDER.length - 1; i >= 0; i--) {
+        const key = DECISION_TREE_ORDER[i];
+        const meta = FEATURE_COLUMNS.find((f) => f.key === key);
+        if (!meta) continue;
 
-        const meta = FEATURE_COLUMNS[node.splitColumn];
-        if (!meta) {
-            return leaf(onTakenPath ? vulnerabilityType : bestEffortOffPathLabel(node));
-        }
-
+        const threshold = MANUAL_TREE_THRESHOLDS[meta.key] ?? 1;
         const actualValue = extractedFeatures[meta.key];
-        const threshold = node.splitValue;
-        const tookRight = actualValue >= threshold;
-
-        const yesChild = walk(node.right, onTakenPath && tookRight);
-        const noChild = walk(node.left, onTakenPath && !tookRight);
+        const answer = actualValue >= threshold ? "YES" : "NO";
         const breakdown = buildAggregateBreakdown(meta.key, extractedFeatures);
-
-        return decisionNode(
-            meta.question(threshold),
-            meta.key,
-            yesChild,
-            noChild,
-            tookRight ? "YES" : "NO",
-            meta.explain,
-            breakdown
-        );
+        node = decisionNode(meta, answer, breakdown, node);
     }
 
-    return walk(treeRoot, true);
+    return node;
 }
 
 // ===== API ROUTE =====
@@ -1008,13 +1202,15 @@ app.post('/analyze', (req, res) => {
 
     // Kunin ang pormal at realistic strategies at breakdown - the primary tip
     // is the recommendation model's own prediction; thresholds quoted are
-    // sourced from recommendation_model.json / model.root where the model
-    // actually learned them.
+    // sourced from MANUAL_TREE_THRESHOLDS (fixed, human-chosen guideline values).
     const { tips, technicalBreakdown } = getStrategies(classificationResult.label, extractedFeatures,
         password, model.root, fullClassificationExplanation.classification_rationale, recommendationResult);
 
-    // Decision tree trace - 100% derived from the trained model (model.json).
-    const actualModelDecisionPath = generateActualModelDecisionPath(classificationResult.label, extractedFeatures, model.root);
+    // Decision tree trace - the FINAL label is 100% the real trained model's
+    // prediction (classificationResult.label). The visual WALK through it is
+    // now a manual, fixed 12-question checklist (buildManualDecisionPath)
+    // instead of stopping wherever the trained tree itself stopped splitting.
+    const actualModelDecisionPath = buildManualDecisionPath(extractedFeatures, classificationResult.label);
 
     // Kalkulahin ang estimated entropy bits para sa UI data visualization charts
     const entropyBits = Math.round(password.length * Math.log2(extractedFeatures.character_class_count * 22 || 26));
@@ -1029,9 +1225,11 @@ app.post('/analyze', (req, res) => {
         features: extractedFeatures,
         password_comparison: comparisonResult,
 
-        // Decision tree trace - 100% derived from the trained model (model.json).
-        // Every question, threshold, and result here comes from the model's own
-        // learned splits, walked live for this specific password.
+        // Decision tree trace. The final result at the leaf is 100% the real
+        // trained model's prediction; the 12-question walk to get there is a
+        // fixed, manual/rule-based checklist built from the same extracted
+        // features, so the explanation is always complete rather than
+        // stopping early wherever the trained tree itself stopped splitting.
         actual_model_decision_path: actualModelDecisionPath,
 
         analytics_breakdown: {
@@ -1063,6 +1261,4 @@ app.post('/analyze', (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log('🚀 ML Backend running on http://localhost:3000');
-});
+app.listen(3000, () => {console.log('🚀 ML Backend running on http://localhost:3000');});
