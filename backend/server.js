@@ -1077,16 +1077,40 @@ function buildManualDecisionPath(extractedFeatures, finalLabel) {
             name: label,
             type: "result",
             final: true,
-            result: label
+            result: label,
+            on_path: true
         };
     }
 
-    function decisionNode(meta, answer, breakdown, nextChild) {
+    // A shallow, UNEXPANDED look at what a branch would ask next. Since all
+    // 12 questions are asked in the same fixed order no matter what the
+    // previous answer was, the "next question" on the branch this password
+    // did NOT take is always the exact same question the taken branch asks -
+    // we just don't recurse further into it, because this password never
+    // actually walked that path, so there's nothing real to report beyond
+    // that single next box. This is what keeps the tree a genuine BINARY
+    // tree (every branch leads to a node, not a dead end) without literally
+    // materializing all 2^12 = 4096 possible leaves.
+    function previewNode(nextMeta) {
+        if (!nextMeta) {
+            return { name: "Result", type: "preview", on_path: false, children: [] };
+        }
+        return {
+            name: nextMeta.question(MANUAL_TREE_THRESHOLDS[nextMeta.key] ?? 1),
+            type: "preview",
+            feature: nextMeta.key,
+            on_path: false,
+            children: []
+        };
+    }
+
+    function decisionNode(meta, answer, breakdown, nextChild, nextMeta) {
         const threshold = MANUAL_TREE_THRESHOLDS[meta.key] ?? 1;
         // Per-feature branch wording - e.g. dictionary_present reads as
         // "Present / Not Present" instead of a generic "Yes / No", matching
         // how each question naturally gets answered.
         const [yesLabel, noLabel] = meta.branchLabels || ["Yes", "No"];
+        const preview = previewNode(nextMeta);
 
         return {
             name: meta.question(threshold),
@@ -1096,20 +1120,25 @@ function buildManualDecisionPath(extractedFeatures, finalLabel) {
             decision: answer,
             explanation: { YES: meta.explain.YES, NO: meta.explain.NO },
             breakdown: breakdown || null,
+            on_path: true,
             children: [
                 {
                     name: yesLabel,
                     branch: "YES",
                     taken: answer === "YES",
                     explanation: meta.explain.YES,
-                    children: answer === "YES" ? [nextChild] : []
+                    // Taken side: the real, fully recursive subtree down to
+                    // the leaf. Not-taken side: just a one-level preview of
+                    // the next question, so the frontend can still render a
+                    // real box there instead of an empty branch.
+                    children: [answer === "YES" ? nextChild : preview]
                 },
                 {
                     name: noLabel,
                     branch: "NO",
                     taken: answer === "NO",
                     explanation: meta.explain.NO,
-                    children: answer === "NO" ? [nextChild] : []
+                    children: [answer === "NO" ? nextChild : preview]
                 }
             ]
         };
@@ -1119,19 +1148,12 @@ function buildManualDecisionPath(extractedFeatures, finalLabel) {
     // fully built, has the FIRST question in that order (Dictionary Word) as
     // the root and the real classification result as the deepest leaf - all
     // 12 questions are asked, in that fixed order, every single time,
-    // regardless of how shallow the model's own trained tree happened to be:
-    //
-    //   Dictionary Word
-    //         |
-    //     Present / Not Present
-    //         |
-    //     Leetspeak
-    //         |
-    //       Yes / No
-    //         |
-    //     Numeric Suffix
-    //        ...
+    // regardless of how shallow the model's own trained tree happened to be.
+    // Every node now has TWO real children (a true binary tree shape); only
+    // the taken side keeps expanding, the untaken side stops after one
+    // preview box (see previewNode() above) instead of dead-ending.
     let node = leaf(finalLabel);
+    let nextMeta = null;
     for (let i = DECISION_TREE_ORDER.length - 1; i >= 0; i--) {
         const key = DECISION_TREE_ORDER[i];
         const meta = FEATURE_COLUMNS.find((f) => f.key === key);
@@ -1141,7 +1163,8 @@ function buildManualDecisionPath(extractedFeatures, finalLabel) {
         const actualValue = extractedFeatures[meta.key];
         const answer = actualValue >= threshold ? "YES" : "NO";
         const breakdown = buildAggregateBreakdown(meta.key, extractedFeatures);
-        node = decisionNode(meta, answer, breakdown, node);
+        node = decisionNode(meta, answer, breakdown, node, nextMeta);
+        nextMeta = meta;
     }
 
     return node;

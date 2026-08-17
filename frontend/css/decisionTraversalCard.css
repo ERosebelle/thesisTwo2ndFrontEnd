@@ -15,8 +15,10 @@
 .decision-traversal-card {
     position: fixed !important;
     inset: 0 !important;
+
     width: 100vw !important;
     height: 100vh !important;
+
     z-index: 2147483647 !important;
 
     display: flex;
@@ -38,7 +40,7 @@
 
 
 /* =========================================================
-   MAIN CONTENT CONTAINER
+   CONTENT
    ========================================================= */
 
 .decision-traversal-card-content {
@@ -66,8 +68,6 @@
     overflow-y: auto;
     overflow-x: hidden;
 
-    cursor: default;
-
     scrollbar-width: thin;
     scrollbar-color:
         var(--dtc-scrollbar)
@@ -93,24 +93,8 @@
 }
 
 
-.decision-traversal-card-content::before {
-    content: "";
-
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 2px;
-
-    background: rgba(148, 163, 184, 0.25);
-
-    pointer-events: none;
-}
-
-
 /* =========================================================
-   CLOSE BUTTON
+   CLOSE
    ========================================================= */
 
 .decision-traversal-close {
@@ -170,7 +154,6 @@
 
 .decision-traversal-content {
     position: relative;
-
     width: 100%;
 
     color: #cbd5e1;
@@ -179,33 +162,7 @@
     line-height: 1.75;
 }
 
-.decision-traversal-content > p {
-    margin: 0 0 22px;
-    padding-left: 14px;
-
-    border-left: 2px solid rgba(148, 163, 184, 0.35);
-
-    color: #94a3b8;
-
-    font-size: 12.5px;
-    line-height: 1.65;
-}
-
-.decision-traversal-content > p::before {
-    content: "Note";
-
-    display: block;
-
-    margin-bottom: 3px;
-
-    color: #cbd5e1;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    letter-spacing: 0.3px;
-}
-
+.decision-traversal-content > p,
 .decision-traversal-note {
     margin: 0 0 20px;
     padding-left: 14px;
@@ -218,6 +175,7 @@
     line-height: 1.65;
 }
 
+.decision-traversal-content > p::before,
 .decision-traversal-note::before {
     content: "Note";
 
@@ -235,65 +193,45 @@
 
 
 /* =========================================================
-   TREE
+   TREE AREA
    ========================================================= */
-
-.decision-traversal-main {
-    position: relative;
-    width: 100%;
-}
-
-#decisionTraversalTree {
-    position: relative;
-
-    width: 100%;
-
-    margin-top: 20px;
-
-    min-width: 0;
-}
 
 .decision-traversal-tree-canvas {
     position: relative;
 
     display: flex;
     justify-content: center;
+    align-items: flex-start;
 
     width: 100%;
 
-    padding: 35px 20px 50px;
+    padding: 15px 5px 25px;
 
     box-sizing: border-box;
 
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
 
     text-align: center;
-
-    scrollbar-width: thin;
-    scrollbar-color:
-        var(--dtc-scrollbar)
-        var(--dtc-scrollbar-track);
 }
 
-.decision-traversal-tree-canvas::-webkit-scrollbar {
-    height: 8px;
+
+/* =========================================================
+   COMPACT TREE SCALE
+   ========================================================= */
+
+.decision-traversal-tree-canvas {
+    transform: scale(0.78);
+    transform-origin: top center;
+
+    width: 128.2%;
+    margin-left: -14.1%;
 }
 
-.decision-traversal-tree-canvas::-webkit-scrollbar-track {
-    background: var(--dtc-scrollbar-track);
-    border-radius: 10px;
-}
 
-.decision-traversal-tree-canvas::-webkit-scrollbar-thumb {
-    background: var(--dtc-scrollbar);
-    border-radius: 10px;
-}
-
-.decision-traversal-tree-canvas::-webkit-scrollbar-thumb:hover {
-    background: var(--dtc-scrollbar-hover);
-}
-
+/* =========================================================
+   TREE WRAPPER
+   ========================================================= */
 
 .decision-traversal-tree-canvas
 .decision-traversal-node-wrapper {
@@ -309,15 +247,13 @@
 .decision-traversal-tree-canvas
 .decision-traversal-node-wrapper:first-child {
     width: max-content;
-
-    min-width: 100%;
-
+    min-width: 0;
     margin: 0 auto;
 }
 
 
 /* =========================================================
-   TREE NODES
+   NODES
    ========================================================= */
 
 .decision-traversal-node {
@@ -329,17 +265,18 @@
     align-items: center;
     justify-content: center;
 
-    min-width: 160px;
-    max-width: 220px;
+    width: 112px;
+    min-width: 112px;
+    max-width: 112px;
 
-    min-height: 54px;
+    min-height: 40px;
 
-    padding: 11px 18px;
+    padding: 6px 9px;
 
     box-sizing: border-box;
 
     border: 1px solid rgba(148, 163, 184, 0.28);
-    border-radius: 10px;
+    border-radius: 8px;
 
     background:
         linear-gradient(
@@ -350,17 +287,17 @@
 
     color: #e2e8f0;
 
-    font-size: 12.5px;
+    font-size: 10px;
     font-weight: 600;
 
-    line-height: 1.4;
+    line-height: 1.25;
 
     text-align: center;
 
     cursor: pointer;
 
     box-shadow:
-        0 5px 14px rgba(0, 0, 0, 0.25);
+        0 4px 9px rgba(0, 0, 0, 0.25);
 
     transition:
         transform 0.15s ease,
@@ -371,55 +308,49 @@
 .decision-traversal-node:hover {
     transform: translateY(-2px);
 
-    border-color: rgba(148, 163, 184, 0.55);
+    border-color: rgba(148, 163, 184, 0.6);
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.decision-traversal-root > .decision-traversal-node {
-    min-width: 200px;
-    min-height: 60px;
-
-    border-color: rgba(148, 163, 184, 0.45);
-
-    background:
-        linear-gradient(
-            145deg,
-            #334155,
-            #1e293b
-        );
-
-    font-size: 13.5px;
-    font-weight: 700;
-}
-
-.decision-traversal-node.decision-result-node {
-    min-width: 130px;
-    min-height: 48px;
-
-    border-color: rgba(56, 189, 248, 0.45);
-
-    background:
-        linear-gradient(
-            145deg,
-            #164e63,
-            #0f2f3d
-        );
-
-    color: #67e8f9;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.3px;
+        0 5px 14px rgba(0, 0, 0, 0.3);
 }
 
 
 /* =========================================================
-   TREE CHILDREN
+   ROOT
+   ========================================================= */
+
+.decision-traversal-root > .decision-traversal-node {
+    width: 130px;
+    min-width: 130px;
+    max-width: 130px;
+
+    min-height: 44px;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.decision-traversal-node.decision-result-node {
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+
+    min-height: 36px;
+
+    padding: 7px 10px;
+
+    font-size: 9.5px;
+
+    border-radius: 999px;
+}
+
+
+/* =========================================================
+   CHILDREN
    ========================================================= */
 
 .decision-traversal-children {
@@ -431,11 +362,11 @@
     align-items: flex-start;
 
     width: max-content;
-    min-width: 100%;
+    min-width: 0;
 
     margin-top: 0;
 
-    padding-top: 68px;
+    padding-top: 30px;
 }
 
 .decision-traversal-children::before {
@@ -447,14 +378,14 @@
     left: 50%;
 
     width: 2px;
-    height: 68px;
+    height: 30px;
 
     background: var(--dtc-line);
 }
 
 
 /* =========================================================
-   TREE BRANCHES
+   BRANCHES
    ========================================================= */
 
 .decision-traversal-branch {
@@ -466,9 +397,12 @@
 
     flex-shrink: 0;
 
-    min-width: 190px;
+    width: 115px;
+    min-width: 115px;
 
-    padding: 34px 25px 0;
+    padding: 18px 3px 0;
+
+    box-sizing: border-box;
 }
 
 .decision-traversal-branch::before {
@@ -509,7 +443,7 @@
     left: 50%;
 
     width: 2px;
-    height: 34px;
+    height: 18px;
 
     background: var(--dtc-line);
 }
@@ -530,7 +464,7 @@
 
 .decision-traversal-connector {
     width: 2px;
-    height: 22px;
+    height: 10px;
 
     margin-top: 0;
 
@@ -542,9 +476,9 @@
 
     z-index: 5;
 
-    margin: -11px 0 7px;
+    margin: -5px 0 4px;
 
-    padding: 3px 11px;
+    padding: 2px 6px;
 
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 999px;
@@ -553,10 +487,10 @@
 
     color: #94a3b8;
 
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 700;
 
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 
     text-transform: uppercase;
 
@@ -590,7 +524,7 @@
 
     box-shadow:
         0 0 0 1px rgba(56, 189, 248, 0.25),
-        0 7px 18px rgba(56, 189, 248, 0.15);
+        0 6px 15px rgba(56, 189, 248, 0.15);
 }
 
 .decision-traversal-branch-line[data-taken="true"] {
@@ -621,7 +555,7 @@
 
 
 /* =========================================================
-   INFORMATION POPUP CONTAINER
+   INFORMATION POPUP
    ========================================================= */
 
 .decision-traversal-info-row {
@@ -639,17 +573,6 @@
     z-index: 20;
 }
 
-
-/* =========================================================
-   INFORMATION POPUP SLOT
-
-   IMPORTANT:
-   - No fixed height
-   - No fixed max-height
-   - Height follows the card
-   - Only scrolls when it physically cannot fit
-   ========================================================= */
-
 .decision-traversal-info-slot {
     position: absolute;
 
@@ -658,16 +581,9 @@
     width: 280px;
     max-width: 280px;
 
-    /*
-     * The popup is allowed to grow.
-     */
     height: auto;
     max-height: calc(100% - 30px);
 
-    /*
-     * Prevents the popup from being cut off
-     * when it becomes taller than the available area.
-     */
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -687,11 +603,6 @@
         top 0.15s ease;
 }
 
-
-/* =========================================================
-   POPUP LEFT / RIGHT
-   ========================================================= */
-
 .decision-traversal-info-slot.left {
     left: 18px;
     right: auto;
@@ -702,37 +613,24 @@
     left: auto;
 }
 
-
-/* =========================================================
-   POPUP SCROLLBAR
-   ========================================================= */
-
 .decision-traversal-info-slot::-webkit-scrollbar {
     width: 8px;
 }
 
 .decision-traversal-info-slot::-webkit-scrollbar-track {
     background: var(--dtc-scrollbar-track);
-
     border-radius: 10px;
 }
 
 .decision-traversal-info-slot::-webkit-scrollbar-thumb {
     background: var(--dtc-scrollbar);
-
     border-radius: 10px;
-
     min-height: 35px;
 }
 
 .decision-traversal-info-slot::-webkit-scrollbar-thumb:hover {
     background: var(--dtc-scrollbar-hover);
 }
-
-
-/* =========================================================
-   EMPTY POPUP
-   ========================================================= */
 
 .decision-traversal-info-slot:empty {
     display: none;
@@ -741,18 +639,11 @@
 
 /* =========================================================
    INFORMATION CARD
-
-   IMPORTANT:
-   The card has NO fixed height.
-   It expands according to its content.
    ========================================================= */
 
 .decision-traversal-info-card {
     width: 100%;
 
-    /*
-     * Let the content determine the height.
-     */
     height: auto;
     min-height: 0;
 
@@ -761,7 +652,6 @@
     padding: 16px 17px;
 
     border: 1px solid rgba(148, 163, 184, 0.16);
-
     border-radius: 10px;
 
     background:
@@ -776,30 +666,18 @@
 
     backdrop-filter: blur(10px);
 
-    /*
-     * Important for long text.
-     */
     overflow-wrap: anywhere;
     word-break: normal;
 }
 
-
-/* =========================================================
-   POPUP SIDE INDICATOR
-   ========================================================= */
-
 .decision-traversal-info-card.left {
     border-left: 3px solid var(--dtc-line-taken);
-
-    border-right:
-        1px solid rgba(148, 163, 184, 0.16);
+    border-right: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .decision-traversal-info-card.right {
     border-right: 3px solid var(--dtc-line-taken);
-
-    border-left:
-        1px solid rgba(148, 163, 184, 0.16);
+    border-left: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 
@@ -853,7 +731,6 @@
 
 .decision-traversal-breakdown-list {
     display: flex;
-
     flex-direction: column;
 
     gap: 8px;
@@ -868,7 +745,6 @@
     padding: 8px 10px;
 
     border: 1px solid rgba(148, 163, 184, 0.14);
-
     border-radius: 8px;
 
     background: rgba(30, 41, 59, 0.45);
@@ -912,25 +788,124 @@
 
 
 /* =========================================================
-   RESPONSIVE
+   NO HORIZONTAL SCROLL
    ========================================================= */
 
-@media (max-width: 1100px) {
-
-    .decision-traversal-info-slot {
-        width: 250px;
-        max-width: 250px;
-    }
-
-    .decision-traversal-info-slot.left {
-        left: 10px;
-    }
-
-    .decision-traversal-info-slot.right {
-        right: 10px;
-    }
+.decision-traversal-tree-canvas {
+    overflow-x: hidden !important;
 }
 
+
+/* =========================================================
+   STRAIGHT PATH AT POPUP BOUNDARY
+   ========================================================= */
+
+.decision-traversal-branch.dtc-boundary-left,
+.decision-traversal-branch.dtc-boundary-right {
+    width: 130px;
+    min-width: 130px;
+
+    padding-left: 0;
+    padding-right: 0;
+}
+
+
+/* REMOVE HORIZONTAL BRANCH */
+
+.decision-traversal-branch.dtc-boundary-left::before,
+.decision-traversal-branch.dtc-boundary-right::before {
+    display: none !important;
+}
+
+
+/* KEEP VERTICAL CONNECTOR */
+
+.decision-traversal-branch.dtc-boundary-left::after,
+.decision-traversal-branch.dtc-boundary-right::after {
+    left: 50% !important;
+    width: 2px !important;
+}
+
+
+/* =========================================================
+   FORCE SUBTREE STRAIGHT
+   ========================================================= */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children {
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    width: 130px !important;
+    min-width: 130px !important;
+
+    padding-top: 18px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+/* REMOVE HORIZONTAL CHILDREN CONNECTOR */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children::before {
+    display: none !important;
+}
+
+
+/* EVERY BRANCH INSIDE STRAIGHT SECTION */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children
+> .decision-traversal-branch {
+    width: 130px !important;
+    min-width: 130px !important;
+
+    padding: 18px 0 0 !important;
+
+    margin: 0 !important;
+}
+
+
+/* REMOVE HORIZONTAL LINES */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children
+> .decision-traversal-branch::before {
+    display: none !important;
+}
+
+
+/* CENTER VERTICAL CONNECTOR */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children
+> .decision-traversal-branch::after {
+    left: 50% !important;
+    width: 2px !important;
+    height: 18px !important;
+}
+
+
+/* =========================================================
+   TAKEN PATH
+   ========================================================= */
+
+.decision-traversal-node-wrapper.dtc-boundary-stack
+> .decision-traversal-children
+> .decision-traversal-branch[data-taken="true"]::after {
+    background: var(--dtc-line-taken);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 900px) {
 
@@ -948,10 +923,15 @@
     }
 
     .decision-traversal-tree-canvas {
-        justify-content: flex-start;
+        transform: scale(0.72);
 
-        padding-left: 30px;
-        padding-right: 30px;
+        width: 138.9%;
+        margin-left: -19.45%;
+    }
+
+    .decision-traversal-branch {
+        width: 110px;
+        min-width: 110px;
     }
 
     .decision-traversal-info-slot {
@@ -966,10 +946,35 @@
     .decision-traversal-info-slot.right {
         right: 6px;
     }
+
+    .decision-traversal-node-wrapper.dtc-boundary-stack
+    > .decision-traversal-children {
+        width: 120px !important;
+        min-width: 120px !important;
+    }
+
+    .decision-traversal-node-wrapper.dtc-boundary-stack
+    > .decision-traversal-children
+    > .decision-traversal-branch {
+        width: 120px !important;
+        min-width: 120px !important;
+    }
 }
 
 
 @media (max-width: 700px) {
+
+    .decision-traversal-tree-canvas {
+        transform: scale(0.68);
+
+        width: 147.1%;
+        margin-left: -23.55%;
+    }
+
+    .decision-traversal-branch {
+        width: 105px;
+        min-width: 105px;
+    }
 
     .decision-traversal-info-slot {
         width: 200px;
@@ -1005,37 +1010,47 @@
 
     .decision-traversal-card-content h2 {
         margin-right: 45px;
-
         font-size: 18px;
     }
 
+    .decision-traversal-tree-canvas {
+        transform: scale(0.62);
+
+        width: 161.3%;
+        margin-left: -30.65%;
+    }
+
     .decision-traversal-node {
-        min-width: 130px;
-        max-width: 170px;
+        width: 105px;
+        min-width: 105px;
+        max-width: 105px;
 
-        min-height: 48px;
+        min-height: 38px;
 
-        padding: 9px 12px;
+        padding: 6px 8px;
 
-        font-size: 11.5px;
+        font-size: 9px;
     }
 
     .decision-traversal-root > .decision-traversal-node {
-        min-width: 150px;
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
+
+        min-height: 42px;
+
+        font-size: 10px;
+    }
+
+    .decision-traversal-node.decision-result-node {
+        width: 95px;
+        min-width: 95px;
+        max-width: 95px;
     }
 
     .decision-traversal-branch {
-        min-width: 160px;
-
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .decision-traversal-tree-canvas {
-        justify-content: flex-start;
-
-        padding-left: 20px;
-        padding-right: 20px;
+        width: 100px;
+        min-width: 100px;
     }
 
     .decision-traversal-info-slot {
@@ -1055,5 +1070,18 @@
 
     .decision-traversal-info-card {
         padding: 14px;
+    }
+
+    .decision-traversal-node-wrapper.dtc-boundary-stack
+    > .decision-traversal-children {
+        width: 110px !important;
+        min-width: 110px !important;
+    }
+
+    .decision-traversal-node-wrapper.dtc-boundary-stack
+    > .decision-traversal-children
+    > .decision-traversal-branch {
+        width: 110px !important;
+        min-width: 110px !important;
     }
 }
