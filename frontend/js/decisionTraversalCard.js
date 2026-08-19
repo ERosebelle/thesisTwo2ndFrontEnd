@@ -10,6 +10,7 @@ const DecisionTraversalCard = (() => {
     let closeButton = null;
     let initialized = false;
     let activeInfoElement = null;
+    let boundaryResizeFrame = null;
 
     function getRealChildEdges(node) {
 
@@ -116,9 +117,21 @@ const DecisionTraversalCard = (() => {
                 );
 
             closeButton =
-                document.getElementById(
-                    "decisionTraversalClose"
-                );
+    card.querySelector(
+        "#decisionTraversalClose"
+    );
+
+
+
+if (closeButton) {
+
+    closeButton.style.position = "absolute";
+    closeButton.style.top = "18px";
+    closeButton.style.right = "18px";
+    closeButton.style.left = "auto";
+    closeButton.style.bottom = "auto";
+    closeButton.style.zIndex = "10000";
+}
 
             return !!(
                 card &&
@@ -182,6 +195,24 @@ const DecisionTraversalCard = (() => {
             repositionActiveInfo
         );
 
+        window.addEventListener(
+            "resize",
+            () => {
+
+                if (boundaryResizeFrame) {
+
+                    cancelAnimationFrame(
+                        boundaryResizeFrame
+                    );
+                }
+
+                boundaryResizeFrame =
+                    requestAnimationFrame(
+                        applyWidthBoundaries
+                    );
+            }
+        );
+
         if (cardContent) {
 
             cardContent.addEventListener(
@@ -208,7 +239,15 @@ const DecisionTraversalCard = (() => {
             data;
 
         if (tree) {
+
             renderTree(data);
+
+            if (
+                card &&
+                !card.hidden
+            ) {
+                scheduleWidthBoundaries();
+            }
         }
     }
 
@@ -332,172 +371,131 @@ const DecisionTraversalCard = (() => {
             : "right";
     }
 
-    function getElementSide(element) {
+function getElementSide(element) {
 
-        if (!element || !tree) {
-            return "right";
-        }
-
-        const branch =
-            element.closest(
-                ".decision-traversal-branch"
-            );
-
-        if (branch) {
-            return (
-                branch.dataset.side ||
-                "right"
-            );
-        }
-
-        const wrapper =
-            element.closest(
-                ".decision-traversal-node-wrapper"
-            );
-
-        if (
-            wrapper &&
-            wrapper.dataset.side &&
-            wrapper.dataset.side !== "center"
-        ) {
-            return wrapper.dataset.side;
-        }
-
-        const canvas =
-            element.closest(
-                ".decision-traversal-tree-canvas"
-            );
-
-        if (!canvas) {
-            return "right";
-        }
-
-        const elementRect =
-            element.getBoundingClientRect();
-
-        const canvasRect =
-            canvas.getBoundingClientRect();
-
-        const elementCenter =
-            elementRect.left +
-            elementRect.width / 2;
-
-        const canvasCenter =
-            canvasRect.left +
-            canvasRect.width / 2;
-
-        return elementCenter < canvasCenter
-            ? "left"
-            : "right";
+    if (!element || !main) {
+        return "right";
     }
 
-    function positionInfo(
-        sourceElement,
-        side
+    const elementRect =
+        element.getBoundingClientRect();
+
+    const mainRect =
+        main.getBoundingClientRect();
+
+    const elementCenter =
+        elementRect.left +
+        elementRect.width / 2;
+
+    const mainCenter =
+        mainRect.left +
+        mainRect.width / 2;
+
+    return elementCenter < mainCenter
+        ? "left"
+        : "right";
+}
+
+function positionInfo(
+    sourceElement,
+    side
+) {
+
+    if (
+        !sourceElement ||
+        !main
     ) {
-
-        if (
-            !sourceElement ||
-            !main
-        ) {
-            return;
-        }
-
-        const container =
-            side === "left"
-                ? leftInfo
-                : rightInfo;
-
-        if (!container) {
-            return;
-        }
-
-        const panel =
-            container.querySelector(
-                ".decision-traversal-info-card"
-            );
-
-        if (!panel) {
-            return;
-        }
-
-        const sourceRect =
-            sourceElement.getBoundingClientRect();
-
-        // `.decision-traversal-info-slot` is positioned
-        // absolutely inside `.decision-traversal-main`,
-        // so that is the coordinate system we must
-        // convert the clicked element's viewport
-        // position into (its `getBoundingClientRect()`
-        // origin), not the unrelated intro-text block.
-        const mainRect =
-            main.getBoundingClientRect();
-
-        const panelHeight =
-            panel.offsetHeight;
-
-        const sourceCenter =
-            sourceRect.top +
-            sourceRect.height / 2;
-
-        const mainRelativeCenter =
-            sourceCenter -
-            mainRect.top;
-
-        const mainHeight =
-            main.clientHeight;
-
-        const padding =
-            8;
-
-        const halfPanel =
-            panelHeight / 2;
-
-        const minimumCenter =
-            padding +
-            halfPanel;
-
-        const maximumCenter =
-            Math.max(
-                minimumCenter,
-                mainHeight -
-                padding -
-                halfPanel
-            );
-
-        const finalCenter =
-            Math.max(
-                minimumCenter,
-                Math.min(
-                    mainRelativeCenter,
-                    maximumCenter
-                )
-            );
-
-        container.style.top =
-            `${finalCenter}px`;
-
-        container.style.transform =
-            "translateY(-50%)";
-
-        if (side === "left") {
-
-            container.style.left =
-                "18px";
-
-            container.style.right =
-                "auto";
-
-        } else {
-
-            container.style.right =
-                "18px";
-
-            container.style.left =
-                "auto";
-        }
+        return;
     }
 
+    const container =
+        side === "left"
+            ? leftInfo
+            : rightInfo;
+
+    if (!container) {
+        return;
+    }
+
+    const panel =
+        container.querySelector(
+            ".decision-traversal-info-card"
+        );
+
+    if (!panel) {
+        return;
+    }
+
+    const sourceRect =
+        sourceElement.getBoundingClientRect();
+
+    const mainRect =
+        main.getBoundingClientRect();
+
+    const panelHeight =
+        panel.offsetHeight;
+
+    const sourceCenter =
+        sourceRect.top +
+        sourceRect.height / 2;
+
+    const mainRelativeCenter =
+        sourceCenter -
+        mainRect.top;
+
+    const mainHeight =
+        main.clientHeight;
+
+    const padding =
+        8;
+
+    const halfPanel =
+        panelHeight / 2;
+
+    const minimumCenter =
+        padding +
+        halfPanel;
+
+    const maximumCenter =
+        Math.max(
+            minimumCenter,
+            mainHeight -
+            padding -
+            halfPanel
+        );
+
+    const finalCenter =
+        Math.max(
+            minimumCenter,
+            Math.min(
+                mainRelativeCenter,
+                maximumCenter
+            )
+        );
+
+    container.style.top =
+        `${finalCenter}px`;
+
+    container.style.transform =
+        "translateY(-50%)";
+
+    if (side === "left") {
+
+        container.style.left =
+            "18px";
+
+        container.style.right =
+            "auto";
+
+    } else {
+
+        container.style.right =
+            "18px";
+
+        container.style.left =
+            "auto";
+    }
+}
     function repositionActiveInfo() {
 
         if (!activeInfoElement) {
@@ -1008,6 +1006,203 @@ const DecisionTraversalCard = (() => {
         return branch;
     }
 
+    /* =========================================================
+       WIDE-BRANCH BOUNDARY CONSTRAINT
+
+       The detailed tree's layout (spacing, spread, diagonal
+       look) is still entirely driven by the existing CSS flex
+       rules above — nothing about normal branches changes.
+
+       This only measures the tree AFTER it has been laid out
+       by the browser, and — exactly like the compact overview
+       tree already does — stops branches from drifting further
+       and further outward once they cross a reasonable
+       horizontal boundary based on the real available width of
+       the detailed-tree area. Once a branch crosses that
+       boundary, that branch and everything beneath it renders
+       as a straight vertical drop (via the existing
+       .dtc-boundary-left / .dtc-boundary-right /
+       .dtc-boundary-stack CSS rules) instead of continuing to
+       fan outward.
+       ========================================================= */
+
+    function clearBoundaryMarkers() {
+
+        if (!tree) {
+            return;
+        }
+
+        tree.querySelectorAll(
+            ".dtc-boundary-stack"
+        ).forEach(el => {
+
+            el.classList.remove(
+                "dtc-boundary-stack"
+            );
+        });
+
+        tree.querySelectorAll(
+            ".dtc-boundary-left, .dtc-boundary-right"
+        ).forEach(el => {
+
+            el.classList.remove(
+                "dtc-boundary-left",
+                "dtc-boundary-right"
+            );
+        });
+    }
+
+    function walkForBoundaries(
+        wrapper,
+        forceStack,
+        centerX,
+        maxOffset
+    ) {
+
+        if (!wrapper) {
+            return;
+        }
+
+        if (forceStack) {
+
+            wrapper.classList.add(
+                "dtc-boundary-stack"
+            );
+        }
+
+        const childrenContainer =
+            wrapper.querySelector(
+                ":scope > .decision-traversal-children"
+            );
+
+        if (!childrenContainer) {
+            return;
+        }
+
+        const branches =
+            childrenContainer.querySelectorAll(
+                ":scope > .decision-traversal-branch"
+            );
+
+        branches.forEach(branch => {
+
+            const childWrapper =
+                branch.querySelector(
+                    ":scope > .decision-traversal-node-wrapper"
+                );
+
+            if (!childWrapper) {
+                return;
+            }
+
+            let stack = forceStack;
+
+            if (!stack) {
+
+                const rect =
+                    childWrapper.getBoundingClientRect();
+
+                const nodeCenterX =
+                    rect.left +
+                    rect.width / 2;
+
+                const offset =
+                    Math.abs(
+                        nodeCenterX - centerX
+                    );
+
+                if (offset > maxOffset) {
+
+                    stack = true;
+
+                    branch.classList.add(
+                        branch.dataset.side === "left"
+                            ? "dtc-boundary-left"
+                            : "dtc-boundary-right"
+                    );
+                }
+            }
+
+            walkForBoundaries(
+                childWrapper,
+                stack,
+                centerX,
+                maxOffset
+            );
+        });
+    }
+
+    function applyWidthBoundaries() {
+
+        if (
+            !tree ||
+            !card ||
+            card.hidden
+        ) {
+            return;
+        }
+
+        const canvas =
+            tree.querySelector(
+                ".decision-traversal-tree-canvas"
+            );
+
+        if (!canvas) {
+            return;
+        }
+
+        clearBoundaryMarkers();
+
+        const treeRect =
+            tree.getBoundingClientRect();
+
+        if (!treeRect.width) {
+            return;
+        }
+
+        // The boundary is derived from the actual available
+        // width of the detailed-tree area (not an arbitrary
+        // fixed pixel value); a small edge margin keeps the
+        // outermost nodes from touching the tree area's edge.
+        const centerX =
+            treeRect.left +
+            treeRect.width / 2;
+
+        const edgeMargin = 24;
+
+        const maxOffset =
+            Math.max(
+                90,
+                treeRect.width / 2 - edgeMargin
+            );
+
+        const rootWrapper =
+            canvas.querySelector(
+                ":scope > .decision-traversal-node-wrapper"
+            );
+
+        if (!rootWrapper) {
+            return;
+        }
+
+        walkForBoundaries(
+            rootWrapper,
+            false,
+            centerX,
+            maxOffset
+        );
+    }
+
+    function scheduleWidthBoundaries() {
+
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(
+                applyWidthBoundaries
+            );
+        });
+    }
+
     function renderTree(data) {
 
         if (!tree) {
@@ -1102,6 +1297,8 @@ const DecisionTraversalCard = (() => {
 
         document.body.style.overflow =
             "hidden";
+
+        scheduleWidthBoundaries();
     }
 
     function close() {

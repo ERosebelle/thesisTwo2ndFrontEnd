@@ -82,7 +82,7 @@
     left: 50%;
     top: 45%;
 
-    width: 82%;
+    width: 100%;
     height: 72%;
 
     display: flex;
@@ -100,44 +100,7 @@
 }
 
 
-.decision-tree-hologram::before {
-    content: "";
 
-    position: absolute;
-
-    width: 170px;
-    height: 170px;
-
-    border-radius: 50%;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(56, 189, 248, .10) 0%,
-            rgba(56, 189, 248, .035) 42%,
-            transparent 72%
-        );
-
-    filter: blur(14px);
-
-    pointer-events: none;
-
-    animation: treeAmbientGlow 4s ease-in-out infinite;
-}
-
-
-@keyframes treeAmbientGlow {
-    0%,
-    100% {
-        opacity: .5;
-        transform: scale(.94);
-    }
-
-    50% {
-        opacity: .9;
-        transform: scale(1.05);
-    }
-}
 
 
 /* =========================================================
@@ -188,11 +151,6 @@
     stroke: #22D3EE;
     opacity: 1;
     stroke-width: 2;
-
-    filter:
-        drop-shadow(0 0 2px #22D3EE)
-        drop-shadow(0 0 6px rgba(34, 211, 238, .75))
-        drop-shadow(0 0 14px rgba(34, 211, 238, .4));
 }
 
 
@@ -219,11 +177,6 @@
     stroke: #D8B4FE;
     stroke-width: 1.2;
     opacity: 1;
-
-    filter:
-        drop-shadow(0 0 4px #A855F7)
-        drop-shadow(0 0 10px rgba(168, 85, 247, .8))
-        drop-shadow(0 0 20px rgba(168, 85, 247, .4));
 }
 
 
@@ -232,9 +185,7 @@
     stroke: #BFDBFE;
     opacity: .95;
 
-    filter:
-        drop-shadow(0 0 3px #60A5FA)
-        drop-shadow(0 0 7px rgba(96, 165, 250, .55));
+ 
 }
 
 
@@ -250,10 +201,6 @@
     stroke: #67E8F9;
     opacity: 1;
 
-    filter:
-        drop-shadow(0 0 3px #22D3EE)
-        drop-shadow(0 0 8px #22D3EE)
-        drop-shadow(0 0 17px rgba(34, 211, 238, .6));
 }
 
 
@@ -261,10 +208,7 @@
     fill: #A855F7;
     stroke: #E9D5FF;
 
-    filter:
-        drop-shadow(0 0 4px #A855F7)
-        drop-shadow(0 0 10px #A855F7)
-        drop-shadow(0 0 20px rgba(168, 85, 247, .5));
+
 }
 
 
@@ -272,10 +216,7 @@
     fill: #60A5FA;
     stroke: #DBEAFE;
 
-    filter:
-        drop-shadow(0 0 3px #60A5FA)
-        drop-shadow(0 0 8px #60A5FA)
-        drop-shadow(0 0 16px rgba(96, 165, 250, .5));
+ 
 }
 
 
@@ -284,31 +225,13 @@
     stroke: #FEF08A;
     opacity: 1;
 
-    filter:
-        drop-shadow(0 0 4px #FACC15)
-        drop-shadow(0 0 9px #FACC15)
-        drop-shadow(0 0 19px rgba(250, 204, 21, .6));
+
 }
 
 
 /* =========================================================
    OVERVIEW HOVER
    ========================================================= */
-
-.decision-tree-hologram:hover .dt-root {
-    filter:
-        drop-shadow(0 0 5px #A855F7)
-        drop-shadow(0 0 12px rgba(168, 85, 247, .9))
-        drop-shadow(0 0 22px rgba(168, 85, 247, .5));
-}
-
-
-.decision-tree-hologram:hover .dt-question {
-    filter:
-        drop-shadow(0 0 3px #60A5FA)
-        drop-shadow(0 0 8px rgba(96, 165, 250, .7));
-}
-
 
 .decision-tree-hologram:focus-visible,
 .decision-tree-visual:focus-visible {
@@ -1739,5 +1662,101 @@
 
     .decision-tree-legend-item {
         font-size: 8px;
+    }
+}
+
+/* =========================================================
+   HOLOGRAM ANIMATION
+   ========================================================= */
+
+/* Moving hologram scan line */
+.decision-tree-visual::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: -20%;
+
+    width: 100%;
+    height: 1px;
+
+    background: rgba(56, 189, 248, 0.18);
+
+    pointer-events: none;
+
+    z-index: 4;
+
+    animation: hologramScan 5s linear infinite;
+}
+
+
+/* Subtle movement for the tree itself */
+.decision-tree-hologram {
+    animation: hologramFloat 4s ease-in-out infinite;
+}
+
+
+/* Slowly moving grid */
+.decision-tree-visual::before {
+    animation: hologramGrid 12s linear infinite;
+}
+
+
+/* =========================================================
+   SCAN ANIMATION
+   ========================================================= */
+
+@keyframes hologramScan {
+    0% {
+        top: -10%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+
+    90% {
+        opacity: 0.7;
+    }
+
+    100% {
+        top: 110%;
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   FLOATING TREE
+   ========================================================= */
+
+@keyframes hologramFloat {
+    0%,
+    100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(-5px);
+    }
+}
+
+
+/* =========================================================
+   MOVING GRID
+   ========================================================= */
+
+@keyframes hologramGrid {
+    0% {
+        background-position: 0 0, 0 0;
+    }
+
+    100% {
+        background-position: 28px 28px, 28px 28px;
     }
 }

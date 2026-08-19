@@ -11,56 +11,48 @@
             class="decision-traversal-close"
             aria-label="Close"
         >
-            ×
+            ✕
         </button>
 
+        <div class="decision-traversal-scroll-content">
 
-        <h2 id="decisionTraversalTitle">
-            Detailed Decision Tree Traversal
-        </h2>
-
-
-        <div
-            id="decisionTraversalContent"
-            class="decision-traversal-content"
-        >
-            <p>
-                This space provides detailed information about the flow of the Decision Tree.
-                Each shape and line contains an explanation of its role in the decision path.
-                Click a shape or line to view its explanation, and click it again to exit the explanation.
-            </p>
-        </div>
-
-
-        <div class="decision-traversal-main">
-
-
-            <!-- LEFT FIXED INFORMATION PANEL -->
-
-            <aside
-                id="decisionTraversalLeftInfo"
-                class="decision-traversal-info-slot left"
-            ></aside>
-
-
-            <!-- TREE -->
+            <h2 id="decisionTraversalTitle">
+                Detailed Decision Tree Traversal
+            </h2>
 
             <div
-                id="decisionTraversalTree"
-                class="decision-traversal-tree"
-            ></div>
+                id="decisionTraversalContent"
+                class="decision-traversal-content"
+            >
+                <p>
+                    This space provides detailed information about the flow of the Decision Tree.
+                    Each shape and line contains an explanation of its role in the decision path.
+                    <span class="decision-traversal-instruction">
+                        Click any shape to view its explanation. Click the selected shape again to close the explanation.
+                    </span>
+                </p>
+            </div>
 
+            <div class="decision-traversal-main">
 
-            <!-- RIGHT FIXED INFORMATION PANEL -->
+                <aside
+                    id="decisionTraversalLeftInfo"
+                    class="decision-traversal-info-slot left"
+                ></aside>
 
-            <aside
-                id="decisionTraversalRightInfo"
-                class="decision-traversal-info-slot right"
-            ></aside>
+                <div
+                    id="decisionTraversalTree"
+                    class="decision-traversal-tree"
+                ></div>
 
+                <aside
+                    id="decisionTraversalRightInfo"
+                    class="decision-traversal-info-slot right"
+                ></aside>
+
+            </div>
 
         </div>
-
 
     </div>
 </div>
