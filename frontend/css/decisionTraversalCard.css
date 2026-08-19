@@ -40,7 +40,7 @@
 
 
 /* =========================================================
-   CONTENT
+   CONTENT WRAPPER
    ========================================================= */
 
 .decision-traversal-card-content {
@@ -189,6 +189,16 @@
     font-weight: 700;
 
     letter-spacing: 0.3px;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER (CRITICAL FIX)
+   ========================================================= */
+
+.decision-traversal-main {
+    position: relative !important;
+    width: 100%;
 }
 
 

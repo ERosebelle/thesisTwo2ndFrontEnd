@@ -11,11 +11,14 @@
     padding: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
 }
 
 .feature-vector-header {
     width: 100%;
+    text-align: center;
     margin: 0 0 3px;
     box-sizing: border-box;
 }
@@ -27,7 +30,7 @@
     font-weight: 700;
     color: #f8fafc;
     letter-spacing: .4px;
-    text-align: left;
+    text-align: center;
     text-shadow: 0 0 10px rgba(56, 189, 248, .40);
 }
 
@@ -38,15 +41,18 @@
     font-size: 13px !important;
     line-height: 1.8;
     letter-spacing: .2px;
+    text-align: center;
     box-sizing: border-box;
 }
 
 .feature-vector-divider {
     width: 100%;
+    max-width: 1050px;
     height: 1px;
-    margin: 18px 0 20px;
+    margin: 18px auto 20px auto;
     background: linear-gradient(
         90deg,
+        transparent,
         rgba(56, 189, 248, .55),
         rgba(56, 189, 248, .18),
         transparent
@@ -114,6 +120,7 @@
     font-weight: 600;
     color: #7dd3fc;
     letter-spacing: .4px;
+    text-align: center;
 }
 
 .feature-table {
@@ -124,7 +131,7 @@
 
 .feature-table th {
     padding: 7px 8px;
-    text-align: left;
+    text-align: center;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: .6px;
@@ -137,6 +144,7 @@
     font-size: 13px;
     color: #e2e8f0;
     border-bottom: 1px solid rgba(148, 163, 184, .12);
+    text-align: center;
 }
 
 .feature-table tr:last-child td {
@@ -146,6 +154,7 @@
 .feature-table th:first-child,
 .feature-table td:first-child {
     width: 62%;
+    text-align: center;
 }
 
 .feature-table th:nth-child(2),
@@ -163,10 +172,10 @@
 .feature-table tbody tr:hover {
     background: linear-gradient(
         90deg,
+        transparent,
         rgba(56, 189, 248, .15),
         transparent
     );
-    transform: translateX(5px);
 }
 
 .feature-table-card:hover {

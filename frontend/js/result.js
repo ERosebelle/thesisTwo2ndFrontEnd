@@ -205,9 +205,9 @@ async function loadComponents() {
 
     if (
         typeof SummaryCard !==
-            "undefined" &&
+        "undefined" &&
         typeof SummaryCard.initialize ===
-            "function"
+        "function"
     ) {
 
         SummaryCard.initialize();
@@ -371,9 +371,9 @@ function initializeSidebar() {
 
             if (
                 typeof TutorialCard !==
-                    "undefined" &&
+                "undefined" &&
                 typeof TutorialCard.open ===
-                    "function"
+                "function"
             ) {
 
                 TutorialCard.open();

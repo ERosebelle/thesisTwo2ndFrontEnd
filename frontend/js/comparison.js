@@ -301,16 +301,6 @@ function updateComparisonStatus(
         return;
     }
 
-    const currentScore =
-        comparison.current_score ??
-        comparison.currentScore ??
-        "--";
-
-    const previousScore =
-        comparison.previous_score ??
-        comparison.previousScore ??
-        "--";
-
     const comparisonStatus =
         String(
             comparison.status || ""
@@ -332,12 +322,6 @@ function updateComparisonStatus(
         status.innerHTML = `
             Your current password has stronger security characteristics
             than your previous password.
-            <strong>${escapeComparisonHTML(
-                currentScore
-            )}</strong> current score vs
-            <strong>${escapeComparisonHTML(
-                previousScore
-            )}</strong> previous score.
         `;
         return;
     }
@@ -349,12 +333,6 @@ function updateComparisonStatus(
         status.innerHTML = `
             Your previous password has stronger security characteristics
             than your current password.
-            <strong>${escapeComparisonHTML(
-                previousScore
-            )}</strong> previous score vs
-            <strong>${escapeComparisonHTML(
-                currentScore
-            )}</strong> current score.
         `;
         return;
     }
@@ -366,10 +344,6 @@ function updateComparisonStatus(
         status.innerHTML = `
             Your current and previous passwords have similar
             security characteristics.
-            Both received a score of
-            <strong>${escapeComparisonHTML(
-                currentScore
-            )}</strong>.
         `;
         return;
     }
