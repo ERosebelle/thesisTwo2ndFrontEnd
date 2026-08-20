@@ -1,36 +1,24 @@
 :root {
     --dtc-line: rgba(148, 163, 184, 0.32);
     --dtc-line-taken: #38bdf8;
-
     --dtc-scrollbar: #38bdf8;
     --dtc-scrollbar-hover: #0ea5e9;
     --dtc-scrollbar-track: rgba(15, 23, 42, 0.45);
 }
 
-
-/* =========================================================
-   MAIN CARD
-   ========================================================= */
-
 .decision-traversal-card {
     position: fixed !important;
     inset: 0 !important;
-
     width: 100vw !important;
     height: 100vh !important;
-
     z-index: 2147483647 !important;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 24px;
     box-sizing: border-box;
-
     background: rgba(2, 6, 23, 0.72);
     backdrop-filter: blur(8px);
-
     pointer-events: auto !important;
 }
 
@@ -38,41 +26,27 @@
     display: none !important;
 }
 
-
 .decision-traversal-card-content {
     position: relative;
-
     width: min(94vw, 1400px);
     height: min(90vh, 850px);
-
     padding: 32px 38px;
     box-sizing: border-box;
-
     border: 1px solid rgba(148, 163, 184, 0.16);
     border-radius: 22px;
-
-    background: linear-gradient(
-        145deg,
-        #1e293b,
-        #0f172a
-    );
-
+    background: linear-gradient(145deg, #1e293b, #0f172a);
     box-shadow:
         0 18px 45px rgba(0, 0, 0, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.04);
-
     overflow: hidden;
 }
 
 .decision-traversal-scroll-content {
     width: 100%;
     height: 100%;
-
     overflow-y: auto;
     overflow-x: hidden;
-
     box-sizing: border-box;
-
     padding-top: 50px;
     padding-right: 4px;
 }
@@ -84,9 +58,9 @@
 .decision-traversal-scroll-content::-webkit-scrollbar-track {
     background: var(--dtc-scrollbar-track);
     border-radius: 10px;
-
     margin-top: 45px;
 }
+
 .decision-traversal-scroll-content::-webkit-scrollbar-thumb {
     background: var(--dtc-scrollbar);
     border-radius: 10px;
@@ -114,36 +88,21 @@
     background: var(--dtc-scrollbar-hover);
 }
 
-/* =========================================================
-   TITLE
-   ========================================================= */
-
 .decision-traversal-card-content h2 {
     position: relative;
-
     margin: 2px 55px 24px 0;
     padding-bottom: 14px;
-
     border-bottom: 1px solid rgba(148, 163, 184, 0.10);
-
     color: #e2e8f0;
-
     font-size: 21px;
     font-weight: 700;
     line-height: 1.3;
 }
 
-
-/* =========================================================
-   CONTENT
-   ========================================================= */
-
 .decision-traversal-content {
     position: relative;
     width: 100%;
-
     color: #cbd5e1;
-
     font-size: 14px;
     line-height: 1.75;
 }
@@ -152,11 +111,8 @@
 .decision-traversal-note {
     margin: 0 0 20px;
     padding-left: 14px;
-
     border-left: 2px solid rgba(148, 163, 184, 0.35);
-
     color: #94a3b8;
-
     font-size: 12.5px;
     line-height: 1.65;
 }
@@ -164,79 +120,42 @@
 .decision-traversal-content > p::before,
 .decision-traversal-note::before {
     content: "Note";
-
     display: block;
-
     margin-bottom: 3px;
-
     color: #cbd5e1;
-
     font-size: 11px;
     font-weight: 700;
-
     letter-spacing: 0.3px;
 }
-
-
-/* =========================================================
-   MAIN CONTAINER (CRITICAL FIX)
-   ========================================================= */
 
 .decision-traversal-main {
     position: relative !important;
     width: 100%;
 }
 
-
-/* =========================================================
-   TREE AREA
-   ========================================================= */
-
 .decision-traversal-tree-canvas {
     position: relative;
-
     display: flex;
     justify-content: center;
     align-items: flex-start;
-
     width: 100%;
-
     padding: 15px 5px 25px;
-
     box-sizing: border-box;
-
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     overflow-y: visible;
-
     text-align: center;
-}
-
-
-/* =========================================================
-   COMPACT TREE SCALE
-   ========================================================= */
-
-.decision-traversal-tree-canvas {
     transform: scale(1.50);
     transform-origin: top center;
-
     width: 128.2%;
     margin-left: -14.1%;
 }
 
-
-/* =========================================================
-   TREE WRAPPER
-   ========================================================= */
-
 .decision-traversal-tree-canvas
 .decision-traversal-node-wrapper {
     position: relative;
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     flex-shrink: 0;
 }
 
@@ -247,54 +166,28 @@
     margin: 0 auto;
 }
 
-
-/* =========================================================
-   NODES
-   ========================================================= */
-
 .decision-traversal-node {
     position: relative;
-
     z-index: 3;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     width: 112px;
     min-width: 112px;
     max-width: 112px;
-
     min-height: 40px;
-
     padding: 6px 9px;
-
     box-sizing: border-box;
-
     border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #1e293b,
-            #111827
-        );
-
+    background: linear-gradient(145deg, #1e293b, #111827);
     color: #e2e8f0;
-
     font-size: 10px;
     font-weight: 600;
-
     line-height: 1.25;
-
     text-align: center;
-
     cursor: pointer;
-
-    box-shadow:
-        0 4px 9px rgba(0, 0, 0, 0.25);
-
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.25);
     transition:
         transform 0.15s ease,
         border-color 0.15s ease,
@@ -303,115 +196,68 @@
 
 .decision-traversal-node:hover {
     transform: translateY(-2px);
-
     border-color: rgba(148, 163, 184, 0.6);
-
-    box-shadow:
-        0 5px 14px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
 }
-
-
-/* =========================================================
-   ROOT
-   ========================================================= */
 
 .decision-traversal-root > .decision-traversal-node {
     width: 130px;
     min-width: 130px;
     max-width: 130px;
-
     min-height: 44px;
-
     font-size: 11px;
 }
-
-
-/* =========================================================
-   RESULT
-   ========================================================= */
 
 .decision-traversal-node.decision-result-node {
     width: 100px;
     min-width: 100px;
     max-width: 100px;
-
     min-height: 36px;
-
     padding: 7px 10px;
-
     font-size: 9.5px;
-
     border-radius: 999px;
 }
 
-
-/* =========================================================
-   CHILDREN
-   ========================================================= */
-
 .decision-traversal-children {
     position: relative;
-
     display: flex;
-
     justify-content: center;
     align-items: flex-start;
-
     width: max-content;
     min-width: 0;
-
     margin-top: 0;
-
     padding-top: 30px;
 }
 
 .decision-traversal-children::before {
     content: "";
-
     position: absolute;
-
     top: 0;
     left: 50%;
-
     width: 2px;
     height: 30px;
-
     background: var(--dtc-line);
 }
 
-
-/* =========================================================
-   BRANCHES
-   ========================================================= */
-
 .decision-traversal-branch {
     position: relative;
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     flex-shrink: 0;
-
     width: 170px;
     min-width: 170px;
-
     padding: 18px 3px 0;
-
     box-sizing: border-box;
 }
 
 .decision-traversal-branch::before {
     content: "";
-
     position: absolute;
-
     top: 0;
     left: 0;
-
     width: 100%;
     height: 2px;
-
     background: var(--dtc-line);
 }
 
@@ -432,15 +278,11 @@
 
 .decision-traversal-branch::after {
     content: "";
-
     position: absolute;
-
     top: 0;
     left: 50%;
-
     width: 2px;
     height: 18px;
-
     background: var(--dtc-line);
 }
 
@@ -453,43 +295,199 @@
     display: none;
 }
 
+.decision-traversal-children[data-split="true"] {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 340px;
+    min-width: 340px;
 
-/* =========================================================
-   CONNECTORS
-   ========================================================= */
+    /* RAISED */
+    padding-top: 15px;
+}
+
+.decision-traversal-children[data-split="true"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+
+    /* RAISED */
+    height: 27px;
+
+    background: var(--dtc-line);
+    transform: translateX(-50%);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"] {
+    position: relative;
+    width: 170px;
+    min-width: 170px;
+
+    /* RAISED */
+    padding: 15px 3px 0;
+
+    margin: 0;
+    left: 0;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"]::before {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+
+    /* RAISED */
+    height: 15px;
+
+    background: var(--dtc-line-taken);
+    transform: translateX(-50%);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-taken="true"]) {
+    position: absolute;
+
+    /* RAISED */
+    top: 15px;
+
+    width: 170px;
+    min-width: 170px;
+    padding: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
+    right: calc(50% + 65px);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
+    left: calc(50% + 2px);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before {
+    content: "";
+    position: absolute;
+
+    /* RAISED */
+    top: 0;
+
+    right: 0;
+    width: 150px;
+    height: 2px;
+    background: var(--dtc-line);
+    transform-origin: right center;
+    transform: rotate(-35deg);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::after {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+    content: "";
+    position: absolute;
+
+    /* RAISED */
+    top: 0;
+
+    left: 0;
+    width: 150px;
+    height: 2px;
+    background: var(--dtc-line);
+    transform-origin: left center;
+    transform: rotate(35deg);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::after {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-taken="true"])
+> .decision-traversal-node-wrapper {
+    position: absolute;
+
+    /* RAISED */
+    top: 40px;
+
+    pointer-events: auto;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+> .decision-traversal-node-wrapper {
+    right: 0;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+> .decision-traversal-node-wrapper {
+    left: 0;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-taken="true"])
+> .decision-traversal-branch-line {
+    position: absolute;
+
+    /* RAISED */
+    top: 3px;
+
+    z-index: 10;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+> .decision-traversal-branch-line {
+    right: 92px;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+> .decision-traversal-branch-line {
+    left: 92px;
+}
 
 .decision-traversal-connector {
     width: 2px;
     height: 10px;
-
     margin-top: 0;
-
     background: var(--dtc-line);
 }
 
 .decision-traversal-branch-line {
     position: relative;
-
     z-index: 5;
-
     margin: -5px 0 4px;
-
     padding: 2px 6px;
-
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 999px;
-
     background: #172033;
-
     color: #94a3b8;
-
     font-size: 8px;
     font-weight: 700;
-
     letter-spacing: 0.3px;
-
     text-transform: uppercase;
-
     cursor: pointer;
 }
 
@@ -497,11 +495,6 @@
     border-color: rgba(148, 163, 184, 0.6);
     color: #e2e8f0;
 }
-
-
-/* =========================================================
-   TAKEN BRANCH
-   ========================================================= */
 
 .decision-traversal-branch[data-taken="true"]::before,
 .decision-traversal-branch[data-taken="true"]::after {
@@ -517,7 +510,6 @@
 > .decision-traversal-node-wrapper
 > .decision-traversal-node {
     border-color: var(--dtc-line-taken);
-
     box-shadow:
         0 0 0 1px rgba(56, 189, 248, 0.25),
         0 6px 15px rgba(56, 189, 248, 0.15);
@@ -525,78 +517,46 @@
 
 .decision-traversal-branch-line[data-taken="true"] {
     border-color: var(--dtc-line-taken);
-
     background: rgba(56, 189, 248, 0.14);
-
     color: #7dd3fc;
-
     box-shadow:
         0 0 0 1px rgba(56, 189, 248, 0.2);
 }
 
-
-/* =========================================================
-   EMPTY TREE
-   ========================================================= */
-
 .decision-traversal-empty {
     margin: 30px 0;
-
     color: #94a3b8;
-
     font-size: 13px;
-
     text-align: center;
 }
 
-
-/* =========================================================
-   INFORMATION POPUP
-   ========================================================= */
-
 .decision-traversal-info-row {
     position: absolute;
-
     inset: 0;
-
     width: 100%;
     height: 100%;
-
     margin: 0;
-
     pointer-events: none;
-
     z-index: 20;
 }
 
 .decision-traversal-info-slot {
     position: absolute;
-
     top: var(--dtc-info-top, 0%);
-
     width: 280px;
     max-width: 280px;
-
     height: auto;
     max-height: calc(100% - 30px);
-
     overflow-y: auto;
     overflow-x: hidden;
-
     box-sizing: border-box;
-
     pointer-events: auto;
-
     transform: translateY(-50%);
-
     scrollbar-width: thin;
-
     scrollbar-color:
         var(--dtc-scrollbar)
         var(--dtc-scrollbar-track);
-
-    transition:
-        top 0.15s ease;
+    transition: top 0.15s ease;
 }
 
 .decision-traversal-info-slot.left {
@@ -632,36 +592,23 @@
     display: none;
 }
 
-
-/* =========================================================
-   INFORMATION CARD
-   ========================================================= */
-
 .decision-traversal-info-card {
     width: 100%;
-
     height: auto;
     min-height: 0;
-
     box-sizing: border-box;
-
     padding: 16px 17px;
-
     border: 1px solid rgba(148, 163, 184, 0.16);
     border-radius: 10px;
-
     background:
         linear-gradient(
             145deg,
             rgba(30, 41, 59, 0.97),
             rgba(15, 23, 42, 0.97)
         );
-
     box-shadow:
         0 12px 30px rgba(0, 0, 0, 0.35);
-
     backdrop-filter: blur(10px);
-
     overflow-wrap: anywhere;
     word-break: normal;
 }
@@ -676,75 +623,46 @@
     border-left: 1px solid rgba(148, 163, 184, 0.16);
 }
 
-
-/* =========================================================
-   POPUP TEXT
-   ========================================================= */
-
 .decision-traversal-info-card strong {
     display: block;
-
     margin-bottom: 7px;
-
     color: #e2e8f0;
-
     font-size: 13px;
-
     line-height: 1.45;
 }
 
 .decision-traversal-info-card p {
     margin: 0;
-
     color: #cbd5e1;
-
     font-size: 12.5px;
-
     line-height: 1.6;
-
     overflow-wrap: anywhere;
 }
 
-
-/* =========================================================
-   BREAKDOWN
-   ========================================================= */
-
 .decision-traversal-breakdown-title {
     display: block;
-
     margin: 12px 0 6px;
-
     color: #94a3b8;
-
     font-size: 10.5px;
     font-weight: 700;
-
     letter-spacing: 0.4px;
-
     text-transform: uppercase;
 }
 
 .decision-traversal-breakdown-list {
     display: flex;
     flex-direction: column;
-
     gap: 8px;
-
     margin: 0;
     padding: 0;
-
     list-style: none;
 }
 
 .decision-traversal-breakdown-item {
     padding: 8px 10px;
-
     border: 1px solid rgba(148, 163, 184, 0.14);
     border-radius: 8px;
-
     background: rgba(30, 41, 59, 0.45);
-
     overflow-wrap: anywhere;
 }
 
@@ -754,12 +672,9 @@
 
 .decision-traversal-breakdown-label {
     display: block;
-
     color: #e2e8f0;
-
     font-size: 12px;
     font-weight: 600;
-
     line-height: 1.4;
 }
 
@@ -770,51 +685,25 @@
 
 .decision-traversal-breakdown-detail {
     display: block;
-
     margin-top: 2px;
-
     color: #94a3b8;
-
     font-size: 11.5px;
-
     line-height: 1.5;
-
     overflow-wrap: anywhere;
 }
-
-
-/* =========================================================
-   NO HORIZONTAL SCROLL
-   ========================================================= */
-
-.decision-traversal-tree-canvas {
-    overflow-x: hidden !important;
-}
-
-
-/* =========================================================
-   STRAIGHT PATH AT POPUP BOUNDARY
-   ========================================================= */
 
 .decision-traversal-branch.dtc-boundary-left,
 .decision-traversal-branch.dtc-boundary-right {
     width: 130px;
     min-width: 130px;
-
     padding-left: 0;
     padding-right: 0;
 }
-
-
-/* REMOVE HORIZONTAL BRANCH */
 
 .decision-traversal-branch.dtc-boundary-left::before,
 .decision-traversal-branch.dtc-boundary-right::before {
     display: none !important;
 }
-
-
-/* KEEP VERTICAL CONNECTOR */
 
 .decision-traversal-branch.dtc-boundary-left::after,
 .decision-traversal-branch.dtc-boundary-right::after {
@@ -822,62 +711,38 @@
     width: 2px !important;
 }
 
-
-/* =========================================================
-   FORCE SUBTREE STRAIGHT
-   ========================================================= */
-
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children {
     display: flex !important;
-
     flex-direction: column !important;
-
     align-items: center !important;
     justify-content: flex-start !important;
-
     width: 130px !important;
     min-width: 130px !important;
-
     padding-top: 18px !important;
-
     margin-left: auto !important;
     margin-right: auto !important;
 }
-
-
-/* REMOVE HORIZONTAL CHILDREN CONNECTOR */
 
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children::before {
     display: none !important;
 }
 
-
-/* EVERY BRANCH INSIDE STRAIGHT SECTION */
-
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children
 > .decision-traversal-branch {
     width: 130px !important;
     min-width: 130px !important;
-
     padding: 18px 0 0 !important;
-
     margin: 0 !important;
 }
-
-
-/* REMOVE HORIZONTAL LINES */
 
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children
 > .decision-traversal-branch::before {
     display: none !important;
 }
-
-
-/* CENTER VERTICAL CONNECTOR */
 
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children
@@ -887,41 +752,27 @@
     height: 18px !important;
 }
 
-
-/* =========================================================
-   TAKEN PATH
-   ========================================================= */
-
 .decision-traversal-node-wrapper.dtc-boundary-stack
 > .decision-traversal-children
 > .decision-traversal-branch[data-taken="true"]::after {
     background: var(--dtc-line-taken);
 }
 
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
 @media (max-width: 900px) {
-
     .decision-traversal-card {
         padding: 15px;
     }
 
     .decision-traversal-card-content {
-         --dtc-scroll-top: 50px;
+        --dtc-scroll-top: 50px;
         width: 96vw;
         height: 92vh;
-
         padding: 28px;
-
         border-radius: 20px;
     }
 
     .decision-traversal-tree-canvas {
         transform: scale(0.72);
-
         width: 138.9%;
         margin-left: -19.45%;
     }
@@ -944,6 +795,68 @@
         right: 6px;
     }
 
+    .decision-traversal-children[data-split="true"] {
+        width: 240px;
+        min-width: 240px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-taken="true"] {
+        width: 130px;
+        min-width: 130px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"]) {
+        width: 130px;
+        min-width: 130px;
+
+        /* RAISED */
+        top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
+        right: calc(50% + 55px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
+        left: calc(50% + 55px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+        width: 115px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        /* RAISED */
+        top: 3px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        right: 72px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        left: 72px;
+    }
+
     .decision-traversal-node-wrapper.dtc-boundary-stack
     > .decision-traversal-children {
         width: 120px !important;
@@ -958,12 +871,9 @@
     }
 }
 
-
 @media (max-width: 700px) {
-
     .decision-traversal-tree-canvas {
         transform: scale(0.68);
-
         width: 147.1%;
         margin-left: -23.55%;
     }
@@ -976,7 +886,6 @@
     .decision-traversal-info-slot {
         width: 200px;
         max-width: 200px;
-
         max-height: calc(100% - 20px);
     }
 
@@ -987,11 +896,71 @@
     .decision-traversal-info-slot.right {
         right: 5px;
     }
+
+    .decision-traversal-children[data-split="true"] {
+        width: 220px;
+        min-width: 220px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-taken="true"] {
+        width: 120px;
+        min-width: 120px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"]) {
+        width: 120px;
+        min-width: 120px;
+
+        /* RAISED */
+        top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
+        right: calc(50% + 50px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
+        left: calc(50% + 50px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+        width: 100px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        /* RAISED */
+        top: 3px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        right: 62px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        left: 62px;
+    }
 }
 
-
 @media (max-width: 550px) {
-
     .decision-traversal-card {
         padding: 10px;
     }
@@ -999,9 +968,7 @@
     .decision-traversal-card-content {
         width: 98vw;
         height: 94vh;
-
         padding: 24px 20px;
-
         border-radius: 18px;
     }
 
@@ -1012,7 +979,6 @@
 
     .decision-traversal-tree-canvas {
         transform: scale(0.62);
-
         width: 161.3%;
         margin-left: -30.65%;
     }
@@ -1021,11 +987,8 @@
         width: 105px;
         min-width: 105px;
         max-width: 105px;
-
         min-height: 38px;
-
         padding: 6px 8px;
-
         font-size: 9px;
     }
 
@@ -1033,9 +996,7 @@
         width: 120px;
         min-width: 120px;
         max-width: 120px;
-
         min-height: 42px;
-
         font-size: 10px;
     }
 
@@ -1053,7 +1014,6 @@
     .decision-traversal-info-slot {
         width: 175px;
         max-width: 175px;
-
         max-height: calc(100% - 20px);
     }
 
@@ -1067,6 +1027,68 @@
 
     .decision-traversal-info-card {
         padding: 14px;
+    }
+
+    .decision-traversal-children[data-split="true"] {
+        width: 200px;
+        min-width: 200px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-taken="true"] {
+        width: 110px;
+        min-width: 110px;
+
+        /* RAISED */
+        padding-top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"]) {
+        width: 110px;
+        min-width: 110px;
+
+        /* RAISED */
+        top: 15px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
+        right: calc(50% + 45px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
+        left: calc(50% + 45px);
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+        width: 85px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        /* RAISED */
+        top: 3px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        right: 52px;
+    }
+
+    .decision-traversal-children[data-split="true"]
+    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+    > .decision-traversal-branch-line {
+        left: 52px;
     }
 
     .decision-traversal-node-wrapper.dtc-boundary-stack
@@ -1083,71 +1105,47 @@
     }
 }
 
-/* =========================================================
-   INTERACTION INSTRUCTION HIGHLIGHT
-   ========================================================= */
-
 .decision-traversal-instruction {
     color: #7dd3fc;
-
     font-weight: 700;
-
     text-shadow:
         0 0 6px rgba(56, 189, 248, 0.45);
-
     animation: decisionInstructionPulse 2.5s ease-in-out infinite;
 }
 
-
 @keyframes decisionInstructionPulse {
-
     0%,
     100% {
         color: #7dd3fc;
-
         text-shadow:
             0 0 5px rgba(56, 189, 248, 0.30);
     }
 
     50% {
         color: #bae6fd;
-
         text-shadow:
             0 0 8px rgba(56, 189, 248, 0.65);
     }
 }
 
-
 .decision-traversal-close {
     position: absolute;
-
     top: 18px;
     right: 18px;
-
     width: 34px;
     height: 34px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 0;
-
     color: #CBD5E1;
-
     background: rgba(30, 41, 59, .65);
-
     border: 1px solid rgba(148, 163, 184, .16);
-
     border-radius: 9px;
-
     font-size: 23px;
     line-height: 1;
-
     cursor: pointer;
-
     z-index: 10000;
-
     transition:
         color .2s ease,
         background .2s ease,
@@ -1155,13 +1153,9 @@
         transform .2s ease;
 }
 
-
 .decision-traversal-close:hover {
     color: #F8FAFC;
-
-    background: rgba(56, 189, 248, .12);
-
+    background: rgba(56, 163, 248, .12);
     border-color: rgba(56, 189, 248, .35);
-
     transform: scale(1.04);
 }

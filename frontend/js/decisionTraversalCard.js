@@ -371,6 +371,63 @@ if (closeButton) {
             : "right";
     }
 
+    /* =========================================================
+       TAKEN-AWARE BRANCH SIDE
+
+       This does NOT change getBranchSide() above (left untouched
+       for any non-standard / non-binary case). It only decides
+       placement for the normal YES/NO case where exactly one of
+       the two branches was actually taken:
+
+           TAKEN branch      -> always "center" (straight down)
+           NOT-TAKEN = YES    -> "left"
+           NOT-TAKEN = NO     -> "right"
+
+       Anything outside that exact shape (more than 2 branches,
+       neither/both marked taken, etc.) falls back to the
+       original getBranchSide() behavior unchanged.
+       ========================================================= */
+
+    function getTakenAwareSide(
+        edge,
+        index,
+        edges
+    ) {
+
+        if (edge.taken) {
+            return "center";
+        }
+
+        const takenCount =
+            edges.filter(
+                e => e.taken
+            ).length;
+
+        if (
+            edges.length === 2 &&
+            takenCount === 1
+        ) {
+
+            const value =
+                String(edge.branch || "")
+                    .toUpperCase();
+
+            if (value === "YES") {
+                return "left";
+            }
+
+            if (value === "NO") {
+                return "right";
+            }
+        }
+
+        return getBranchSide(
+            edge.branch,
+            index,
+            edges.length
+        );
+    }
+
 function getElementSide(element) {
 
     if (!element || !main) {
@@ -877,14 +934,32 @@ function positionInfo(
         children.dataset.count =
             edges.length;
 
+        const takenCount =
+            edges.filter(
+                e => e.taken
+            ).length;
+
+        // Marks the standard YES/NO case where exactly one
+        // branch was taken, so the CSS can keep that branch
+        // centered/straight and peel the other one off to the
+        // side without it. Any other shape is left as "false"
+        // and renders with the original spread layout.
+        children.dataset.split =
+            (
+                edges.length === 2 &&
+                takenCount === 1
+            )
+                ? "true"
+                : "false";
+
         edges.forEach(
             (edge, index) => {
 
                 const side =
-                    getBranchSide(
-                        edge.branch,
+                    getTakenAwareSide(
+                        edge,
                         index,
-                        edges.length
+                        edges
                     );
 
                 children.appendChild(
