@@ -218,6 +218,10 @@
     border-radius: 999px;
 }
 
+/* =========================================================
+   STANDARD SPACING LOGIC
+   ========================================================= */
+
 .decision-traversal-children {
     position: relative;
     display: flex;
@@ -226,7 +230,7 @@
     width: max-content;
     min-width: 0;
     margin-top: 0;
-    padding-top: 30px;
+    padding-top: 40px;
 }
 
 .decision-traversal-children::before {
@@ -235,7 +239,7 @@
     top: 0;
     left: 50%;
     width: 2px;
-    height: 30px;
+    height: 40px;
     background: var(--dtc-line);
 }
 
@@ -247,7 +251,7 @@
     flex-shrink: 0;
     width: 170px;
     min-width: 170px;
-    padding: 18px 3px 0;
+    padding: 24px 3px 0;
     box-sizing: border-box;
 }
 
@@ -271,7 +275,7 @@
     width: 50%;
 }
 
-.decision-traversal-branch:not(:first-child):not(:last-child)::before {
+.decision-traversal-branch:not(:first-child):not(:last-child):::before {
     left: 0;
     width: 100%;
 }
@@ -282,7 +286,7 @@
     top: 0;
     left: 50%;
     width: 2px;
-    height: 18px;
+    height: 24px;
     background: var(--dtc-line);
 }
 
@@ -293,179 +297,6 @@
 .decision-traversal-branch:only-child::before,
 .decision-traversal-branch:only-child::after {
     display: none;
-}
-
-.decision-traversal-children[data-split="true"] {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 340px;
-    min-width: 340px;
-
-    /* RAISED */
-    padding-top: 15px;
-}
-
-.decision-traversal-children[data-split="true"]::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 2px;
-
-    /* RAISED */
-    height: 27px;
-
-    background: var(--dtc-line);
-    transform: translateX(-50%);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-taken="true"] {
-    position: relative;
-    width: 170px;
-    min-width: 170px;
-
-    /* RAISED */
-    padding: 15px 3px 0;
-
-    margin: 0;
-    left: 0;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-taken="true"]::before {
-    display: none;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-taken="true"]::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 2px;
-
-    /* RAISED */
-    height: 15px;
-
-    background: var(--dtc-line-taken);
-    transform: translateX(-50%);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch:not([data-taken="true"]) {
-    position: absolute;
-
-    /* RAISED */
-    top: 15px;
-
-    width: 170px;
-    min-width: 170px;
-    padding: 0;
-    margin: 0;
-    pointer-events: none;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
-    right: calc(50% + 65px);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
-    left: calc(50% + 2px);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before {
-    content: "";
-    position: absolute;
-
-    /* RAISED */
-    top: 0;
-
-    right: 0;
-    width: 150px;
-    height: 2px;
-    background: var(--dtc-line);
-    transform-origin: right center;
-    transform: rotate(-35deg);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::after {
-    display: none;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
-    content: "";
-    position: absolute;
-
-    /* RAISED */
-    top: 0;
-
-    left: 0;
-    width: 150px;
-    height: 2px;
-    background: var(--dtc-line);
-    transform-origin: left center;
-    transform: rotate(35deg);
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::after {
-    display: none;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch:not([data-taken="true"])
-> .decision-traversal-node-wrapper {
-    position: absolute;
-
-    /* RAISED */
-    top: 40px;
-
-    pointer-events: auto;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
-> .decision-traversal-node-wrapper {
-    right: 0;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
-> .decision-traversal-node-wrapper {
-    left: 0;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch:not([data-taken="true"])
-> .decision-traversal-branch-line {
-    position: absolute;
-
-    /* RAISED */
-    top: 3px;
-
-    z-index: 10;
-    margin: 0;
-    white-space: nowrap;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
-> .decision-traversal-branch-line {
-    right: 92px;
-}
-
-.decision-traversal-children[data-split="true"]
-> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
-> .decision-traversal-branch-line {
-    left: 92px;
 }
 
 .decision-traversal-connector {
@@ -522,6 +353,190 @@
     box-shadow:
         0 0 0 1px rgba(56, 189, 248, 0.2);
 }
+
+/* =========================================================
+   TAKEN-AWARE ("SPLIT") LAYOUT
+   ========================================================= */
+
+.decision-traversal-children[data-split="true"] {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 340px;
+    min-width: 340px;
+    padding-top: 40px;
+}
+
+.decision-traversal-children[data-split="true"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 40px;
+    background: var(--dtc-line);
+    transform: translateX(-50%);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"] {
+    position: relative;
+    width: 170px;
+    min-width: 170px;
+    padding: 80px 3px 0;
+    margin: 0;
+    left: 0;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"]::before {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 80px;
+    background: var(--dtc-line-taken);
+    transform: translateX(-50%);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-taken="true"]
+> .decision-traversal-branch-line {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    z-index: 10;
+}
+
+/* Base style for the un-taken diagonal branch */
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-taken="true"]) {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+/* Left Untaken Branch Layout (Supports data-side="left" or generic fallback) */
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 140px;
+    height: 2px;
+    background: var(--dtc-line);
+    transform-origin: top left;
+    transform: rotate(150deg);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::after,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child::after {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+> .decision-traversal-node-wrapper,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child
+> .decision-traversal-node-wrapper {
+    position: absolute;
+    top: 70px;
+    right: 121px;
+    transform: translateX(50%);
+    pointer-events: auto;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
+> .decision-traversal-branch-line,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child
+> .decision-traversal-branch-line {
+    position: absolute;
+    top: 23px;
+    right: 61px;
+    transform: translateX(50%);
+    margin: 0;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+/* Right Untaken Branch Layout (Supports data-side="right" or generic fallback) */
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 140px;
+    height: 2px;
+    background: var(--dtc-line);
+    transform-origin: top left;
+    transform: rotate(30deg);
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::after,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child::after {
+    display: none;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+> .decision-traversal-node-wrapper,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child
+> .decision-traversal-node-wrapper {
+    position: absolute;
+    top: 70px;
+    left: 121px;
+    transform: translateX(-50%);
+    pointer-events: auto;
+}
+
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
+> .decision-traversal-branch-line,
+.decision-traversal-children[data-split="true"]
+> .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child
+> .decision-traversal-branch-line {
+    position: absolute;
+    top: 23px;
+    left: 61px;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   SIDE PANEL, BOUNDARY MARKERS, ETC.
+   ========================================================= */
 
 .decision-traversal-empty {
     margin: 30px 0;
@@ -758,6 +773,10 @@
     background: var(--dtc-line-taken);
 }
 
+/* =========================================================
+   MEDIA QUERIES
+   ========================================================= */
+
 @media (max-width: 900px) {
     .decision-traversal-card {
         padding: 15px;
@@ -780,6 +799,19 @@
     .decision-traversal-branch {
         width: 110px;
         min-width: 110px;
+        padding-top: 20px;
+    }
+
+    .decision-traversal-children {
+        padding-top: 35px;
+    }
+    
+    .decision-traversal-children::before {
+        height: 35px;
+    }
+    
+    .decision-traversal-branch::after {
+        height: 20px;
     }
 
     .decision-traversal-info-slot {
@@ -787,87 +819,72 @@
         max-width: 220px;
     }
 
-    .decision-traversal-info-slot.left {
-        left: 6px;
-    }
-
-    .decision-traversal-info-slot.right {
-        right: 6px;
-    }
+    .decision-traversal-info-slot.left { left: 6px; }
+    .decision-traversal-info-slot.right { right: 6px; }
 
     .decision-traversal-children[data-split="true"] {
         width: 240px;
         min-width: 240px;
-
-        /* RAISED */
-        padding-top: 15px;
+        padding-top: 35px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-taken="true"] {
+    .decision-traversal-children[data-split="true"]::before {
+        height: 35px;
+    }
+
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] {
         width: 130px;
         min-width: 130px;
-
-        /* RAISED */
-        padding-top: 15px;
+        padding: 70px 3px 0;
+    }
+    
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"]::after {
+        height: 70px;
+    }
+    
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] > .decision-traversal-branch-line {
+        top: 35px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"]) {
-        width: 130px;
-        min-width: 130px;
-
-        /* RAISED */
-        top: 15px;
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-taken="true"]) {
+        width: 0;
+        min-width: 0;
+        top: 35px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
-        right: calc(50% + 55px);
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child::before {
+        width: 120px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
-        left: calc(50% + 55px);
+    /* Left */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-node-wrapper {
+        top: 60px; right: 104px;
+    }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-branch-line {
+        top: 18px; right: 52px;
+    }
+    
+    /* Right */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-node-wrapper {
+        top: 60px; left: 104px;
+    }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-branch-line {
+        top: 18px; left: 52px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
-        width: 115px;
+    .decision-traversal-node-wrapper.dtc-boundary-stack > .decision-traversal-children {
+        width: 120px !important; min-width: 120px !important;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        /* RAISED */
-        top: 3px;
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        right: 72px;
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        left: 72px;
-    }
-
-    .decision-traversal-node-wrapper.dtc-boundary-stack
-    > .decision-traversal-children {
-        width: 120px !important;
-        min-width: 120px !important;
-    }
-
-    .decision-traversal-node-wrapper.dtc-boundary-stack
-    > .decision-traversal-children
-    > .decision-traversal-branch {
-        width: 120px !important;
-        min-width: 120px !important;
+    .decision-traversal-node-wrapper.dtc-boundary-stack > .decision-traversal-children > .decision-traversal-branch {
+        width: 120px !important; min-width: 120px !important;
     }
 }
 
@@ -879,84 +896,72 @@
     }
 
     .decision-traversal-branch {
-        width: 105px;
-        min-width: 105px;
+        width: 105px; min-width: 105px;
+        padding-top: 18px;
     }
+
+    .decision-traversal-children { padding-top: 30px; }
+    .decision-traversal-children::before { height: 30px; }
+    .decision-traversal-branch::after { height: 18px; }
 
     .decision-traversal-info-slot {
         width: 200px;
         max-width: 200px;
         max-height: calc(100% - 20px);
     }
-
-    .decision-traversal-info-slot.left {
-        left: 5px;
-    }
-
-    .decision-traversal-info-slot.right {
-        right: 5px;
-    }
+    .decision-traversal-info-slot.left { left: 5px; }
+    .decision-traversal-info-slot.right { right: 5px; }
 
     .decision-traversal-children[data-split="true"] {
         width: 220px;
         min-width: 220px;
-
-        /* RAISED */
-        padding-top: 15px;
+        padding-top: 30px;
+    }
+    
+    .decision-traversal-children[data-split="true"]::before {
+        height: 30px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-taken="true"] {
-        width: 120px;
-        min-width: 120px;
-
-        /* RAISED */
-        padding-top: 15px;
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] {
+        width: 120px; min-width: 120px; padding: 60px 3px 0;
+    }
+    
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"]::after {
+        height: 60px;
+    }
+    
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] > .decision-traversal-branch-line {
+        top: 30px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"]) {
-        width: 120px;
-        min-width: 120px;
-
-        /* RAISED */
-        top: 15px;
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-taken="true"]) {
+        top: 30px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
-        right: calc(50% + 50px);
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
-        left: calc(50% + 50px);
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child::before {
         width: 100px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        /* RAISED */
-        top: 3px;
+    /* Left */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-node-wrapper {
+        top: 50px; right: 87px;
     }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        right: 62px;
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-branch-line {
+        top: 13px; right: 43px;
     }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        left: 62px;
+    /* Right */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-node-wrapper {
+        top: 50px; left: 87px;
+    }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-branch-line {
+        top: 13px; left: 43px;
     }
 }
 
@@ -984,124 +989,82 @@
     }
 
     .decision-traversal-node {
-        width: 105px;
-        min-width: 105px;
-        max-width: 105px;
-        min-height: 38px;
-        padding: 6px 8px;
-        font-size: 9px;
+        width: 105px; min-width: 105px; max-width: 105px; min-height: 38px; padding: 6px 8px; font-size: 9px;
     }
 
     .decision-traversal-root > .decision-traversal-node {
-        width: 120px;
-        min-width: 120px;
-        max-width: 120px;
-        min-height: 42px;
-        font-size: 10px;
+        width: 120px; min-width: 120px; max-width: 120px; min-height: 42px; font-size: 10px;
     }
 
     .decision-traversal-node.decision-result-node {
-        width: 95px;
-        min-width: 95px;
-        max-width: 95px;
+        width: 95px; min-width: 95px; max-width: 95px;
     }
 
     .decision-traversal-branch {
-        width: 100px;
-        min-width: 100px;
+        width: 100px; min-width: 100px;
+        padding-top: 15px;
     }
+    
+    .decision-traversal-children { padding-top: 25px; }
+    .decision-traversal-children::before { height: 25px; }
+    .decision-traversal-branch::after { height: 15px; }
 
     .decision-traversal-info-slot {
-        width: 175px;
-        max-width: 175px;
-        max-height: calc(100% - 20px);
+        width: 175px; max-width: 175px; max-height: calc(100% - 20px);
     }
-
-    .decision-traversal-info-slot.left {
-        left: 5px;
-    }
-
-    .decision-traversal-info-slot.right {
-        right: 5px;
-    }
+    .decision-traversal-info-slot.left { left: 5px; }
+    .decision-traversal-info-slot.right { right: 5px; }
 
     .decision-traversal-info-card {
         padding: 14px;
     }
 
     .decision-traversal-children[data-split="true"] {
-        width: 200px;
-        min-width: 200px;
-
-        /* RAISED */
-        padding-top: 15px;
+        width: 200px; min-width: 200px; padding-top: 25px;
     }
+    
+    .decision-traversal-children[data-split="true"]::before { height: 25px; }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-taken="true"] {
-        width: 110px;
-        min-width: 110px;
-
-        /* RAISED */
-        padding-top: 15px;
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] {
+        width: 110px; min-width: 110px; padding: 50px 3px 0;
     }
+    
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"]::after { height: 50px; }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-taken="true"] > .decision-traversal-branch-line { top: 25px; }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-taken="true"]) { top: 25px; }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"]) {
-        width: 110px;
-        min-width: 110px;
-
-        /* RAISED */
-        top: 15px;
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) {
-        right: calc(50% + 45px);
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) {
-        left: calc(50% + 45px);
-    }
-
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before {
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])::before,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child::before {
         width: 85px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        /* RAISED */
-        top: 3px;
+    /* Left */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-node-wrapper {
+        top: 42px; right: 74px;
+    }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="left"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):first-child > .decision-traversal-branch-line {
+        top: 9px; right: 37px;
+    }
+    /* Right */
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-node-wrapper,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-node-wrapper {
+        top: 42px; left: 74px;
+    }
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch[data-side="right"]:not([data-taken="true"]) > .decision-traversal-branch-line,
+    .decision-traversal-children[data-split="true"] > .decision-traversal-branch:not([data-side]):not([data-taken="true"]):last-child > .decision-traversal-branch-line {
+        top: 9px; left: 37px;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="left"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        right: 52px;
+    .decision-traversal-node-wrapper.dtc-boundary-stack > .decision-traversal-children {
+        width: 110px !important; min-width: 110px !important;
     }
 
-    .decision-traversal-children[data-split="true"]
-    > .decision-traversal-branch[data-side="right"]:not([data-taken="true"])
-    > .decision-traversal-branch-line {
-        left: 52px;
-    }
-
-    .decision-traversal-node-wrapper.dtc-boundary-stack
-    > .decision-traversal-children {
-        width: 110px !important;
-        min-width: 110px !important;
-    }
-
-    .decision-traversal-node-wrapper.dtc-boundary-stack
-    > .decision-traversal-children
-    > .decision-traversal-branch {
-        width: 110px !important;
-        min-width: 110px !important;
+    .decision-traversal-node-wrapper.dtc-boundary-stack > .decision-traversal-children > .decision-traversal-branch {
+        width: 110px !important; min-width: 110px !important;
     }
 }
 
@@ -1158,4 +1121,46 @@
     background: rgba(56, 163, 248, .12);
     border-color: rgba(56, 189, 248, .35);
     transform: scale(1.04);
+}
+
+/* =========================================================
+   PURE CSS CLICK-TO-POP-OUT EFFECT
+   ========================================================= */
+
+.decision-traversal-popout {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: max-content;
+    max-width: 220px;
+    padding: 12px 16px;
+    
+    background: linear-gradient(145deg, #1e293b, #111827);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 8px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+    color: #e2e8f0;
+    font-size: 11px;
+    text-align: left;
+    
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.decision-traversal-popout strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #7dd3fc;
+    font-size: 12px;
+}
+
+.decision-traversal-node-wrapper:focus-within .decision-traversal-popout {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
 }

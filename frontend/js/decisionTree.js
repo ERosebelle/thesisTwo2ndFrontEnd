@@ -121,7 +121,12 @@ const DecisionTree = (() => {
         const assessment =
             data.security_assessment || {};
 
+        // Prefer the Decision Tree page's OWN explanation (genuinely
+        // derived from the actual tree traversal for this password) -
+        // falls back to the old field only if a backend without this
+        // update is still being used.
         const vulnerabilityExplanation =
+            data.decision_tree_explanation ||
             assessment.vulnerability_explanation ||
             "";
 
