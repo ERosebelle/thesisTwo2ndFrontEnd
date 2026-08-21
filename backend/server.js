@@ -142,10 +142,16 @@ function extractFeatures(password) {
     // below threshold even when the password was built entirely out of real
     // words.
     let dictionaryDetected = 0;
+    // Tracks the actual matched word (not just the boolean) - used only to
+    // build realistic "similar password" examples in the recommendation
+    // section (generateSimilarGuessablePasswords). Never returned to the
+    // frontend directly and never influences the detection logic above.
+    let matchedDictionaryWord = "";
 
     // 1. FAST: Exact match on the whole normalized string (Laging 100% tama)
     if (englishSet.has(leetNormalized) || tagalogSet.has(leetNormalized)) {
         dictionaryDetected = 1;
+        matchedDictionaryWord = leetNormalized;
     } else {
         const alphaTokens = leetNormalized.split(/[^a-z]+/).filter(Boolean);
 
@@ -169,6 +175,7 @@ function extractFeatures(password) {
             // Exact token match first (whole word between separators)
             if (englishSet.has(token) || tagalogSet.has(token)) {
                 exactMatchCount++;
+                if (token.length > longestSingleMatch) matchedDictionaryWord = token;
                 longestSingleMatch = Math.max(longestSingleMatch, token.length);
                 continue;
             }
@@ -179,10 +186,12 @@ function extractFeatures(password) {
             // NOT exactMatchCount, since "contains a word" is a much weaker
             // signal than "IS a word".
             let longestInToken = 0;
+            let longestInTokenWord = "";
 
             for (let word of englishSet) {
                 if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
                     longestInToken = word.length;
+                    longestInTokenWord = word;
                 }
             }
 
@@ -190,11 +199,13 @@ function extractFeatures(password) {
                 for (let word of tagalogSet) {
                     if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
                         longestInToken = word.length;
+                        longestInTokenWord = word;
                     }
                 }
             }
 
             if (longestInToken >= 4) {
+                if (longestInToken > longestSingleMatch) matchedDictionaryWord = longestInTokenWord;
                 longestSingleMatch = Math.max(longestSingleMatch, longestInToken);
             }
         }
@@ -211,6 +222,7 @@ function extractFeatures(password) {
 
             if (englishSet.has(merged) || tagalogSet.has(merged)) {
                 exactMatchCount++;
+                if (merged.length > longestSingleMatch) matchedDictionaryWord = merged;
                 longestSingleMatch = Math.max(longestSingleMatch, merged.length);
                 continue;
             }
@@ -222,10 +234,12 @@ function extractFeatures(password) {
             // `right` alone) to avoid double-counting a match already
             // found during the single-token pass.
             let longestInMerge = 0;
+            let longestInMergeWord = "";
             for (let word of englishSet) {
                 if (word.length >= 4 && word.length > longestInMerge &&
                     merged.includes(word) && !left.includes(word) && !right.includes(word)) {
                     longestInMerge = word.length;
+                    longestInMergeWord = word;
                 }
             }
             if (longestInMerge === 0) {
@@ -233,10 +247,12 @@ function extractFeatures(password) {
                     if (word.length >= 4 && word.length > longestInMerge &&
                         merged.includes(word) && !left.includes(word) && !right.includes(word)) {
                         longestInMerge = word.length;
+                        longestInMergeWord = word;
                     }
                 }
             }
             if (longestInMerge >= 4) {
+                if (longestInMerge > longestSingleMatch) matchedDictionaryWord = longestInMergeWord;
                 longestSingleMatch = Math.max(longestSingleMatch, longestInMerge);
             }
         }
@@ -277,6 +293,11 @@ function extractFeatures(password) {
         // "abcabc") - the original single-char-only regex missed the latter
         // entirely (e.g. "huhuhu" scored as having no repetition at all).
         has_repetition: (/(.)\1{2,}/.test(originalPassword) || /(.{2,4})\1+/.test(originalPassword)) ? 1 : 0,
+        // Metadata only - NOT one of the 12 trained features, never sent to
+        // the classifiers. Used solely by generateSimilarGuessablePasswords()
+        // to build realistic sibling-password examples for the
+        // recommendation section.
+        _matched_dictionary_word: dictionaryDetected ? matchedDictionaryWord : ""
     };
 
     extractedFeatures.character_class_count =
@@ -530,7 +551,16 @@ function buildManualFeatureSteps(extractedFeatures) {
 
 /* Turns the real traced steps into a plain-language paragraph - this is what
 makes the risk explanation genuinely complete and grounded in this specific
-password's features, rather than a parallel hand-coded formula description. */
+password's features, rather than a parallel hand-coded formula description.
+
+Binary features (dictionary_present, has_repetition, has_digit, etc.) are
+always checked against a threshold of 1 (present) vs 0 (absent) - showing
+that raw number ("is at or above the reference threshold of 1") explains
+nothing to a user. For these, the plain-language YES/NO explanation already
+written for this exact outcome (step.explanation) is used instead, with no
+threshold mentioned at all. Numeric features (length, character_class_count)
+keep a threshold, phrased as a natural whole-number comparison instead of a
+raw number. */
 function buildRiskModelRationale(steps, level) {
     if (steps.length === 0) {
         return `The risk assessment reached a ${level} risk rating without any features to check.`;
@@ -538,10 +568,17 @@ function buildRiskModelRationale(steps, level) {
 
     const stepSentences = steps.map((step, i) => {
         const ordinal = i === 0 ? "First" : (i === steps.length - 1 ? "Finally" : "Next");
-        const comparisonWord = step.direction === "higher" ? "at or above" : "below";
-        const roundedThreshold = Math.round(step.threshold * 100) / 100;
+        const isNumeric = step.feature === "length" || step.feature === "character_class_count";
 
-        return `${ordinal}, "${step.label}" was checked: your password's value (${step.actualValue}) is ${comparisonWord} the reference threshold of ${roundedThreshold}.`;
+        if (isNumeric) {
+            const unit = step.feature === "length" ? "character(s)" : "character type(s)";
+            const comparison = step.direction === "higher"
+                ? `at least the guideline of ${step.threshold} ${unit}`
+                : `below the guideline of ${step.threshold} ${unit}`;
+            return `${ordinal}, "${step.label}" was checked: your password has ${step.actualValue} ${unit}, which is ${comparison}.`;
+        }
+
+        return `${ordinal}, "${step.label}" was checked: ${step.explanation}`;
     });
 
     return `The risk assessment walked through all ${steps.length} extracted password features. ` +
@@ -604,7 +641,106 @@ const MANUAL_TREE_THRESHOLDS = {
     character_class_count: 3
 };
 
-// ===== 3. RECOMMENDATION MODEL -> PLAIN-LANGUAGE STRATEGY TEXT =====
+/* ===== SECOND-MOST-IMPACTFUL WEAKNESS (runtime deficit ranking) =====
+Mirrors the EXACT deficit formula used in create_recommendation_dataset.js to
+label the training data (same point values: 20 for dictionary, 15 for
+rule-pattern, 10 per missing character class, 1 per missing character of
+length), so this runtime ranking never disagrees with what the model was
+actually trained to prioritize. Used only to surface a SECOND, genuinely
+distinct recommendation alongside the model's top-1 prediction - never used
+to override the model's own predicted label. */
+function computeRuntimeDeficits(f) {
+    return {
+        AVOID_DICTIONARY_WORDS: f.dictionary_present ? 20 : 0,
+        AVOID_PREDICTABLE_PATTERNS: f.rule_pattern_present ? 15 : 0,
+        ADD_CHARACTER_VARIETY: Math.max(0, MANUAL_TREE_THRESHOLDS.character_class_count - f.character_class_count) * 10,
+        INCREASE_LENGTH: Math.max(0, MANUAL_TREE_THRESHOLDS.length - f.length) * 1
+    };
+}
+
+function pickSecondRecommendationLabel(extractedFeatures, topLabel) {
+    const deficits = computeRuntimeDeficits(extractedFeatures);
+    const ranked = Object.entries(deficits)
+        .filter(([label]) => label !== topLabel)
+        .sort((a, b) => b[1] - a[1]);
+
+    if (ranked.length === 0 || ranked[0][1] === 0) {
+        return null;
+    }
+    return ranked[0][0];
+}
+
+/* ===== "SIMILAR PASSWORD STRUCTURES" EXAMPLES =====
+Illustrates WHY the detected structure is risky by showing 3 example
+passwords that share the same underlying pattern - not the user's actual
+password, never reconstructable back to it.
+
+- Dictionary-based passwords: builds sibling variants of the ACTUAL matched
+  base word (_matched_dictionary_word) by randomly picking 3 DISTINCT
+  recipes from a wide pool of real cracking-tool mutation rules (digit
+  suffixes, leetspeak, capitalization, symbol padding, year suffixes,
+  duplication, reversal) - so repeated analyses don't always show the same
+  3 examples.
+- Non-dictionary passwords: builds 3 freshly random strings matching the
+  SAME shape (length + character classes used) as the analyzed password,
+  without reusing a single character of the real one. */
+function generateSimilarGuessablePasswords(password, extractedFeatures) {
+    if (!extractedFeatures.dictionary_present || !extractedFeatures._matched_dictionary_word) {
+        const symbols = ['!', '@', '#', '$', '%', '&', '*'];
+        const digits = '0123456789';
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        function randChar(str) { return str[Math.floor(Math.random() * str.length)]; }
+
+        const len = Math.min(Math.max(extractedFeatures.length, 4), 20);
+        const pools = [];
+        if (extractedFeatures.has_lowercase) pools.push(lower);
+        if (extractedFeatures.has_uppercase) pools.push(upper);
+        if (extractedFeatures.has_digit) pools.push(digits);
+        if (extractedFeatures.has_symbol) pools.push(symbols);
+        if (pools.length === 0) pools.push(lower);
+        const combinedPool = pools.join('');
+
+        const examples = [];
+        for (let i = 0; i < 3; i++) {
+            let s = '';
+            for (let j = 0; j < len; j++) s += randChar(combinedPool);
+            examples.push(s);
+        }
+        return { core: null, examples };
+    }
+
+    const core = extractedFeatures._matched_dictionary_word;
+    const titleCase = core.charAt(0).toUpperCase() + core.slice(1);
+
+    const leet = s => s.replace(/a/g, '@').replace(/o/g, '0').replace(/e/g, '3').replace(/i/g, '1').replace(/s/g, '$');
+    const symbols = ['!', '@', '#', '$', '%', '&', '*'];
+    const years = ['2024', '2025', '1995', '2000', '2010'];
+    const randOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randDigits = (n) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
+
+    const recipes = [
+        () => `${core}${randDigits(3)}`,
+        () => `${core}${randDigits(1)}`,
+        () => `${leet(core)}${randDigits(3)}`,
+        () => `${titleCase}${randOf(symbols)}`,
+        () => `${titleCase}${randDigits(2)}`,
+        () => `${randOf(symbols)}${core}${randDigits(2)}`,
+        () => `${core}${core}`,
+        () => `${core.split('').reverse().join('')}`,
+        () => `${core}${randOf(years)}`,
+        () => `${core}${randOf(symbols)}${randDigits(2)}`,
+        () => `${leet(titleCase)}`,
+        () => `${titleCase}${core.slice(0, 2)}${randDigits(1)}`
+    ];
+
+    const shuffled = [...recipes].sort(() => Math.random() - 0.5);
+    const examples = shuffled.slice(0, 3).map(recipe => recipe());
+
+    return { core, examples };
+}
+
+
 /* This used to be a hand-written if/else chain keyed off vulnerabilityType,
 with hardcoded thresholds (12 chars, 3 classes) and dense, jargon-heavy
 copy ("combinatorial search space", "Hashcat rules engine", etc). It is now
@@ -765,7 +901,7 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         technicalBreakdown.remediation = `Make it longer - each extra character makes brute-force guessing exponentially harder.`;
     }
 
-    // ===== ML-DRIVEN PRIMARY RECOMMENDATION =====
+    // ===== 1. ML-DRIVEN PRIMARY RECOMMENDATION =====
     // recommendationResult.label was predicted by recommendation_model.json
     // (a real, independently trained CART classifier) - NOT decided by
     // vulnerabilityType or a hand-written if/else here.
@@ -777,10 +913,42 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         tips.push("⚠️ Recommendation model is unavailable right now - run create_recommendation_dataset.js then train_recommendation_model.js to enable personalized tips.");
     }
 
-    // A short, simple general-security tip always shown alongside the
-    // model's specific fix - not a substitute for it. (Used to be
-    // conditional on the label not being KEEP_IT_UP; that label no longer
-    // exists, so this now always runs whenever there's a recommendation.)
+    // ===== 2. SECOND-MOST-IMPACTFUL WEAKNESS =====
+    // A genuinely distinct, data-driven second tip - not padding. Reuses the
+    // SAME template functions as the primary tip (just a different label),
+    // so the wording style stays consistent. Falls back to a generic,
+    // still-useful tip only when there is no second real weakness left.
+    if (recommendationResult && recommendationResult.label) {
+        const secondLabel = pickSecondRecommendationLabel(extractedFeatures, recommendationResult.label);
+        if (secondLabel && RECOMMENDATION_LABEL_TEMPLATES[secondLabel]) {
+            tips.push(
+                "Additionally: " + RECOMMENDATION_LABEL_TEMPLATES[secondLabel](extractedFeatures, currentPassword, recommendationModel.root)
+            );
+        } else {
+            tips.push("🔑 Consider using a password manager to generate and store unique, complex passwords for every account, so you never have to reuse or simplify one.");
+        }
+    }
+
+    // ===== 3. SIMILAR PASSWORD STRUCTURES =====
+    // Shows 3 example passwords sharing the analyzed password's structural
+    // pattern (never the real password itself).
+    if (recommendationResult && recommendationResult.label) {
+        const similarGuesses = generateSimilarGuessablePasswords(currentPassword, extractedFeatures);
+        if (similarGuesses.core) {
+            tips.push(
+                `🎯 Your password's structure is similar to how attackers generate guesses: taking a base like '${similarGuesses.core}' and trying '${similarGuesses.examples.join("', '")}'. ` +
+                `Wordlist-plus-rules cracking tools try exactly this kind of variation automatically.`
+            );
+        } else {
+            tips.push(
+                `🎯 Your password's shape - ${extractedFeatures.length} characters using its current mix of character types - is easy to regenerate at random. Freshly-generated examples sharing that exact shape: '${similarGuesses.examples.join("', '")}'.`
+            );
+        }
+    }
+
+    // ===== 4. GENERAL SECURITY TIP =====
+    // Always shown alongside the model's specific fixes - not a substitute
+    // for them.
     if (recommendationResult && recommendationResult.label) {
         tips.push("🛡️ Also consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
     }

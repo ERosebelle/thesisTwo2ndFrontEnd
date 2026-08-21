@@ -35,8 +35,32 @@ function renderClassification(data) {
     if (summary) {
         summary.innerHTML = `
             <p>${getClassificationSummary(data)}</p>
+            ${getRiskExplanationHTML(data)}
         `;
     }
+}
+
+// Renders WHY the risk level is what it is - separate from the vulnerability
+// classification rationale above. risk_assessment.summary (a full,
+// feature-grounded narrative from the backend's explainRisk()) and its
+// itemized contributing_factors are both shown here.
+function getRiskExplanationHTML(data) {
+    const riskAssessment = data?.risk_assessment;
+    if (!riskAssessment || !riskAssessment.summary) {
+        return "";
+    }
+
+    const factorsList = Array.isArray(riskAssessment.contributing_factors) && riskAssessment.contributing_factors.length > 0
+        ? `<ul class="risk-factors-list">${riskAssessment.contributing_factors.map(f => `<li>${f}</li>`).join("")}</ul>`
+        : "";
+
+    return `
+        <div class="risk-explanation">
+            <p class="risk-explanation-label">Why this risk level:</p>
+            <p>${riskAssessment.summary}</p>
+            ${factorsList}
+        </div>
+    `;
 }
 
 function getRiskClass(data) {
@@ -109,4 +133,20 @@ function getRiskLevel(data) {
     }
 
     return `${String(risk).trim().toUpperCase()} RISK`;
+}
+
+function getRiskExplanationHTML(data) {
+    const riskAssessment = data?.risk_assessment;
+    if (!riskAssessment || !riskAssessment.summary) {
+        return "";
+    }
+
+    // TINANGGAL ANG factorsList DITO PARA HINDI LUMABAS ANG POINT DEDUCTIONS
+
+    return `
+        <div class="risk-explanation">
+            <p class="risk-explanation-label">Why this risk level:</p>
+            <p>${riskAssessment.summary}</p>
+        </div>
+    `;
 }
