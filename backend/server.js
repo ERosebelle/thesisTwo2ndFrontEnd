@@ -355,7 +355,7 @@ function comparePasswords(currentFeatures, previousFeatures) {
             current_score: scoreCurrent,
             previous_score: scorePrevious,
             message:
-                "Your current password has stronger security characteristics compared to your previous password."
+                "Your current password has favorable security characteristics compared to your previous password."
         };
     }
 
@@ -365,7 +365,7 @@ function comparePasswords(currentFeatures, previousFeatures) {
             current_score: scoreCurrent,
             previous_score: scorePrevious,
             message:
-                "Your previous password has stronger security characteristics compared to your current password."
+                "Your previous password has favorable security characteristics compared to your current password."
         };
     }
 
@@ -775,11 +775,11 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
             : "";
 
         return pickVariant([
-            `🚨 '${password}' is built around a real word, which is the very first thing attackers try.${stackedNote} ` +
+            `'${password}' is built around a real word, which is the very first thing attackers try.${stackedNote} ` +
                 `A passphrase like "${passphrase}" - unrelated words strung together - is far harder to guess.`,
-            `🚨 Dictionary attacks check real words before anything else, and '${password}' is one.${stackedNote} ` +
+            `Dictionary attacks check real words before anything else, and '${password}' is one.${stackedNote} ` +
                 `Try replacing it with something like "${passphrase}" instead - random, unrelated words beat a single word every time.`,
-            `🚨 The core of '${password}' matches a word cracking tools already have in their list.${stackedNote} ` +
+            `The core of '${password}' matches a word cracking tools already have in their list.${stackedNote} ` +
                 `Consider a multi-word passphrase such as "${passphrase}" - length and unpredictability matter more than using a "real" word.`
         ]);
     },
@@ -793,11 +793,11 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
         const whatWasFound = found.length > 0 ? found.join(", ") : "a common modification pattern";
 
         return pickVariant([
-            `🔄 '${password}' contains ${whatWasFound} - these are the first tricks cracking tools test right after plain words. ` +
+            `'${password}' contains ${whatWasFound} - these are the first tricks cracking tools test right after plain words. ` +
                 `Try placing your symbols and numbers in the middle of the password instead of just at the start or end.`,
-            `🔄 We noticed ${whatWasFound} in '${password}'. Automated tools try these exact tweaks first, so they add less protection than they feel like they do. ` +
+            `We noticed ${whatWasFound} in '${password}'. Automated tools try these exact tweaks first, so they add less protection than they feel like they do. ` +
                 `Mixing changes into the middle of the password, not just the edges, makes it noticeably harder to predict.`,
-            `🔄 The pattern in '${password}' (${whatWasFound}) is one of the first things a password cracker checks after trying the plain word. ` +
+            `The pattern in '${password}' (${whatWasFound}) is one of the first things a password cracker checks after trying the plain word. ` +
                 `Breaking up the predictable part - rather than just appending to it - would make a bigger difference.`
         ]);
     },
@@ -815,11 +815,11 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
             : "";
 
         return pickVariant([
-            `⚠️ '${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters.${missingNote} ` +
+            `'${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters.${missingNote} ` +
                 `Aim for at least ${target} types (uppercase, lowercase, numbers, symbols) to make guessing much harder.`,
-            `⚠️ Character variety in '${password}' is limited to ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"}.${missingNote} ` +
+            `Character variety in '${password}' is limited to ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"}.${missingNote} ` +
                 `Mixing in the missing types pushes the total combinations an attacker has to try up dramatically.`,
-            `⚠️ With only ${f.character_class_count} character type${f.character_class_count === 1 ? "" : "s"} in use, '${password}' has less variety than it could.${missingNote} ` +
+            `With only ${f.character_class_count} character type${f.character_class_count === 1 ? "" : "s"} in use, '${password}' has less variety than it could.${missingNote} ` +
                 `Passwords that combine at least ${target} types are significantly more resistant to guessing.`
         ]);
     },
@@ -832,11 +832,11 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
             : ` It already meets the usual ${target}-character guideline, but there's no upper limit on how much extra length helps.`;
 
         return pickVariant([
-            `📏 '${password}' is ${f.length} character${f.length === 1 ? "" : "s"} long.${remainingNote} ` +
+            `'${password}' is ${f.length} character${f.length === 1 ? "" : "s"} long.${remainingNote} ` +
                 `Every extra character makes brute-force guessing exponentially harder.`,
-            `📏 At ${f.length} character${f.length === 1 ? "" : "s"}, '${password}' has room to grow.${remainingNote} ` +
+            `At ${f.length} character${f.length === 1 ? "" : "s"}, '${password}' has room to grow.${remainingNote} ` +
                 `Length adds more protection per character than almost any other change you can make.`,
-            `📏 '${password}' currently sits at ${f.length} character${f.length === 1 ? "" : "s"}.${remainingNote} ` +
+            `'${password}' currently sits at ${f.length} character${f.length === 1 ? "" : "s"}.${remainingNote} ` +
                 `Stretching it out - even by adding a short unrelated word or phrase - meaningfully raises how long it would take to crack.`
         ]);
     }
@@ -901,7 +901,14 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         technicalBreakdown.remediation = `Make it longer - each extra character makes brute-force guessing exponentially harder.`;
     }
 
-    // ===== 1. ML-DRIVEN PRIMARY RECOMMENDATION =====
+    // ===== 1. GENERAL SECURITY TIP =====
+    // Always shown alongside the model's specific fixes - not a substitute
+    // for them.
+    if (recommendationResult && recommendationResult.label) {
+        tips.push("Consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
+    }
+
+    // ===== 2. ML-DRIVEN PRIMARY RECOMMENDATION =====
     // recommendationResult.label was predicted by recommendation_model.json
     // (a real, independently trained CART classifier) - NOT decided by
     // vulnerabilityType or a hand-written if/else here.
@@ -910,10 +917,10 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
             RECOMMENDATION_LABEL_TEMPLATES[recommendationResult.label](extractedFeatures, currentPassword, recommendationModel.root)
         );
     } else {
-        tips.push("⚠️ Recommendation model is unavailable right now - run create_recommendation_dataset.js then train_recommendation_model.js to enable personalized tips.");
+        tips.push("Recommendation model is unavailable right now - run create_recommendation_dataset.js then train_recommendation_model.js to enable personalized tips.");
     }
 
-    // ===== 2. SECOND-MOST-IMPACTFUL WEAKNESS =====
+    // ===== 3. SECOND-MOST-IMPACTFUL WEAKNESS =====
     // A genuinely distinct, data-driven second tip - not padding. Reuses the
     // SAME template functions as the primary tip (just a different label),
     // so the wording style stays consistent. Falls back to a generic,
@@ -925,33 +932,28 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
                 "Additionally: " + RECOMMENDATION_LABEL_TEMPLATES[secondLabel](extractedFeatures, currentPassword, recommendationModel.root)
             );
         } else {
-            tips.push("🔑 Consider using a password manager to generate and store unique, complex passwords for every account, so you never have to reuse or simplify one.");
+            tips.push("Consider using a password manager to generate and store unique, complex passwords for every account, so you never have to reuse or simplify one.");
         }
     }
 
-    // ===== 3. SIMILAR PASSWORD STRUCTURES =====
+    // ===== 4. SIMILAR PASSWORD STRUCTURES =====
     // Shows 3 example passwords sharing the analyzed password's structural
     // pattern (never the real password itself).
     if (recommendationResult && recommendationResult.label) {
         const similarGuesses = generateSimilarGuessablePasswords(currentPassword, extractedFeatures);
         if (similarGuesses.core) {
             tips.push(
-                `🎯 Your password's structure is similar to how attackers generate guesses: taking a base like '${similarGuesses.core}' and trying '${similarGuesses.examples.join("', '")}'. ` +
+                `Your password's structure is similar to how attackers generate guesses: taking a base like '${similarGuesses.core}' and trying '${similarGuesses.examples.join("', '")}'. ` +
                 `Wordlist-plus-rules cracking tools try exactly this kind of variation automatically.`
             );
         } else {
             tips.push(
-                `🎯 Your password's shape - ${extractedFeatures.length} characters using its current mix of character types - is easy to regenerate at random. Freshly-generated examples sharing that exact shape: '${similarGuesses.examples.join("', '")}'.`
+                `How guessing software works: Software can generate random combinations matching your password's exact pattern (${extractedFeatures.length} characters using its current mix). Examples: '${similarGuesses.examples.join("', '")}'.`
             );
         }
     }
 
-    // ===== 4. GENERAL SECURITY TIP =====
-    // Always shown alongside the model's specific fixes - not a substitute
-    // for them.
-    if (recommendationResult && recommendationResult.label) {
-        tips.push("🛡️ Also consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
-    }
+
 
     return { tips, technicalBreakdown };
 }

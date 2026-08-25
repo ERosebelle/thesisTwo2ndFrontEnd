@@ -375,17 +375,34 @@ body::after {
     color: #0369a1;
 }
 
+/* MODIFIED SCROLLBAR STYLES */
 .info-content {
     height: 320px;
-    overflow-y: auto;
-    scrollbar-width: none;
+    overflow-y: auto; 
+    padding-right: 15px; 
     animation: contentFade .4s ease;
+    scrollbar-width: thin; 
+    scrollbar-color: #0284c7 transparent; 
 }
 
-/* Chrome, Edge, Safari */
+/* Chrome, Edge, Safari Custom Scrollbar */
 .info-content::-webkit-scrollbar {
-    display: none;
+    width: 6px; 
 }
+
+.info-content::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+.info-content::-webkit-scrollbar-thumb {
+    background: #94a3b8; 
+    border-radius: 10px; 
+}
+
+.info-content::-webkit-scrollbar-thumb:hover {
+    background: #0284c7; 
+}
+/* END MODIFIED SCROLLBAR STYLES */
 
 .info-content p {
     font-size: 14px;
@@ -802,53 +819,28 @@ body::after {
     margin-top: 10px;
 }
 
-
-
-
-
 .tutorial-dots{
-
     display:flex;
-
     justify-content:center;
-
     gap:8px;
-
     margin-top:12px;
-
 }
-
-
 
 .dot{
-
     width:8px;
-
     height:8px;
-
     border-radius:50%;
-
     background:#94a3b8;
-
     cursor:pointer;
-
 }
 
-
-
 .dot.active{
-
     background:#0284c7;
-
-    box-shadow:
-    0 0 10px #38bdf8;
-
+    box-shadow: 0 0 10px #38bdf8;
 }
 
 .tutorial-slide{
-
     cursor:pointer;
-
 }
 
 /* =========================
@@ -856,88 +848,45 @@ body::after {
 ========================= */
 
 .tutorial-slider{
-
     width:380px;
-
     height:220px;
-
     max-width:100%;
-
     margin:20px auto;
-
     position:relative;
-
     overflow:hidden;
-
     cursor:pointer;
-
 }
-
 
 .tutorial-slide{
-
     width:100%;
-
     height:100%;
-
     object-fit:contain;
-
     position:absolute;
-
     top:0;
-
     left:0;
-
     display:none;
-
 }
-
-
 
 .tutorial-slide.active{
-
     display:block;
-
 }
-
-
-
-
 
 .tutorial-dots{
-
     display:flex;
-
     justify-content:center;
-
     gap:10px;
-
     margin-top:10px;
-
 }
-
-
 
 .dot{
-
     width:9px;
-
     height:9px;
-
     border-radius:50%;
-
     background:#94a3b8;
-
     cursor:pointer;
-
 }
 
-
-
 .dot.active{
-
     background:#0284c7;
-
     transform:scale(1.3);
-
 }

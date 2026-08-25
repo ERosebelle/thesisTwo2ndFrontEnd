@@ -240,6 +240,8 @@ const informationData = {
 
         <div class="tutorial-container">
             <p>Step 3: Review the vulnerability result and recommendations.</p>
+            <p>Click an image to next</p>
+
 
             <div class="tutorial-slider">
                 <img class="tutorial-slide active" src="../assets/images/step3-(1-3).png">

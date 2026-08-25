@@ -244,8 +244,8 @@ const informationData = {
 
 <div class="tutorial-container">
 <p>
-Step 3: Review the comparison result.
-    </p>
+Step 3: Review the comparison result. </p>
+<p>Click an image to next</p>
     <div class="tutorial-slider">
     <img class="tutorial-slide active" src="../assets/images/step3-(1-3).png">
     <img class="tutorial-slide" src="../assets/images/step3-(2-3).png">

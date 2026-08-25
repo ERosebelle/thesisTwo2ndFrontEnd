@@ -631,14 +631,12 @@ function initializePasswordPreview() {
             "previousPassword"
         ) || "";
 
+    // FIXED: Stripped the OR chain. fetchAnalysisResult() strictly updates 
+    // "analyzedPassword" to be the final inputted password. No more stale data.
     const testedPassword =
         localStorage.getItem(
-            "currentPassword"
-        ) ||
-        localStorage.getItem(
             "analyzedPassword"
-        ) ||
-        "";
+        ) || "";
 
     const previousContainer =
         document.getElementById(
@@ -788,9 +786,11 @@ async function initializeResultPage() {
         initializeDecisionTree();
     }
 
-    initializePasswordPreview();
-
+    // Await this first so the local storage keys are fully locked in and correct
     await fetchAnalysisResult();
+
+    // Now safely read the verified correct password for the preview
+    initializePasswordPreview();
 
     initializeActionButtons();
 }

@@ -145,92 +145,6 @@ body::after{
 
 /* INFO BUTTON*/
 .info-btn{
-    width:24px;
-    height:24px;
-    border-radius:50%;
-    border:1px solid #0284c7;
-    background:transparent;
-    color:#0284c7;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.3s;
-}
-
-/* PASSWORD INPUT*/
-.password-wrapper{
-    position:relative;
-    width:100%;
-}
-
-.password-wrapper input{
-    width:100%;
-    padding: 9px 45px 9px 15px;
-    border-radius:12px;
-    border:1px solid #94a3b8;
-    background:#ffffff;
-    font-size:13px;
-    outline:none;
-    color:#0f172a;
-    transition:.3s;
-}
-
-.password-wrapper input::placeholder{
-    color:#94a3b8;
-}
-
-.password-wrapper input:focus{
-    border-color:#0284c7;
-    box-shadow:0 0 20px rgba(14,165,233,.4);
-}
-
-/* EYE BUTTON */
-.eye-btn{
-    position:absolute;
-    right:8px;
-    top:50%;
-    transform:translateY(-50%);
-    width:28px;
-    height:28px;
-    border:none;
-    background:transparent;
-    cursor:pointer;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.eye-svg{
-    width:18px;
-    height:18px;
-}
-
-/* SCAN BUTTON*/
-.scan-btn{
-    margin-top:10px;
-    width:100%;
-    padding:8px;
-    border:none;
-    border-radius:12px;
-    background:
-    linear-gradient(135deg,#0369a1,#0284c7);
-    color:white;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:1px;
-    cursor:pointer;
-    box-shadow: 0 0 25px rgba(56,189,248,.35);
-    transition:.3s;
-}
-
-.scan-btn:hover{
-    transform:translateY(-3px);
-    background:linear-gradient(135deg, #0284c7, #38bdf8);
-    box-shadow:0 0 40px rgba(56,189,248,.7);
-}
-
-/* INFO BUTTON*/
-.info-btn{
     width:28px;
     height:28px;
     border-radius:50%;
@@ -371,17 +285,75 @@ body::after{
     color:#0369a1;
 }
 
-.info-content{
-    height:320px;
-    overflow-y:auto;
-    scrollbar-width:none;
-    animation:contentFade .4s ease;
+/* ------------------------------------------- */
+/* UPDATED INFO-CONTENT WITH LEFT SCROLLBAR    */
+/* ------------------------------------------- */
+
+.info-content {
+    height: 320px;
+    overflow-y: auto;
+    animation: contentFade .4s ease;
+    
+    /* Firefox support */
+    scrollbar-width: thin;
+    scrollbar-color: #0369a1 transparent;
 }
 
-/* Chrome, Edge, Safari */
-.info-content::-webkit-scrollbar{
-    display:none;
+/* New class targeted by JavaScript */
+.info-content.left-scroll {
+    /* Flip container to place scrollbar on left */
+    direction: rtl; 
+    
+    /* Adds space between the scrollbar and the text */
+    padding-left: 20px; 
 }
+
+/* Reset the text direction back to normal for all inner elements */
+.info-content.left-scroll > * {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Chrome/Edge/Safari Scrollbar Base */
+.info-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Transparent Track */
+.info-content::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+/* Blue Rounded Thumb */
+.info-content::-webkit-scrollbar-thumb {
+    background: #0369a1; 
+    border-radius: 10px;
+}
+
+.info-content::-webkit-scrollbar-thumb:hover {
+    background: #0284c7; 
+}
+
+/* Top and Bottom Scroll Arrows */
+.info-content::-webkit-scrollbar-button:single-button {
+    display: block;
+    height: 12px;
+    background-color: transparent;
+    background-size: 10px;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+/* Up Arrow SVG */
+.info-content::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230369a1"><path d="M12 8l-6 6h12z"/></svg>');
+}
+
+/* Down Arrow SVG */
+.info-content::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230369a1"><path d="M12 16l-6-6h12z"/></svg>');
+}
+/* ------------------------------------------- */
 
 .info-content p{
     font-size:14px;
@@ -458,19 +430,6 @@ body::after{
 
 .info-panel{
     overflow:hidden;
-}
-
-.info-content p{
-    font-size:14px;
-    line-height:1.7;
-}
-
-.info-content ul{
-    padding-left:20px;
-}
-
-.info-content li{
-    margin-bottom:10px;
 }
 
 @keyframes contentFade{

@@ -320,7 +320,7 @@ function updateComparisonStatus(
         "CURRENT_PREFERRED"
     ) {
         status.innerHTML = `
-            Your current password has stronger security characteristics
+            Your current password has favorable security characteristics
             than your previous password.
         `;
         return;
@@ -331,7 +331,7 @@ function updateComparisonStatus(
         "PREVIOUS_PREFERRED"
     ) {
         status.innerHTML = `
-            Your previous password has stronger security characteristics
+            Your previous password has favorable security characteristics
             than your current password.
         `;
         return;

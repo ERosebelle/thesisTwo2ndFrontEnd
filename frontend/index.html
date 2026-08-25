@@ -54,15 +54,7 @@
 
         // Project opened correctly
         else {
-            const consent = localStorage.getItem("consentAccepted");
-            if (consent === "true") {
-                window.location.replace("pages/initialTest.html"
-                );
-            }
-
-            else {
-                window.location.replace("pages/consent.html");
-            }
+            window.location.replace("pages/consent.html");
         }
     </script>
 </body>
