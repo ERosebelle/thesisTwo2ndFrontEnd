@@ -102,6 +102,14 @@
     width: 100%;
     margin: 0 0 18px;
     gap: 8px;
+
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: rgba(2, 6, 23, .96);
+    backdrop-filter: blur(8px);
 }
 
 /* =========================================================
@@ -118,8 +126,8 @@
     background:
         linear-gradient(
             145deg,
-            rgba(30, 41, 59, .55),
-            rgba(15, 23, 42, .65)
+            rgba(15, 23, 42, .92),
+            rgba(15, 23, 42, .74)
         );
 
     color: #64748b;
@@ -165,8 +173,8 @@
     background:
         linear-gradient(
             145deg,
-            rgba(56, 189, 248, .13),
-            rgba(56, 189, 248, .045)
+            rgba(8, 47, 73, .90),
+            rgba(15, 23, 42, .88)
         );
 
     border-color: rgba(56, 189, 248, .52);
@@ -754,12 +762,21 @@
     display: none;
 }
 
+.comparison-detailed-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    width: 100%;
+    align-items: start;
+}
+
 /* =========================================================
    DETAIL GROUP
    ========================================================= */
 
 .comparison-group {
     width: 100%;
+    min-width: 0;
 }
 
 .comparison-group-header {
@@ -807,6 +824,10 @@
     width: 100%;
 }
 
+.comparison-group .comparison-card-grid {
+    grid-template-columns: 1fr;
+}
+
 /* =========================================================
    DETAIL CARD
    ========================================================= */
@@ -830,8 +851,8 @@
     background:
         linear-gradient(
             145deg,
-            rgba(30, 41, 59, .68),
-            rgba(15, 23, 42, .78)
+            rgba(15, 23, 42, .88),
+            rgba(15, 23, 42, .72)
         );
 
     box-shadow:

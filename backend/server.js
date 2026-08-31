@@ -185,22 +185,29 @@ function extractFeatures(password) {
             // "helloo" or "xhelloz") - counted only toward longestSingleMatch,
             // NOT exactMatchCount, since "contains a word" is a much weaker
             // signal than "IS a word".
+            //
+            // IMPORTANT: both dictionaries are ALWAYS checked here, and the
+            // LONGER match wins - never "check English first, only check
+            // Tagalog if English found nothing". The English word list has
+            // ~370k entries and can contain short, obscure, coincidental
+            // substrings (e.g. "ging") that would otherwise pre-empt a
+            // longer, clearly-intended Tagalog word sitting right next to it
+            // (e.g. "poginglamig" contains "pogi" and "lamig", both real
+            // Tagalog words, but also happens to contain "ging" - a rare
+            // English dictionary entry with no relation to the password).
             let longestInToken = 0;
             let longestInTokenWord = "";
 
             for (let word of englishSet) {
-                if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
+                if (word.length >= 4 && word.length > longestInToken && token.includes(word)) {
                     longestInToken = word.length;
                     longestInTokenWord = word;
                 }
             }
-
-            if (longestInToken === 0) {
-                for (let word of tagalogSet) {
-                    if (word.length >= 4 && token.includes(word) && word.length > longestInToken) {
-                        longestInToken = word.length;
-                        longestInTokenWord = word;
-                    }
+            for (let word of tagalogSet) {
+                if (word.length >= 4 && word.length > longestInToken && token.includes(word)) {
+                    longestInToken = word.length;
+                    longestInTokenWord = word;
                 }
             }
 
@@ -232,7 +239,9 @@ function extractFeatures(password) {
             // above. Only counts a match that genuinely SPANS the token
             // boundary (not already fully contained inside `left` or
             // `right` alone) to avoid double-counting a match already
-            // found during the single-token pass.
+            // found during the single-token pass. Both dictionaries are
+            // ALWAYS checked (never "skip Tagalog if English found
+            // anything") - see the single-token pass above for why.
             let longestInMerge = 0;
             let longestInMergeWord = "";
             for (let word of englishSet) {
@@ -242,13 +251,11 @@ function extractFeatures(password) {
                     longestInMergeWord = word;
                 }
             }
-            if (longestInMerge === 0) {
-                for (let word of tagalogSet) {
-                    if (word.length >= 4 && word.length > longestInMerge &&
-                        merged.includes(word) && !left.includes(word) && !right.includes(word)) {
-                        longestInMerge = word.length;
-                        longestInMergeWord = word;
-                    }
+            for (let word of tagalogSet) {
+                if (word.length >= 4 && word.length > longestInMerge &&
+                    merged.includes(word) && !left.includes(word) && !right.includes(word)) {
+                    longestInMerge = word.length;
+                    longestInMergeWord = word;
                 }
             }
             if (longestInMerge >= 4) {

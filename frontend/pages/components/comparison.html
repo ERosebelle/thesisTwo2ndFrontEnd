@@ -1,25 +1,19 @@
 <div class="comparison-page">
 
     <div class="comparison-notice">
-
         <div class="comparison-notice-icon">
             i
         </div>
-
         <div class="comparison-notice-content">
-
             <span class="comparison-notice-title">
                 Password Privacy
             </span>
-
             <p class="comparison-notice-text">
                 Your passwords are not saved by the system.
                 Only the information needed to evaluate and
                 compare their security is used.
             </p>
-
         </div>
-
     </div>
 
     <section
@@ -27,29 +21,22 @@
         id="comparisonEmptyState"
         hidden
     >
-
         <div class="comparison-empty-card">
-
             <div class="comparison-empty-icon">
                 ↔
             </div>
-
             <span class="comparison-empty-label">
                 COMPARISON UNAVAILABLE
             </span>
-
             <h3 class="comparison-empty-title">
                 No Previous Password
             </h3>
-
             <p class="comparison-empty-text">
                 There is no previous password available for
                 comparison. Analyze another password to
                 compare its security with your current one.
             </p>
-
         </div>
-
     </section>
 
     <section
@@ -57,18 +44,16 @@
         id="comparisonContent"
         hidden
     >
-
+        <!-- Static Tab Buttons (Not affected by scrolling) -->
         <div class="comparison-view-tabs">
-
             <button
                 type="button"
-                class="comparison-view-button active"
+                class="comparison-view-button"
                 id="comparisonSummaryButton"
             >
                 <span class="comparison-view-button-label">
                     COMPARISON SUMMARY
                 </span>
-
                 <span class="comparison-view-button-description">
                     Quick overview of both passwords
                 </span>
@@ -76,268 +61,191 @@
 
             <button
                 type="button"
-                class="comparison-view-button"
+                class="comparison-view-button active"
                 id="comparisonDetailedButton"
             >
                 <span class="comparison-view-button-label">
                     DETAILED COMPARISON
                 </span>
-
                 <span class="comparison-view-button-description">
                     View detailed security characteristics
                 </span>
             </button>
-
         </div>
 
+        <!-- Summary View -->
         <section
             class="comparison-summary-view"
             id="comparisonSummaryView"
         >
-
             <div class="comparison-summary-grid">
-
-                <article
-                    class="comparison-summary-password-card current"
-                >
-
+                <article class="comparison-summary-password-card current">
                     <div class="comparison-summary-card-header">
-
                         <span class="comparison-summary-card-label">
                             CURRENT PASSWORD
                         </span>
-
                     </div>
-
                     <div class="comparison-summary-field">
-
                         <span class="comparison-summary-field-label">
                             Vulnerability
                         </span>
-
                         <strong
                             id="comparisonCurrentVulnerability"
                             class="comparison-summary-vulnerability"
                         >
                             --
                         </strong>
-
                     </div>
-
                     <div class="comparison-summary-field">
-
                         <span class="comparison-summary-field-label">
                             Risk Level
                         </span>
-
                         <strong
                             id="comparisonCurrentRisk"
                             class="comparison-risk risk-unknown"
                         >
                             --
                         </strong>
-
                     </div>
-
                 </article>
 
-                <article
-                    class="comparison-summary-password-card previous"
-                >
-
+                <article class="comparison-summary-password-card previous">
                     <div class="comparison-summary-card-header">
-
                         <span class="comparison-summary-card-label">
                             PREVIOUS PASSWORD
                         </span>
-
                     </div>
-
                     <div class="comparison-summary-field">
-
                         <span class="comparison-summary-field-label">
                             Vulnerability
                         </span>
-
                         <strong
                             id="comparisonPreviousVulnerability"
                             class="comparison-summary-vulnerability"
                         >
                             --
                         </strong>
-
                     </div>
-
                     <div class="comparison-summary-field">
-
                         <span class="comparison-summary-field-label">
                             Risk Level
                         </span>
-
                         <strong
                             id="comparisonPreviousRisk"
                             class="comparison-risk risk-unknown"
                         >
                             --
                         </strong>
-
                     </div>
-
                 </article>
-
             </div>
 
             <section
                 class="comparison-summary-result"
                 id="comparisonStatus"
             >
-
                 <div class="comparison-summary-result-line"></div>
-
                 <p
                     id="comparisonSummaryText"
                     class="comparison-summary-result-text"
                 >
                     --
                 </p>
-
                 <div class="comparison-summary-result-line"></div>
-
             </section>
-
         </section>
 
+        <!-- Detailed View (Side-by-Side Grid & Independent Scroll) -->
         <section
             class="comparison-detailed-view"
             id="comparisonDetailedView"
             hidden
         >
-
-            <section class="comparison-group">
-
-                <div class="comparison-group-header">
-
-                    <div>
-
-                        <span class="comparison-group-label">
-                            CURRENT PASSWORD
+            <div class="comparison-detailed-grid">
+                <!-- Current Password Column (Left) -->
+                <section class="comparison-group">
+                    <div class="comparison-group-header">
+                        <div>
+                            <span class="comparison-group-label">
+                                CURRENT PASSWORD
+                            </span>
+                            <p class="comparison-group-description">
+                                Latest password analysis
+                            </p>
+                        </div>
+                        <span class="comparison-group-tag">
+                            CURRENT
                         </span>
-
-                        <p class="comparison-group-description">
-                            Latest password analysis
-                        </p>
-
                     </div>
 
-                    <span class="comparison-group-tag">
-                        CURRENT
-                    </span>
+                    <div class="comparison-card-grid">
+                        <article class="comparison-card comparison-explanation-card">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-label">
+                                    ANALYSIS EXPLANATION
+                                </span>
+                            </div>
+                            <div
+                                id="comparisonCurrentExplanation"
+                                class="comparison-explanation"
+                            >
+                                --
+                            </div>
+                        </article>
+                    </div>
+                </section>
 
-                </div>
-
-                <div class="comparison-card-grid">
-
-                    <article
-                        class="comparison-card comparison-explanation-card"
-                    >
-
-                        <div class="comparison-card-header">
-
-                            <span class="comparison-card-label">
-                                ANALYSIS EXPLANATION
+                <!-- Previous Password Column (Right) -->
+                <section class="comparison-group">
+                    <div class="comparison-group-header">
+                        <div>
+                            <span class="comparison-group-label">
+                                PREVIOUS PASSWORD
                             </span>
-
+                            <p class="comparison-group-description">
+                                Previous password analysis
+                            </p>
                         </div>
-
-                        <div
-                            id="comparisonCurrentExplanation"
-                            class="comparison-explanation"
-                        >
-                            --
-                        </div>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-            <div class="comparison-divider"></div>
-
-            <section class="comparison-group">
-
-                <div class="comparison-group-header">
-
-                    <div>
-
-                        <span class="comparison-group-label">
-                            PREVIOUS PASSWORD
+                        <span class="comparison-group-tag">
+                            PREVIOUS
                         </span>
-
-                        <p class="comparison-group-description">
-                            Previous password analysis
-                        </p>
-
                     </div>
 
-                    <span class="comparison-group-tag">
-                        PREVIOUS
-                    </span>
-
-                </div>
-
-                <div class="comparison-card-grid">
-
-                    <article
-                        class="comparison-card comparison-explanation-card"
-                    >
-
-                        <div class="comparison-card-header">
-
-                            <span class="comparison-card-label">
-                                ANALYSIS EXPLANATION
-                            </span>
-
-                        </div>
-
-                        <div
-                            id="comparisonPreviousExplanation"
-                            class="comparison-explanation"
-                        >
-                            --
-                        </div>
-
-                    </article>
-
-                </div>
-
-            </section>
+                    <div class="comparison-card-grid">
+                        <article class="comparison-card comparison-explanation-card previous">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-label">
+                                    ANALYSIS EXPLANATION
+                                </span>
+                            </div>
+                            <div
+                                id="comparisonPreviousExplanation"
+                                class="comparison-explanation"
+                            >
+                                --
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </div>
 
             <section
                 class="comparison-status"
                 id="comparisonDetailedStatus"
             >
-
                 <div class="comparison-status-icon">
                     ↔
                 </div>
-
                 <div class="comparison-status-content">
-
                     <span class="comparison-status-label">
                         COMPARISON STATUS
                     </span>
-
                     <p id="comparisonStatusText">
                         --
                     </p>
-
                 </div>
-
             </section>
-
         </section>
-
     </section>
 
 </div>

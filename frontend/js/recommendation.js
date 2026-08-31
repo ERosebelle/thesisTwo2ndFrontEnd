@@ -1,13 +1,13 @@
 console.log("Recommendation JS Connected");
 
 const recommendationImages = {
-    "Add Character Variety": "../../assets/images/Add Character Variety.jpg",
-    "Avoid Predictable Patterns": "../../assets/images/Avoid Predictable Patterns.jpg",
-    "Dictionary Words": "../../assets/images/Dictionary Words.jpg",
-    "Increase Password Length": "../../assets/images/Increase Password Length.jpg",
-    "MFA + Password Manager": "../../assets/images/MFA + Password Manager.jpg",
-    "Similar Password Guesses": "../../assets/images/Similar Password Guesses.jpg",
-    "Current Password Is Stronger Than Previous": "../../assets/images/Current Password Is Stronger Than Previous.jpg"
+    "Add Character Variety": "../assets/images/Add Character Variety.jpg",
+    "Avoid Predictable Patterns": "../assets/images/Avoid Predictable Patterns.jpg",
+    "Dictionary Words": "../assets/images/Dictionary Words.jpg",
+    "Increase Password Length": "../assets/images/Increase Password Length.jpg",
+    "MFA + Password Manager": "../assets/images/MFA + Password Manager.jpg",
+    "Similar Password Guesses": "../assets/images/Similar Password Guesses.jpg",
+    "Current Password Is Stronger Than Previous": "../assets/images/Current Password Is Stronger Than Previous.jpg"
 };
 
 function updateRecommendation(data, censoredPassword) {

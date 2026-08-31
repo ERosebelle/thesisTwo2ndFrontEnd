@@ -28,19 +28,58 @@ const DecisionTraversalCard = (() => {
                 Array.isArray(marker.children) &&
                 marker.children.length
             )
-            .map(marker => ({
-                node: marker.children[0],
-                branch:
-                    marker.branch ||
-                    marker.name ||
-                    "",
-                taken: marker.taken === true,
-                explanation:
-                    marker.explanation ||
-                    marker.description ||
+            .map(marker => {
+                const childNode = marker.children[0];
+                const isTaken =
+                    marker.taken === true ||
+                    (childNode && childNode.taken === true);
+
+                return {
+                    node: childNode,
+                    branch:
+                        marker.branch ||
+                        marker.name ||
+                        "",
+                    taken: isTaken,
+                    explanation:
+                        marker.explanation ||
+                        marker.description ||
+                        ""
+                };
+            })
+            .filter(edge => {
+                if (!edge.node) return false;
+
+                const nodeLabel = String(
+                    edge.node.name ||
+                    edge.node.label ||
+                    edge.node.question ||
+                    edge.node.decision ||
+                    edge.node.title ||
                     ""
-            }))
-            .filter(edge => edge.node);
+                ).trim().toLowerCase();
+
+                const nodeType = String(
+                    edge.node.type || ""
+                ).trim().toLowerCase();
+
+                const isResultType =
+                    nodeType === "result" ||
+                    nodeType === "leaf" ||
+                    edge.node.final === true ||
+                    nodeLabel === "result";
+
+                // Filter out nodes literally named "result" or untaken result nodes
+                if (nodeLabel === "result") {
+                    return false;
+                }
+
+                if (isResultType && !edge.taken) {
+                    return false;
+                }
+
+                return true;
+            });
     }
 
     async function loadHTML() {
@@ -117,21 +156,18 @@ const DecisionTraversalCard = (() => {
                 );
 
             closeButton =
-    card.querySelector(
-        "#decisionTraversalClose"
-    );
+                card.querySelector(
+                    "#decisionTraversalClose"
+                );
 
-
-
-if (closeButton) {
-
-    closeButton.style.position = "absolute";
-    closeButton.style.top = "18px";
-    closeButton.style.right = "18px";
-    closeButton.style.left = "auto";
-    closeButton.style.bottom = "auto";
-    closeButton.style.zIndex = "10000";
-}
+            if (closeButton) {
+                closeButton.style.position = "absolute";
+                closeButton.style.top = "18px";
+                closeButton.style.right = "18px";
+                closeButton.style.left = "auto";
+                closeButton.style.bottom = "auto";
+                closeButton.style.zIndex = "10000";
+            }
 
             return !!(
                 card &&
@@ -328,11 +364,9 @@ if (closeButton) {
     }
 
     function getResultLabel(node) {
-
         if (!node) {
             return "RESULT";
         }
-
         return (
             node.result ||
             node.vulnerability ||
@@ -370,23 +404,6 @@ if (closeButton) {
             ? "left"
             : "right";
     }
-
-    /* =========================================================
-       TAKEN-AWARE BRANCH SIDE
-
-       This does NOT change getBranchSide() above (left untouched
-       for any non-standard / non-binary case). It only decides
-       placement for the normal YES/NO case where exactly one of
-       the two branches was actually taken:
-
-           TAKEN branch      -> always "center" (straight down)
-           NOT-TAKEN = YES    -> "left"
-           NOT-TAKEN = NO     -> "right"
-
-       Anything outside that exact shape (more than 2 branches,
-       neither/both marked taken, etc.) falls back to the
-       original getBranchSide() behavior unchanged.
-       ========================================================= */
 
     function getTakenAwareSide(
         edge,
@@ -428,131 +445,132 @@ if (closeButton) {
         );
     }
 
-function getElementSide(element) {
+    function getElementSide(element) {
 
-    if (!element || !main) {
-        return "right";
+        if (!element || !main) {
+            return "right";
+        }
+
+        const elementRect =
+            element.getBoundingClientRect();
+
+        const mainRect =
+            main.getBoundingClientRect();
+
+        const elementCenter =
+            elementRect.left +
+            elementRect.width / 2;
+
+        const mainCenter =
+            mainRect.left +
+            mainRect.width / 2;
+
+        return elementCenter < mainCenter
+            ? "left"
+            : "right";
     }
 
-    const elementRect =
-        element.getBoundingClientRect();
-
-    const mainRect =
-        main.getBoundingClientRect();
-
-    const elementCenter =
-        elementRect.left +
-        elementRect.width / 2;
-
-    const mainCenter =
-        mainRect.left +
-        mainRect.width / 2;
-
-    return elementCenter < mainCenter
-        ? "left"
-        : "right";
-}
-
-function positionInfo(
-    sourceElement,
-    side
-) {
-
-    if (
-        !sourceElement ||
-        !main
+    function positionInfo(
+        sourceElement,
+        side
     ) {
-        return;
+
+        if (
+            !sourceElement ||
+            !main
+        ) {
+            return;
+        }
+
+        const container =
+            side === "left"
+                ? leftInfo
+                : rightInfo;
+
+        if (!container) {
+            return;
+        }
+
+        const panel =
+            container.querySelector(
+                ".decision-traversal-info-card"
+            );
+
+        if (!panel) {
+            return;
+        }
+
+        const sourceRect =
+            sourceElement.getBoundingClientRect();
+
+        const mainRect =
+            main.getBoundingClientRect();
+
+        const panelHeight =
+            panel.offsetHeight;
+
+        const sourceCenter =
+            sourceRect.top +
+            sourceRect.height / 2;
+
+        const mainRelativeCenter =
+            sourceCenter -
+            mainRect.top;
+
+        const mainHeight =
+            main.clientHeight;
+
+        const padding =
+            8;
+
+        const halfPanel =
+            panelHeight / 2;
+
+        const minimumCenter =
+            padding +
+            halfPanel;
+
+        const maximumCenter =
+            Math.max(
+                minimumCenter,
+                mainHeight -
+                padding -
+                halfPanel
+            );
+
+        const finalCenter =
+            Math.max(
+                minimumCenter,
+                Math.min(
+                    mainRelativeCenter,
+                    maximumCenter
+                )
+            );
+
+        container.style.top =
+            `${finalCenter}px`;
+
+        container.style.transform =
+            "translateY(-50%)";
+
+        if (side === "left") {
+
+            container.style.left =
+                "18px";
+
+            container.style.right =
+                "auto";
+
+        } else {
+
+            container.style.right =
+                "18px";
+
+            container.style.left =
+                "auto";
+        }
     }
 
-    const container =
-        side === "left"
-            ? leftInfo
-            : rightInfo;
-
-    if (!container) {
-        return;
-    }
-
-    const panel =
-        container.querySelector(
-            ".decision-traversal-info-card"
-        );
-
-    if (!panel) {
-        return;
-    }
-
-    const sourceRect =
-        sourceElement.getBoundingClientRect();
-
-    const mainRect =
-        main.getBoundingClientRect();
-
-    const panelHeight =
-        panel.offsetHeight;
-
-    const sourceCenter =
-        sourceRect.top +
-        sourceRect.height / 2;
-
-    const mainRelativeCenter =
-        sourceCenter -
-        mainRect.top;
-
-    const mainHeight =
-        main.clientHeight;
-
-    const padding =
-        8;
-
-    const halfPanel =
-        panelHeight / 2;
-
-    const minimumCenter =
-        padding +
-        halfPanel;
-
-    const maximumCenter =
-        Math.max(
-            minimumCenter,
-            mainHeight -
-            padding -
-            halfPanel
-        );
-
-    const finalCenter =
-        Math.max(
-            minimumCenter,
-            Math.min(
-                mainRelativeCenter,
-                maximumCenter
-            )
-        );
-
-    container.style.top =
-        `${finalCenter}px`;
-
-    container.style.transform =
-        "translateY(-50%)";
-
-    if (side === "left") {
-
-        container.style.left =
-            "18px";
-
-        container.style.right =
-            "auto";
-
-    } else {
-
-        container.style.right =
-            "18px";
-
-        container.style.left =
-            "auto";
-    }
-}
     function repositionActiveInfo() {
 
         if (!activeInfoElement) {
@@ -722,25 +740,15 @@ function positionInfo(
     function hideInfo() {
 
         if (leftInfo) {
-
             leftInfo.innerHTML = "";
-
-            leftInfo.style.top =
-                "0px";
-
-            leftInfo.style.transform =
-                "translateY(0)";
+            leftInfo.style.top = "0px";
+            leftInfo.style.transform = "translateY(0)";
         }
 
         if (rightInfo) {
-
             rightInfo.innerHTML = "";
-
-            rightInfo.style.top =
-                "0px";
-
-            rightInfo.style.transform =
-                "translateY(0)";
+            rightInfo.style.top = "0px";
+            rightInfo.style.transform = "translateY(0)";
         }
 
         activeInfoElement = null;
@@ -801,21 +809,13 @@ function positionInfo(
         );
 
         if (sourceElement) {
-
-            sourceElement.dataset.infoSide =
-                side;
+            sourceElement.dataset.infoSide = side;
         }
 
-        activeInfoElement =
-            sourceElement || null;
+        activeInfoElement = sourceElement || null;
 
         requestAnimationFrame(() => {
-
-            positionInfo(
-                sourceElement,
-                side
-            );
-
+            positionInfo(sourceElement, side);
         });
     }
 
@@ -824,6 +824,21 @@ function positionInfo(
         level,
         side
     ) {
+        if (!node) {
+            return null;
+        }
+
+        const nodeLabel = String(
+            node.name ||
+            node.label ||
+            node.question ||
+            node.decision ||
+            ""
+        ).trim().toLowerCase();
+
+        if (nodeLabel === "result" && !node.taken) {
+            return null;
+        }
 
         const wrapper =
             document.createElement("div");
@@ -838,27 +853,30 @@ function positionInfo(
             side || "center";
 
         if (level === 0) {
-
             wrapper.classList.add(
                 "decision-traversal-root"
             );
         }
 
+        const nodeType = String(
+            node.type || ""
+        ).trim().toLowerCase();
+
         const isResult =
-            node.type === "result" ||
-            node.type === "leaf" ||
+            nodeType === "result" ||
+            nodeType === "leaf" ||
             node.final === true;
 
         const element =
             document.createElement("button");
 
         element.type = "button";
-
+        
         element.className =
             isResult
                 ? "decision-traversal-node decision-result-node"
                 : "decision-traversal-node decision-node";
-
+                
         element.textContent =
             isResult
                 ? getResultLabel(node)
@@ -867,15 +885,12 @@ function positionInfo(
         element.addEventListener(
             "click",
             event => {
-
                 event.preventDefault();
                 event.stopPropagation();
 
-                const actualSide =
-                    getElementSide(element);
+                const actualSide = getElementSide(element);
 
                 if (isResult) {
-
                     showInfo(
                         actualSide,
                         "Classification Result",
@@ -883,7 +898,6 @@ function positionInfo(
                         null,
                         element
                     );
-
                     return;
                 }
 
@@ -897,17 +911,12 @@ function positionInfo(
             }
         );
 
-        wrapper.appendChild(
-            element
-        );
+        wrapper.appendChild(element);
 
         if (!isResult) {
-
-            const edges =
-                getRealChildEdges(node);
-
+            const edges = getRealChildEdges(node);
+            
             if (edges.length) {
-
                 wrapper.appendChild(
                     createChildren(
                         edges,
@@ -939,11 +948,6 @@ function positionInfo(
                 e => e.taken
             ).length;
 
-        // Marks the standard YES/NO case where exactly one
-        // branch was taken, so the CSS can keep that branch
-        // centered/straight and peel the other one off to the
-        // side without it. Any other shape is left as "false"
-        // and renders with the original spread layout.
         children.dataset.split =
             (
                 edges.length === 2 &&
@@ -962,15 +966,17 @@ function positionInfo(
                         edges
                     );
 
-                children.appendChild(
-                    createBranch(
-                        edge,
-                        level,
-                        side,
-                        index,
-                        edges.length
-                    )
+                const branchElement = createBranch(
+                    edge,
+                    level,
+                    side,
+                    index,
+                    edges.length
                 );
+
+                if (branchElement) {
+                    children.appendChild(branchElement);
+                }
             }
         );
 
@@ -1004,9 +1010,7 @@ function positionInfo(
             total;
 
         if (edge.taken) {
-
-            branch.dataset.taken =
-                "true";
+            branch.dataset.taken = "true";
         }
 
         const vertical =
@@ -1016,9 +1020,7 @@ function positionInfo(
             "decision-traversal-vertical";
 
         if (edge.taken) {
-
-            vertical.dataset.taken =
-                "true";
+            vertical.dataset.taken = "true";
         }
 
         branch.appendChild(
@@ -1040,15 +1042,12 @@ function positionInfo(
             edge.branch || "";
 
         if (edge.taken) {
-
-            label.dataset.taken =
-                "true";
+            label.dataset.taken = "true";
         }
 
         label.addEventListener(
             "click",
             event => {
-
                 event.preventDefault();
                 event.stopPropagation();
 
@@ -1063,43 +1062,18 @@ function positionInfo(
             }
         );
 
-        branch.appendChild(
-            label
-        );
+        branch.appendChild(label);
 
         if (edge.node) {
-
-            branch.appendChild(
-                createNode(
-                    edge.node,
-                    level,
-                    side
-                )
-            );
+            const childNode = createNode(edge.node, level, side);
+            
+            if (childNode) {
+                branch.appendChild(childNode);
+            }
         }
 
         return branch;
     }
-
-    /* =========================================================
-       WIDE-BRANCH BOUNDARY CONSTRAINT
-
-       The detailed tree's layout (spacing, spread, diagonal
-       look) is still entirely driven by the existing CSS flex
-       rules above — nothing about normal branches changes.
-
-       This only measures the tree AFTER it has been laid out
-       by the browser, and — exactly like the compact overview
-       tree already does — stops branches from drifting further
-       and further outward once they cross a reasonable
-       horizontal boundary based on the real available width of
-       the detailed-tree area. Once a branch crosses that
-       boundary, that branch and everything beneath it renders
-       as a straight vertical drop (via the existing
-       .dtc-boundary-left / .dtc-boundary-right /
-       .dtc-boundary-stack CSS rules) instead of continuing to
-       fan outward.
-       ========================================================= */
 
     function clearBoundaryMarkers() {
 
@@ -1110,16 +1084,12 @@ function positionInfo(
         tree.querySelectorAll(
             ".dtc-boundary-stack"
         ).forEach(el => {
-
-            el.classList.remove(
-                "dtc-boundary-stack"
-            );
+            el.classList.remove("dtc-boundary-stack");
         });
 
         tree.querySelectorAll(
             ".dtc-boundary-left, .dtc-boundary-right"
         ).forEach(el => {
-
             el.classList.remove(
                 "dtc-boundary-left",
                 "dtc-boundary-right"
@@ -1139,10 +1109,7 @@ function positionInfo(
         }
 
         if (forceStack) {
-
-            wrapper.classList.add(
-                "dtc-boundary-stack"
-            );
+            wrapper.classList.add("dtc-boundary-stack");
         }
 
         const childrenContainer =
@@ -1235,10 +1202,6 @@ function positionInfo(
             return;
         }
 
-        // The boundary is derived from the actual available
-        // width of the detailed-tree area (not an arbitrary
-        // fixed pixel value); a small edge margin keeps the
-        // outermost nodes from touching the tree area's edge.
         const centerX =
             treeRect.left +
             treeRect.width / 2;
@@ -1271,7 +1234,6 @@ function positionInfo(
     function scheduleWidthBoundaries() {
 
         requestAnimationFrame(() => {
-
             requestAnimationFrame(
                 applyWidthBoundaries
             );
@@ -1321,9 +1283,9 @@ function positionInfo(
                 "center"
             );
 
-        canvas.appendChild(
-            root
-        );
+        if (root) {
+            canvas.appendChild(root);
+        }
 
         tree.appendChild(
             canvas
@@ -1340,13 +1302,10 @@ function positionInfo(
         }
 
         if (data) {
-
             setData(data);
-
         } else if (
             window.latestAnalysisData
         ) {
-
             setData(
                 window.latestAnalysisData
             );
@@ -1354,24 +1313,12 @@ function positionInfo(
 
         card.hidden = false;
 
-        card.removeAttribute(
-            "hidden"
-        );
-
-        card.style.display =
-            "flex";
-
-        card.style.visibility =
-            "visible";
-
-        card.style.opacity =
-            "1";
-
-        card.style.pointerEvents =
-            "auto";
-
-        document.body.style.overflow =
-            "hidden";
+        card.removeAttribute("hidden");
+        card.style.display = "flex";
+        card.style.visibility = "visible";
+        card.style.opacity = "1";
+        card.style.pointerEvents = "auto";
+        document.body.style.overflow = "hidden";
 
         scheduleWidthBoundaries();
     }
@@ -1386,25 +1333,12 @@ function positionInfo(
 
         card.hidden = true;
 
-        card.setAttribute(
-            "hidden",
-            ""
-        );
-
-        card.style.display =
-            "none";
-
-        card.style.visibility =
-            "hidden";
-
-        card.style.opacity =
-            "0";
-
-        card.style.pointerEvents =
-            "none";
-
-        document.body.style.overflow =
-            "";
+        card.setAttribute("hidden", "");
+        card.style.display = "none";
+        card.style.visibility = "hidden";
+        card.style.opacity = "0";
+        card.style.pointerEvents = "none";
+        document.body.style.overflow = "";
     }
 
     async function initialize() {
@@ -1416,7 +1350,6 @@ function positionInfo(
             ready &&
             window.latestAnalysisData
         ) {
-
             setData(
                 window.latestAnalysisData
             );
