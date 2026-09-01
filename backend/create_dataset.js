@@ -46,13 +46,20 @@ function buildFeatures(password, label, isDictionary) {
 
   const charClassCount = lower + upper + digit + sym;
   const hasLeet = (/[@$40531!]/.test(cleanPassword) && isDictionary) ? 1 : 0;
-  const numSuffix = (isDictionary && /\d{2,}$/.test(cleanPassword)) ? 1 : 0;
+  
+  const numPrefix = /^\d+/.test(cleanPassword) ? 1 : 0;
+  const numSuffix = /\d+$/.test(cleanPassword) ? 1 : 0;
+  const middlePart = cleanPassword.replace(/^\d+/, '').replace(/\d+$/, '');
+  const numInfix = /\d+/.test(middlePart) ? 1 : 0;
+
   const hasSeq = /(123|abc|234|bcd|qwe)/i.test(cleanPassword) ? 1 : 0;
   const hasRep = /(.)\1{1,}/.test(cleanPassword) ? 1 : 0;
 
   const rulePattern = (
     hasLeet ||
+    numPrefix ||
     numSuffix ||
+    numInfix ||
     hasSeq ||
     hasRep
   ) ? 1 : 0;
@@ -65,9 +72,11 @@ function buildFeatures(password, label, isDictionary) {
     f_has_uppercase: upper,
     f_has_digit: digit,
     f_has_symbol: sym,
-    f_dictionary_present: isDictionary,
+    f_dictionary_present: isDictionary ? 1 : 0,
     f_has_leetspeak: hasLeet,
+    f_numeric_prefix: numPrefix,
     f_numeric_suffix: numSuffix,
+    f_numeric_infix: numInfix,
     f_has_sequence: hasSeq,
     f_has_repetition: hasRep,
     f_rule_pattern_present: rulePattern,

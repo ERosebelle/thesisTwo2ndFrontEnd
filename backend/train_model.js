@@ -39,7 +39,9 @@ fs.createReadStream(datasetFile)
       Number(row.f_has_symbol),
       Number(row.f_dictionary_present),
       Number(row.f_has_leetspeak),
+      Number(row.f_numeric_prefix),
       Number(row.f_numeric_suffix),
+      Number(row.f_numeric_infix),
       Number(row.f_has_sequence),
       Number(row.f_has_repetition),
       Number(row.f_rule_pattern_present)

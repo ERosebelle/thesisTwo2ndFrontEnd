@@ -43,7 +43,7 @@
             "gainThreshold": 0.01,
             "splitValue": 2,
             "splitColumn": 1,
-            "gain": 0.4756097560975587,
+            "gain": 0.48039215686273773,
             "numberSamples": 400,
             "left": {
                 "kind": "classifier",
@@ -55,7 +55,7 @@
                 "gain": null,
                 "distribution": [
                     [
-                        0.9999999999999976
+                        0.9999999999999956
                     ]
                 ]
             },
@@ -66,14 +66,14 @@
                 "minNumSamples": 3,
                 "maxDepth": 10,
                 "gainThreshold": 0.01,
-                "splitValue": 0.5,
-                "splitColumn": 11,
-                "gain": 0.004868487688309657,
-                "numberSamples": 205,
+                "splitValue": 13.5,
+                "splitColumn": 0,
+                "gain": 0.0011321459202092432,
+                "numberSamples": 204,
                 "distribution": [
                     [
-                        0.024390243902439025,
-                        0.9756097560975617
+                        0.0196078431372549,
+                        0.9803921568627427
                     ]
                 ]
             }
