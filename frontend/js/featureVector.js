@@ -26,6 +26,7 @@ const FeatureVector = (() => {
         setValue("fvDigits", convert(features.has_digit));
         setValue("fvSymbols", convert(features.has_symbol));
         setValue("fvClasses", features.character_class_count);
+        setValue("fvPrefix", convert(features.numeric_prefix)); 
 
         // PATTERN FEATURES
         setValue("fvDictionary", convert(features.dictionary_present));
@@ -34,6 +35,7 @@ const FeatureVector = (() => {
         setValue("fvSequence", convert(features.has_sequence));
         setValue("fvRepetition", convert(features.has_repetition));
         setValue("fvRulePattern", convert(features.rule_pattern_present));
+        setValue("fvInfix", convert(features.numeric_infix)); 
     }
 
     // SAFE ELEMENT UPDATE

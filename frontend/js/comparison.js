@@ -372,12 +372,12 @@ function updateComparisonSummary(comparison) {
 
     if (status === "CURRENT_PREFERRED") {
         summary =
-            "Your current password is stronger than your previous password based on its overall security characteristics.";
+            "Your current password is favorable than your previous password based on its overall security characteristics.";
     }
 
     else if (status === "PREVIOUS_PREFERRED") {
         summary =
-            "Your previous password is stronger than your current password based on its overall security characteristics.";
+            "Your previous password is favorable than your current password based on its overall security characteristics.";
     }
 
     else if (status === "IDENTICAL") {
