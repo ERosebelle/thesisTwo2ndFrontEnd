@@ -107,6 +107,41 @@ fs.createReadStream(datasetPath)
         console.error("❌ Warning: dataset.csv not found.");
     });
 
+// Expanded Leet Normalization (Kasama na ang '(' -> 'c', '3' -> 'e', etc.)
+function normalizeLeet(str) {
+    return str.toLowerCase()
+        .replace(/[@4]/g, 'a')
+        .replace(/0/g, 'o')
+        .replace(/[\$5]/g, 's')
+        .replace(/3/g, 'e')
+        .replace(/[1!|]/g, 'i')
+        .replace(/[\(\[\<]/g, 'c')
+        .replace(/[7\+]/g, 't')
+        .replace(/8/g, 'b');
+}
+
+// Dynamic Sequence Detector (Gumagana sa pataas/pababa: abc, cba, 123, 321, xyz, zyx, etc.)
+function checkSequence(str) {
+    const s = str.toLowerCase();
+    if (s.length < 3) return 0;
+
+    for (let i = 0; i < s.length - 2; i++) {
+        const c1 = s.charCodeAt(i);
+        const c2 = s.charCodeAt(i + 1);
+        const c3 = s.charCodeAt(i + 2);
+
+        const isDigit = (c) => c >= 48 && c <= 57;
+        const isAlpha = (c) => c >= 97 && c <= 122;
+
+        if ((isDigit(c1) && isDigit(c2) && isDigit(c3)) || (isAlpha(c1) && isAlpha(c2) && isAlpha(c3))) {
+            if ((c2 === c1 + 1 && c3 === c2 + 1) || (c2 === c1 - 1 && c3 === c2 - 1)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 // ===== 1. FEATURE EXTRACTION (FIXED) =====
 function extractFeatures(password) {
     const originalPassword = password;
@@ -117,20 +152,10 @@ function extractFeatures(password) {
     const middlePart = originalPassword.replace(/^\d+/, '').replace(/\d+$/, '');
     const numericInfix = /\d+/.test(middlePart) ? 1 : 0;
 
-    // --- CAMELCASE & COMPOUND WORD SPLITTING ---
+    // --- CAMELCASE SPLITTING ---
     const camelSplit = originalPassword.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
 
     // --- LEET NORMALIZATION ---
-    const normalizeLeet = (str) => str.toLowerCase()
-        .replace(/@/g, 'a')
-        .replace(/4/g, 'a')
-        .replace(/0/g, 'o')
-        .replace(/\$/g, 's')
-        .replace(/5/g, 's')
-        .replace(/3/g, 'e')
-        .replace(/1/g, 'i')
-        .replace(/!/g, 'i');
-
     const leetNormalized = normalizeLeet(camelSplit);
     const alphaTokens = leetNormalized.split(/[^a-z]+/).filter(Boolean);
 
@@ -143,7 +168,6 @@ function extractFeatures(password) {
     for (const token of alphaTokens) {
         if (token.length < 3) continue;
 
-        // Exact token match
         if (englishSet.has(token) || tagalogSet.has(token)) {
             matchedWords.push(token);
             totalMatchedLength += token.length;
@@ -151,7 +175,6 @@ function extractFeatures(password) {
             continue;
         }
 
-        // Substring search within token (Longest Match first)
         let longestSub = "";
         for (let i = 0; i < token.length; i++) {
             for (let j = i + 3; j <= token.length; j++) {
@@ -175,17 +198,14 @@ function extractFeatures(password) {
     }
 
     // --- PRECISE LEETSPEAK DETECTION ---
-    // Inaalis ang prefix/suffix numbers para hindi ma-flag ang trailing '123' bilang leetspeak
     const strippedMiddle = originalPassword.replace(/^\d+/, '').replace(/\d+$/, '');
 
-    // Tinitingnan kung may leet chars na nakapaloob o katabi ng mga titik
-    const hasEmbeddedLeet = /([a-zA-Z][@$40531!]|[a-zA-Z0-9][@$!][a-zA-Z0-9]|[@$40531!][a-zA-Z])/.test(strippedMiddle);
+    const hasEmbeddedLeet = /([a-zA-Z][@$40531!\(\[\<+]|[a-zA-Z0-9][@$!\(\[\<+][a-zA-Z0-9]|[@$40531!\(\[\<+][a-zA-Z])/.test(strippedMiddle);
 
-    // Tinitingnan kung kinailangan ang leet normalization para mahanap ang dictionary word
     const rawTokens = camelSplit.toLowerCase().split(/[^a-z]+/).filter(Boolean);
     const rawMatched = rawTokens.some(t => englishSet.has(t) || tagalogSet.has(t));
 
-    const hasLeetspeak = dictionaryDetected && (hasEmbeddedLeet || (!rawMatched && /[@$40531!]/.test(strippedMiddle))) ? 1 : 0;
+    const hasLeetspeak = dictionaryDetected && (hasEmbeddedLeet || (!rawMatched && /[@$40531!\(\[\<+]/.test(strippedMiddle))) ? 1 : 0;
 
     const extractedFeatures = {
         length: originalPassword.length,
@@ -198,8 +218,8 @@ function extractFeatures(password) {
         numeric_prefix: numericPrefix,
         numeric_suffix: numericSuffix,
         numeric_infix: numericInfix,
-        has_sequence: /(abc|123|bcd|234)/i.test(originalPassword) ? 1 : 0,
-        has_repetition: (/(.)\1{2,}/.test(originalPassword) || /(.{2,4})\1+/.test(originalPassword)) ? 1 : 0,
+        has_sequence: checkSequence(originalPassword),
+        has_repetition: /(.)\1|(.{2,})\2+/i.test(originalPassword) ? 1 : 0,
         _matched_dictionary_word: dictionaryDetected ? matchedWords.join(", ") : ""
     };
 
@@ -236,11 +256,10 @@ function calculateSecurityScore(features) {
 
 function comparePasswords(currentFeatures, previousFeatures, currentRiskLevel, previousRiskLevel) {
     const riskRank = { "CRITICAL": 0, "HIGH": 1, "MODERATE": 2 };
-    
+
     const scoreCurrent = calculateSecurityScore(currentFeatures);
     const scorePrevious = calculateSecurityScore(previousFeatures);
 
-    // 1. Unahing ihambing ang ML Risk Level
     if (riskRank[currentRiskLevel] > riskRank[previousRiskLevel]) {
         return {
             status: "CURRENT_PREFERRED",
@@ -259,7 +278,6 @@ function comparePasswords(currentFeatures, previousFeatures, currentRiskLevel, p
         };
     }
 
-    // 2. Kapag pareho ang Risk Level, gamitin ang Security Score bilang tie-breaker
     if (scoreCurrent > scorePrevious) {
         return {
             status: "CURRENT_PREFERRED",
@@ -317,7 +335,6 @@ function classifyPassword(extractedFeatures) {
 
     let finalLabel = labelMap[prediction[0]];
 
-    // Safety Override: Pure dictionary words without rules shouldn't drift to Rule-Based/Brute-Force
     if (extractedFeatures.dictionary_present === 1 && extractedFeatures.rule_pattern_present === 0) {
         finalLabel = "DICTIONARY";
     }
@@ -335,7 +352,7 @@ function classifyPassword(extractedFeatures) {
 function classifyRisk(extractedFeatures) {
     if (!riskClassifier) {
         console.error("❌ Risk classifier model is not loaded.");
-        return "MODERATE"; // Fallback kapag hindi pa na-load ang model
+        return "MODERATE";
     }
 
     const modelFeatures = [[
@@ -358,14 +375,12 @@ function classifyRisk(extractedFeatures) {
     const rawPrediction = riskClassifier.predict(modelFeatures);
     const predictedIndex = Number(rawPrediction[0]);
 
-    // Numeric Index -> Risk String Label
     const riskMap = {
         0: "CRITICAL",
         1: "HIGH",
         2: "MODERATE"
     };
 
-    // Siguraduhing may fallback sakaling mag-out-of-bounds ang index
     return riskMap[predictedIndex] || "MODERATE";
 }
 
@@ -974,7 +989,6 @@ app.post('/analyze', (req, res) => {
         extractedFeatures.rule_pattern_present
     ]];
 
-    // Kuhanin ang Risk Level ng kasalukuyang password bago gamitin sa comparison
     const currentRiskLevel = classifyRisk(extractedFeatures);
 
     let comparisonResult = null;
