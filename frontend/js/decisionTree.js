@@ -180,7 +180,7 @@ function generateTreeSpecificExplanation(data) {
 
         svg.setAttribute(
             "viewBox",
-            "20 0 200 100"
+            "20 0 250 100"
         );
 
         svg.setAttribute(
@@ -226,7 +226,7 @@ function generateTreeSpecificExplanation(data) {
         const verticalStep =
             Math.min(
                 30,
-                88 /
+                220 /
                 Math.max(
                     depth - 1,
                     1
@@ -515,8 +515,8 @@ function generateTreeSpecificExplanation(data) {
 
         build(
             tree,
-            110,
-            8
+            100,
+            3
         );
     }
 
