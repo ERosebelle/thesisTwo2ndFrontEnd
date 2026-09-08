@@ -59,6 +59,10 @@
     );
 }
 
+/* ================================
+   FEATURE TABLE CONTAINER
+================================ */
+
 .feature-table-container {
     display: flex;
     justify-content: center;
@@ -70,25 +74,46 @@
     box-sizing: border-box;
 }
 
+/* ================================
+   FEATURE TABLE CARDS
+================================ */
+
 .feature-table-card {
     flex: 1 1 0;
+    width: 0;
     max-width: 500px;
+
     position: relative;
     overflow: hidden;
+
     padding: 16px 18px;
+
     border-radius: 14px;
+
     background: linear-gradient(
         160deg,
         rgba(15, 23, 42, .96),
         rgba(30, 41, 59, .94),
         rgba(51, 65, 85, .88)
     );
+
     border: 1px solid rgba(56, 189, 248, .20);
+
     backdrop-filter: blur(8px);
+
     box-shadow:
         0 8px 20px rgba(0, 0, 0, .30),
         0 0 12px rgba(56, 189, 248, .06);
+
     box-sizing: border-box;
+
+    /*
+     * Important:
+     * Cards grow only according to their own content.
+     * The shorter table will NOT stretch to match the taller one.
+     */
+    align-self: flex-start;
+
     transition:
         transform .35s ease,
         box-shadow .35s ease,
@@ -102,6 +127,7 @@
     left: 0;
     width: 100%;
     height: 3px;
+
     background:
         linear-gradient(
             90deg,
@@ -110,7 +136,9 @@
             #60a5fa,
             transparent
         );
+
     background-size: 200% 100%;
+
     animation: energyMove 3s linear infinite;
 }
 
@@ -122,6 +150,10 @@
     letter-spacing: .4px;
     text-align: center;
 }
+
+/* ================================
+   FEATURE TABLE
+================================ */
 
 .feature-table {
     width: 100%;
@@ -151,6 +183,8 @@
     border-bottom: none;
 }
 
+/* Keep both tables symmetrical in column proportions */
+
 .feature-table th:first-child,
 .feature-table td:first-child {
     width: 62%;
@@ -163,6 +197,10 @@
     text-align: center;
     font-weight: 700;
 }
+
+/* ================================
+   TABLE ROW INTERACTION
+================================ */
 
 .feature-table tbody tr {
     position: relative;
@@ -178,13 +216,23 @@
     );
 }
 
+/* ================================
+   CARD HOVER
+================================ */
+
 .feature-table-card:hover {
     transform: translateY(-6px);
+
     border-color: rgba(56, 189, 248, .5);
+
     box-shadow:
         0 20px 45px rgba(0, 0, 0, .5),
         0 0 30px rgba(56, 189, 248, .25);
 }
+
+/* ================================
+   VALUE STATES
+================================ */
 
 .present {
     color: #38bdf8;
@@ -200,22 +248,36 @@
     color: #f8fafc;
 }
 
+/* ================================
+   CARD DECORATION
+================================ */
+
 .feature-table-card::after {
     content: "";
     position: absolute;
+
     right: -50px;
     bottom: -60px;
+
     width: 100px;
     height: 100px;
+
     background: linear-gradient(
         145deg,
         rgba(56, 189, 248, .10),
         transparent
     );
+
     border-radius: 50%;
+
     pointer-events: none;
+
     animation: orbitFloat 5s ease-in-out infinite;
 }
+
+/* ================================
+   ANIMATIONS
+================================ */
 
 @keyframes energyMove {
     from {
@@ -251,7 +313,12 @@
     }
 }
 
+/* ================================
+   RESPONSIVE
+================================ */
+
 @media (max-width: 900px) {
+
     .feature-table-container {
         flex-direction: column;
         align-items: center;

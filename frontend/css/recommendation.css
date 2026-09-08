@@ -144,6 +144,15 @@
     filter: brightness(.88) saturate(.92);
 }
 
+/* ADD CHARACTER VARIETY VIDEO */
+.recommendation-video {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    background: #020617;
+}
+
 .recommendation-item:hover .recommendation-image {
     transform: scale(1.035);
     filter: brightness(1.05) saturate(1.08);

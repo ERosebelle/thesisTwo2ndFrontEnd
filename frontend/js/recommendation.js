@@ -1,7 +1,6 @@
 console.log("Recommendation JS Connected");
 
 const recommendationImages = {
-    "Add Character Variety": "../assets/images/Add Character Variety.jpg",
     "Avoid Predictable Patterns": "../assets/images/Avoid Predictable Patterns.jpg",
     "Dictionary Words": "../assets/images/Dictionary Words.jpg",
     "Increase Password Length": "../assets/images/Increase Password Length.jpg",
@@ -9,6 +8,11 @@ const recommendationImages = {
     "Similar Password Guesses": "../assets/images/Similar Password Guesses.jpg",
     "Current Password Is Stronger Than Previous": "../assets/images/Current Password Is Stronger Than Previous.jpg"
 };
+
+const recommendationVideos = {
+    "Add Character Variety": "../assets/Video/Add Char.mp4"
+};
+
 
 function updateRecommendation(data, censoredPassword) {
 
@@ -88,12 +92,12 @@ function updateRecommendation(data, censoredPassword) {
                 tip
             );
 
-            const imageName =
+            const mediaName =
                 findRecommendationImage(tip);
 
             console.log(
-                `RECOMMENDATION: Matched image for strategy ${index + 1}:`,
-                imageName
+                `RECOMMENDATION: Matched media for strategy ${index + 1}:`,
+                mediaName
             );
 
             const item =
@@ -108,7 +112,68 @@ function updateRecommendation(data, censoredPassword) {
             imageWrapper.className =
                 "recommendation-image-wrapper";
 
-            if (imageName) {
+
+            /*
+             * =====================================================
+             * ADD CHARACTER VARIETY = VIDEO
+             * =====================================================
+             */
+
+            if (
+                mediaName &&
+                recommendationVideos[mediaName]
+            ) {
+
+                const video =
+                    document.createElement("video");
+
+                video.className =
+                    "recommendation-image recommendation-video";
+
+                video.src =
+                    recommendationVideos[mediaName];
+
+                video.alt =
+                    mediaName;
+
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.preload = "auto";
+
+                video.addEventListener(
+                    "loadeddata",
+                    () => {
+                        console.log(
+                            `RECOMMENDATION VIDEO LOADED: ${recommendationVideos[mediaName]}`
+                        );
+                    }
+                );
+
+                video.addEventListener(
+                    "error",
+                    () => {
+                        console.error(
+                            `RECOMMENDATION VIDEO FAILED: ${video.src}`
+                        );
+                    }
+                );
+
+                imageWrapper.appendChild(video);
+
+            }
+
+            /*
+             * =====================================================
+             * ALL OTHER RECOMMENDATIONS = IMAGE
+             * =====================================================
+             */
+
+            else if (
+                mediaName &&
+                recommendationImages[mediaName]
+            ) {
 
                 const image =
                     document.createElement("img");
@@ -117,10 +182,10 @@ function updateRecommendation(data, censoredPassword) {
                     "recommendation-image";
 
                 image.src =
-                    recommendationImages[imageName];
+                    recommendationImages[mediaName];
 
                 image.alt =
-                    imageName;
+                    mediaName;
 
                 image.loading =
                     "lazy";
@@ -128,35 +193,34 @@ function updateRecommendation(data, censoredPassword) {
                 image.addEventListener(
                     "load",
                     () => {
-
                         console.log(
-                            `RECOMMENDATION IMAGE LOADED: ${imageName}`
+                            `RECOMMENDATION IMAGE LOADED: ${mediaName}`
                         );
-
                     }
                 );
 
                 image.addEventListener(
                     "error",
                     () => {
-
                         console.error(
                             `RECOMMENDATION IMAGE FAILED: ${image.src}`
                         );
-
                     }
                 );
 
                 imageWrapper.appendChild(image);
 
-            } else {
+            }
+
+            else {
 
                 console.warn(
-                    "RECOMMENDATION: No matching image found for:",
+                    "RECOMMENDATION: No matching media found for:",
                     tip
                 );
 
             }
+
 
             const text =
                 document.createElement("div");
@@ -169,6 +233,7 @@ function updateRecommendation(data, censoredPassword) {
                     tip,
                     censoredPassword
                 );
+
 
             item.appendChild(
                 imageWrapper
@@ -189,6 +254,7 @@ function updateRecommendation(data, censoredPassword) {
         });
     }
 
+
     renderComparison(
         data.password_comparison,
         contentContainer
@@ -201,8 +267,17 @@ function updateRecommendation(data, censoredPassword) {
         contentContainer.children.length
     );
 
-    console.log("===== RECOMMENDATION DEBUG END =====");
+    console.log(
+        "===== RECOMMENDATION DEBUG END ====="
+    );
 }
+
+
+/*
+ * ============================================================
+ * FIND RECOMMENDATION MEDIA
+ * ============================================================
+ */
 
 function findRecommendationImage(text) {
 
@@ -213,6 +288,7 @@ function findRecommendationImage(text) {
     const normalizedText =
         String(text).toLowerCase();
 
+
     if (
         normalizedText.includes("length") ||
         normalizedText.includes("longer")
@@ -220,10 +296,10 @@ function findRecommendationImage(text) {
         return "Increase Password Length";
     }
 
+
     if (
         normalizedText.includes("uppercase") ||
         normalizedText.includes("lowercase") ||
-        normalizedText.includes("character variety") ||
         normalizedText.includes("character variety") ||
         normalizedText.includes("symbol") ||
         normalizedText.includes("digit") ||
@@ -232,6 +308,7 @@ function findRecommendationImage(text) {
         return "Add Character Variety";
     }
 
+
     if (
         normalizedText.includes("dictionary") ||
         normalizedText.includes("common word") ||
@@ -239,6 +316,7 @@ function findRecommendationImage(text) {
     ) {
         return "Dictionary Words";
     }
+
 
     if (
         normalizedText.includes("predictable") ||
@@ -249,6 +327,7 @@ function findRecommendationImage(text) {
         return "Avoid Predictable Patterns";
     }
 
+
     if (
         normalizedText.includes("similar") ||
         normalizedText.includes("guess") ||
@@ -256,6 +335,7 @@ function findRecommendationImage(text) {
     ) {
         return "Similar Password Guesses";
     }
+
 
     if (
         normalizedText.includes("mfa") ||
@@ -266,8 +346,16 @@ function findRecommendationImage(text) {
         return "MFA + Password Manager";
     }
 
+
     return null;
 }
+
+
+/*
+ * ============================================================
+ * PASSWORD COMPARISON
+ * ============================================================
+ */
 
 function renderComparison(comparison, container) {
 
@@ -303,6 +391,7 @@ function renderComparison(comparison, container) {
         comparison.message
     );
 
+
     if (
         comparison.status !==
         "CURRENT_PREFERRED"
@@ -323,6 +412,7 @@ function renderComparison(comparison, container) {
         return;
     }
 
+
     if (!comparison.message) {
 
         console.log(
@@ -336,6 +426,7 @@ function renderComparison(comparison, container) {
         return;
     }
 
+
     console.log(
         "COMPARISON: Current password is stronger."
     );
@@ -343,6 +434,7 @@ function renderComparison(comparison, container) {
     console.log(
         "COMPARISON: Rendering Current Password Is Stronger Than Previous image."
     );
+
 
     const item =
         document.createElement("div");
@@ -353,11 +445,13 @@ function renderComparison(comparison, container) {
     item.dataset.status =
         comparison.status;
 
+
     const imageWrapper =
         document.createElement("div");
 
     imageWrapper.className =
         "recommendation-image-wrapper";
+
 
     const image =
         document.createElement("img");
@@ -376,6 +470,7 @@ function renderComparison(comparison, container) {
     image.loading =
         "lazy";
 
+
     image.addEventListener(
         "load",
         () => {
@@ -387,6 +482,7 @@ function renderComparison(comparison, container) {
 
         }
     );
+
 
     image.addEventListener(
         "error",
@@ -400,9 +496,11 @@ function renderComparison(comparison, container) {
         }
     );
 
+
     imageWrapper.appendChild(
         image
     );
+
 
     const text =
         document.createElement("div");
@@ -412,6 +510,7 @@ function renderComparison(comparison, container) {
 
     text.textContent =
         comparison.message;
+
 
     item.appendChild(
         imageWrapper
@@ -425,6 +524,7 @@ function renderComparison(comparison, container) {
         item
     );
 
+
     console.log(
         "COMPARISON: Stronger-password comparison rendered successfully."
     );
@@ -433,6 +533,13 @@ function renderComparison(comparison, container) {
         "===== COMPARISON DEBUG END ====="
     );
 }
+
+
+/*
+ * ============================================================
+ * CENSOR PASSWORD
+ * ============================================================
+ */
 
 function censorPassword(text, password) {
 
@@ -454,10 +561,12 @@ function censorPassword(text, password) {
         return text;
     }
 
+
     const escapedPassword =
         escapeRegex(
             String(password)
         );
+
 
     const regex =
         new RegExp(
@@ -467,10 +576,12 @@ function censorPassword(text, password) {
             "g"
         );
 
+
     const maskedPassword =
         "*".repeat(
             String(password).length
         );
+
 
     const result =
         String(text).replace(
@@ -478,6 +589,7 @@ function censorPassword(text, password) {
             `<span class="hidden-password"
                 data-password="${escapeHtmlAttr(password)}">${maskedPassword}</span>`
         );
+
 
     console.log(
         "CENSOR: Result:",
@@ -487,38 +599,34 @@ function censorPassword(text, password) {
     return result;
 }
 
+
 function escapeRegex(string) {
 
     return String(string).replace(
         /[.*+?^${}()|[\]\\]/g,
         "\\$&"
     );
+
 }
+
 
 function escapeHtmlAttr(string) {
 
     return String(string)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#39;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
 }
+
+
+/*
+ * ============================================================
+ * PASSWORD REVEAL
+ * ============================================================
+ */
 
 function activatePasswordReveal() {
 
@@ -526,10 +634,12 @@ function activatePasswordReveal() {
         "PASSWORD REVEAL: Searching for hidden passwords"
     );
 
+
     const hiddenPasswords =
         document.querySelectorAll(
             ".hidden-password"
         );
+
 
     console.log(
         "PASSWORD REVEAL: Found",
@@ -537,34 +647,39 @@ function activatePasswordReveal() {
         "hidden password elements"
     );
 
+
     hiddenPasswords.forEach(
         (item, index) => {
 
             if (
                 item.dataset.listenerAttached
             ) {
-
                 return;
-
             }
+
 
             item.dataset.listenerAttached =
                 "true";
 
+
             const password =
                 item.dataset.password || "";
+
 
             if (!password) {
                 return;
             }
+
 
             const masked =
                 "*".repeat(
                     password.length
                 );
 
+
             item.textContent =
                 masked;
+
 
             function show() {
 
@@ -574,7 +689,9 @@ function activatePasswordReveal() {
 
                 item.textContent =
                     password;
+
             }
+
 
             function hide() {
 
@@ -584,7 +701,9 @@ function activatePasswordReveal() {
 
                 item.textContent =
                     masked;
+
             }
+
 
             item.addEventListener(
                 "pointerdown",
@@ -624,13 +743,17 @@ function activatePasswordReveal() {
                 hide
             );
 
+
             console.log(
                 `PASSWORD REVEAL: Listeners attached to item ${index + 1}`
             );
+
         }
     );
+
 
     console.log(
         "PASSWORD REVEAL: Initialization complete"
     );
+
 }
