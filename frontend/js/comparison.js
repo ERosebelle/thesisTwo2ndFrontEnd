@@ -1,4 +1,3 @@
-
 console.log("Comparison JS Connected");
 
 function getComparisonElements() {
@@ -85,12 +84,13 @@ function showComparisonSummary() {
         detailedView.style.display = "none";
     }
 
+    // Clicked button drops highlight (dark outline), unclicked gets highlight (blue fill)
     if (summaryButton) {
-        summaryButton.classList.add("active");
+        summaryButton.classList.remove("highlighted");
     }
 
     if (detailedButton) {
-        detailedButton.classList.remove("active");
+        detailedButton.classList.add("highlighted");
     }
 }
 
@@ -114,12 +114,13 @@ function showComparisonDetailed() {
         detailedView.style.display = "block";
     }
 
+    // Clicked button drops highlight (dark outline), unclicked gets highlight (blue fill)
     if (summaryButton) {
-        summaryButton.classList.remove("active");
+        summaryButton.classList.add("highlighted");
     }
 
     if (detailedButton) {
-        detailedButton.classList.add("active");
+        detailedButton.classList.remove("highlighted");
     }
 }
 
@@ -137,13 +138,9 @@ function initializeComparisonTabs() {
             showComparisonSummary
         );
 
-        console.log(
-            "COMPARISON: Summary button connected"
-        );
+        console.log("COMPARISON: Summary button connected");
     } else {
-        console.warn(
-            "COMPARISON: Summary button not found"
-        );
+        console.warn("COMPARISON: Summary button not found");
     }
 
     if (detailedButton) {
@@ -152,13 +149,9 @@ function initializeComparisonTabs() {
             showComparisonDetailed
         );
 
-        console.log(
-            "COMPARISON: Detailed button connected"
-        );
+        console.log("COMPARISON: Detailed button connected");
     } else {
-        console.warn(
-            "COMPARISON: Detailed button not found"
-        );
+        console.warn("COMPARISON: Detailed button not found");
     }
 }
 
@@ -286,57 +279,22 @@ function updateComparisonClassification(
     previousData,
     currentData
 ) {
-    console.log(
-        "COMPARISON: updateComparisonClassification() called"
-    );
-
-    console.log(
-        "COMPARISON: Previous data:",
-        previousData
-    );
-
-    console.log(
-        "COMPARISON: Current data:",
-        currentData
-    );
+    console.log("COMPARISON: updateComparisonClassification() called");
 
     if (!previousData || !currentData) {
-        console.log(
-            "COMPARISON: Missing previous or current data"
-        );
-
         updateComparisonEmptyState();
         return;
     }
 
     showComparisonResults();
 
-    updateCurrentComparison(
-        currentData
-    );
-
-    updatePreviousComparison(
-        previousData
-    );
+    updateCurrentComparison(currentData);
+    updatePreviousComparison(previousData);
 
     if (currentData.password_comparison) {
-        console.log(
-            "COMPARISON: Password comparison found:",
-            currentData.password_comparison
-        );
-
-        updateComparisonStatus(
-            currentData.password_comparison
-        );
-
-        updateComparisonSummary(
-            currentData.password_comparison
-        );
+        updateComparisonStatus(currentData.password_comparison);
+        updateComparisonSummary(currentData.password_comparison);
     } else {
-        console.log(
-            "COMPARISON: No password_comparison found"
-        );
-
         updateComparisonSummary({
             status: "",
             message: ""
@@ -350,22 +308,11 @@ function updateComparisonSummary(comparison) {
     } = getComparisonElements();
 
     if (!summaryText) {
-        console.warn(
-            "COMPARISON: #comparisonSummaryText not found"
-        );
-
         return;
     }
 
     const status =
-        String(
-            comparison?.status || ""
-        ).trim().toUpperCase();
-
-    console.log(
-        "COMPARISON: Generating frontend summary for:",
-        status
-    );
+        String(comparison?.status || "").trim().toUpperCase();
 
     let summary =
         "The current password has been compared with the previous password to evaluate their security characteristics.";
@@ -373,19 +320,13 @@ function updateComparisonSummary(comparison) {
     if (status === "CURRENT_PREFERRED") {
         summary =
             "Your current password is favorable than your previous password based on its overall security characteristics.";
-    }
-
-    else if (status === "PREVIOUS_PREFERRED") {
+    } else if (status === "PREVIOUS_PREFERRED") {
         summary =
             "Your previous password is favorable than your current password based on its overall security characteristics.";
-    }
-
-    else if (status === "IDENTICAL") {
+    } else if (status === "IDENTICAL") {
         summary =
             "Your current password is identical to your previous password and provides the same security characteristics.";
-    }
-
-    else if (
+    } else if (
         status === "SIMILAR" ||
         status === "SIMILARITY" ||
         status === "SIMILAR_PASSWORD"
@@ -394,20 +335,10 @@ function updateComparisonSummary(comparison) {
             "Your current and previous passwords have similar security characteristics.";
     }
 
-    summaryText.textContent =
-        summary;
-
-    console.log(
-        "COMPARISON: Summary generated:",
-        summary
-    );
+    summaryText.textContent = summary;
 }
 
 async function loadComparisonFromBackend() {
-    console.log(
-        "COMPARISON: Loading comparison from backend"
-    );
-
     const currentPassword =
         localStorage.getItem("currentPassword") ||
         localStorage.getItem("analyzedPassword");
@@ -415,30 +346,12 @@ async function loadComparisonFromBackend() {
     const previousPassword =
         localStorage.getItem("previousPassword");
 
-    console.log(
-        "COMPARISON: Current password exists:",
-        !!currentPassword
-    );
-
-    console.log(
-        "COMPARISON: Previous password exists:",
-        !!previousPassword
-    );
-
     if (!currentPassword || !previousPassword) {
-        console.log(
-            "COMPARISON: Missing password for comparison"
-        );
-
         updateComparisonEmptyState();
         return;
     }
 
     try {
-        console.log(
-            "COMPARISON: Sending current + previous password to backend"
-        );
-
         const response = await fetch(
             "http://localhost:3000/analyze",
             {
@@ -453,24 +366,11 @@ async function loadComparisonFromBackend() {
             }
         );
 
-        console.log(
-            "COMPARISON: Backend response status:",
-            response.status
-        );
-
         if (!response.ok) {
-            throw new Error(
-                `Backend returned ${response.status}`
-            );
+            throw new Error(`Backend returned ${response.status}`);
         }
 
-        const currentData =
-            await response.json();
-
-        console.log(
-            "COMPARISON: Current backend data:",
-            currentData
-        );
+        const currentData = await response.json();
 
         if (!currentData) {
             updateComparisonEmptyState();
@@ -478,58 +378,29 @@ async function loadComparisonFromBackend() {
         }
 
         let previousData =
-            typeof readCachedOriginalResult ===
-                "function"
-                ? readCachedOriginalResult(
-                    previousPassword
-                )
+            typeof readCachedOriginalResult === "function"
+                ? readCachedOriginalResult(previousPassword)
                 : null;
 
-        if (previousData) {
-            console.log(
-                "COMPARISON: Previous data loaded from cache"
-            );
-        }
-
         if (!previousData) {
-            console.log(
-                "COMPARISON: Previous cached data unavailable"
-            );
-
-            const previousResponse =
-                await fetch(
-                    "http://localhost:3000/analyze",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-                        body: JSON.stringify({
-                            password:
-                                previousPassword
-                        })
-                    }
-                );
-
-            console.log(
-                "COMPARISON: Previous backend response status:",
-                previousResponse.status
+            const previousResponse = await fetch(
+                "http://localhost:3000/analyze",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        password: previousPassword
+                    })
+                }
             );
 
             if (!previousResponse.ok) {
-                throw new Error(
-                    `Previous backend returned ${previousResponse.status}`
-                );
+                throw new Error(`Previous backend returned ${previousResponse.status}`);
             }
 
-            previousData =
-                await previousResponse.json();
-
-            console.log(
-                "COMPARISON: Previous backend data:",
-                previousData
-            );
+            previousData = await previousResponse.json();
         }
 
         if (!previousData) {
@@ -537,85 +408,48 @@ async function loadComparisonFromBackend() {
             return;
         }
 
-        updateComparisonClassification(
-            previousData,
-            currentData
-        );
+        updateComparisonClassification(previousData, currentData);
 
     } catch (error) {
-        console.error(
-            "Comparison backend error:",
-            error
-        );
-
+        console.error("Comparison backend error:", error);
         updateComparisonEmptyState();
     }
 }
 
-function updateComparisonStatus(
-    comparison
-) {
-    const {
-        status
-    } = getComparisonElements();
+function updateComparisonStatus(comparison) {
+    const { status } = getComparisonElements();
 
     if (!status || !comparison) {
         return;
     }
 
-    const comparisonStatus =
-        String(
-            comparison.status || ""
-        ).toUpperCase();
+    const comparisonStatus = String(comparison.status || "").toUpperCase();
 
-    console.log(
-        "COMPARISON: Status:",
-        comparisonStatus
-    );
-
-    if (
-        comparisonStatus ===
-        "IDENTICAL"
-    ) {
+    if (comparisonStatus === "IDENTICAL") {
         status.textContent =
             "Your current password is identical to your previous password, so both passwords have the same security characteristics.";
-
         return;
     }
 
-    if (
-        comparisonStatus ===
-        "CURRENT_PREFERRED"
-    ) {
+    if (comparisonStatus === "CURRENT_PREFERRED") {
         status.textContent =
             "Your current password has stronger security characteristics than your previous password.";
-
         return;
     }
 
-    if (
-        comparisonStatus ===
-        "PREVIOUS_PREFERRED"
-    ) {
+    if (comparisonStatus === "PREVIOUS_PREFERRED") {
         status.textContent =
             "Your previous password has stronger security characteristics than your current password.";
-
         return;
     }
 
-    if (
-        comparisonStatus ===
-        "SIMILAR"
-    ) {
+    if (comparisonStatus === "SIMILAR") {
         status.textContent =
             "Your current and previous passwords have similar security characteristics.";
-
         return;
     }
 
-    status.textContent =
-        comparison.message ||
-        "Comparison completed.";
+    status.textContent = comparison.message || "Comparison completed.";
 }
 
 function formatRisk(risk) {
@@ -623,14 +457,9 @@ function formatRisk(risk) {
         return "UNKNOWN RISK";
     }
 
-    const normalized =
-        String(risk)
-            .trim()
-            .toUpperCase();
+    const normalized = String(risk).trim().toUpperCase();
 
-    if (
-        normalized.includes("RISK")
-    ) {
+    if (normalized.includes("RISK")) {
         return normalized;
     }
 
@@ -642,33 +471,21 @@ function getRiskClass(risk) {
         return "risk-unknown";
     }
 
-    const normalized =
-        String(risk)
-            .trim()
-            .toLowerCase();
+    const normalized = String(risk).trim().toLowerCase();
 
-    if (
-        normalized.includes("critical")
-    ) {
+    if (normalized.includes("critical")) {
         return "risk-critical";
     }
 
-    if (
-        normalized.includes("high")
-    ) {
+    if (normalized.includes("high")) {
         return "risk-high";
     }
 
-    if (
-        normalized.includes("moderate") ||
-        normalized.includes("medium")
-    ) {
+    if (normalized.includes("moderate") || normalized.includes("medium")) {
         return "risk-moderate";
     }
 
-    if (
-        normalized.includes("low")
-    ) {
+    if (normalized.includes("low")) {
         return "risk-low";
     }
 
@@ -676,19 +493,13 @@ function getRiskClass(risk) {
 }
 
 function escapeComparisonHTML(value) {
-    const element =
-        document.createElement("div");
-
-    element.textContent =
-        String(value ?? "");
-
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
     return element.innerHTML;
 }
 
 async function initializeComparison() {
-    console.log(
-        "COMPARISON: Initialization started"
-    );
+    console.log("COMPARISON: Initialization started");
 
     initializeComparisonTabs();
 
@@ -697,15 +508,10 @@ async function initializeComparison() {
         window.comparisonAnalysisData.previous &&
         window.comparisonAnalysisData.current
     ) {
-        console.log(
-            "COMPARISON: Using window.comparisonAnalysisData"
-        );
-
         updateComparisonClassification(
             window.comparisonAnalysisData.previous,
             window.comparisonAnalysisData.current
         );
-
         return;
     }
 
@@ -716,74 +522,32 @@ async function initializeComparison() {
     const previousPassword =
         localStorage.getItem("previousPassword");
 
-    console.log(
-        "COMPARISON: Current password:",
-        currentPassword ? "FOUND" : "NOT FOUND"
-    );
-
-    console.log(
-        "COMPARISON: Previous password:",
-        previousPassword ? "FOUND" : "NOT FOUND"
-    );
-
     if (!currentPassword || !previousPassword) {
         updateComparisonEmptyState();
         return;
     }
 
-    const currentData =
-        window.latestAnalysisData;
+    const currentData = window.latestAnalysisData;
 
     let previousData =
-        typeof readCachedOriginalResult ===
-            "function"
-            ? readCachedOriginalResult(
-                previousPassword
-            )
+        typeof readCachedOriginalResult === "function"
+            ? readCachedOriginalResult(previousPassword)
             : null;
 
-    if (
-        currentData &&
-        previousData
-    ) {
-        console.log(
-            "COMPARISON: Using cached analysis data"
-        );
-
-        updateComparisonClassification(
-            previousData,
-            currentData
-        );
-
+    if (currentData && previousData) {
+        updateComparisonClassification(previousData, currentData);
         return;
     }
 
     await loadComparisonFromBackend();
 }
 
-window.updateComparisonEmptyState =
-    updateComparisonEmptyState;
-
-window.showComparisonResults =
-    showComparisonResults;
-
-window.showComparisonSummary =
-    showComparisonSummary;
-
-window.showComparisonDetailed =
-    showComparisonDetailed;
-
-window.loadComparisonFromBackend =
-    loadComparisonFromBackend;
-
-window.updateComparisonClassification =
-    updateComparisonClassification;
-
-window.updateComparisonStatus =
-    updateComparisonStatus;
-
-window.updateComparisonSummary =
-    updateComparisonSummary;
-
-window.initializeComparison =
-    initializeComparison;
+window.updateComparisonEmptyState = updateComparisonEmptyState;
+window.showComparisonResults = showComparisonResults;
+window.showComparisonSummary = showComparisonSummary;
+window.showComparisonDetailed = showComparisonDetailed;
+window.loadComparisonFromBackend = loadComparisonFromBackend;
+window.updateComparisonClassification = updateComparisonClassification;
+window.updateComparisonStatus = updateComparisonStatus;
+window.updateComparisonSummary = updateComparisonSummary;
+window.initializeComparison = initializeComparison;

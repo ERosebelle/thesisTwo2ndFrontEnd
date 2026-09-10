@@ -381,7 +381,16 @@ function initializeSidebar() {
         }
     );
 
-    showSection(0);
+    // CHECK IF A SPECIFIC TAB SHOULD BE OPENED
+    let initialTab = 0;
+    const targetTab = sessionStorage.getItem("openTab");
+    
+    if (targetTab !== null) {
+        initialTab = Number(targetTab);
+        sessionStorage.removeItem("openTab");
+    }
+
+    showSection(initialTab);
 }
 
 function renderBackendData(data) {

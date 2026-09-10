@@ -363,6 +363,11 @@ if (compareButton && passwordInput) {
 
                 // SAVE RESULT
                 sessionStorage.setItem("analysisResult", JSON.stringify(result));
+                
+                // SIGNAL result.js TO OPEN THE COMPARISON TAB
+                sessionStorage.setItem("openTab", "4");
+                
+                // REDIRECT TO THE DASHBOARD
                 window.location.href = "result.html";
 
             } catch (error) {
