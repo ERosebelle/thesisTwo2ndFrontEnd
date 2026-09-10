@@ -447,32 +447,79 @@ function buildManualFeatureSteps(extractedFeatures) {
     return steps;
 }
 
-function buildRiskModelRationale(steps, level) {
-    if (steps.length === 0) {
-        return `The risk assessment reached a ${level} risk rating without any features to check.`;
+function buildRiskModelRationale(features, level, vulnerabilityType) {
+    // 1. Pattern Detection Sentence
+    const detected = [];
+    const notDetected = [];
+
+    if (features.dictionary_present) detected.push("A dictionary word"); else notDetected.push("dictionary word");
+    if (features.numeric_suffix) detected.push("a number at the end"); else notDetected.push("numeric suffix");
+    if (features.has_sequence) detected.push("a sequential pattern"); else notDetected.push("sequence");
+    if (features.has_leetspeak) detected.push("leetspeak"); else notDetected.push("leetspeak");
+    if (features.numeric_prefix) detected.push("numeric prefix"); else notDetected.push("numeric prefix");
+    if (features.numeric_infix) detected.push("numeric infix"); else notDetected.push("numeric infix");
+    if (features.has_repetition) detected.push("repeated characters"); else notDetected.push("repetition");
+
+    let detectionSentence = "";
+    if (features.dictionary_present) {
+        if (detected.length === 1) {
+            detectionSentence = `A dictionary word was detected, while no ${notDetected.join(", ")} was found.`;
+        } else {
+            const detectedStr = detected.join(", ");
+            detectionSentence = `${detectedStr} were detected, while no ${notDetected.filter(d => d !== 'dictionary word').join(", ")} were found.`;
+        }
+    } else if (features.numeric_infix && !features.dictionary_present) {
+        detectionSentence = `No dictionary word, leetspeak, numeric prefix or suffix, sequence, or repeated characters were detected. Numbers were found in the middle of the password,`;
+    } else if (detected.length === 0) {
+        detectionSentence = "No dictionary word, leetspeak, numeric prefix or suffix, sequence, or repeated characters were detected.";
+    } else {
+        detectionSentence = `${detected.join(", ")} was detected, while no ${notDetected.join(", ")} were found.`;
     }
 
-    const stepSentences = steps.map((step, i) => {
-        const ordinal = i === 0 ? "First" : (i === steps.length - 1 ? "Finally" : "Next");
-        const isNumeric = step.feature === "length" || step.feature === "character_class_count";
+    // 2. Character Classes Sentence
+    const presentClasses = [];
+    const missingClasses = [];
 
-        if (isNumeric) {
-            const unit = step.feature === "length" ? "character(s)" : "character type(s)";
-            const comparison = step.direction === "higher"
-                ? `at least the guideline of ${step.threshold} ${unit}`
-                : `below the guideline of ${step.threshold} ${unit}`;
-            return `${ordinal}, "${step.label}" was checked: your password has ${step.actualValue} ${unit}, which is ${comparison}.`;
-        }
+    if (features.has_lowercase) presentClasses.push("lowercase letters"); else missingClasses.push("uppercase letters, numbers, or symbols");
+    if (features.has_uppercase) presentClasses.push("uppercase letters");
+    if (features.has_digit) presentClasses.push("digits");
+    if (features.has_symbol) presentClasses.push("symbols");
 
-        return `${ordinal}, "${step.label}" was checked: ${step.explanation}`;
-    });
+    let charSentence = "";
+    const charCount = features.character_class_count;
+    const charGuideline = charCount >= 3 
+        ? "which meets the system guideline." 
+        : "which is below the system guideline of 3.";
 
-    return `The risk assessment walked through all ${steps.length} extracted password features. ` +
-        stepSentences.join(" ") +
-        ` Combined, these feature checks support the trained risk model's final rating of ${level} risk.`;
+    if (charCount === 1) {
+        charSentence = `and the password contains ${presentClasses.join(", ")} but no ${missingClasses.join(", ")}, resulting in only 1 character type, ${charGuideline}`;
+    } else {
+        charSentence = `and the password contains ${presentClasses.join(", ")}, giving it ${charCount} character types, ${charGuideline}`;
+    }
+
+    // 3. Length Sentence
+    const len = features.length;
+    const lenGuideline = len >= 12 
+        ? `meets the 12-character guideline.` 
+        : `is below the system guideline of at least 12 characters.`;
+    const lengthSentence = `Its length of ${len} characters ${lenGuideline}`;
+
+    // 4. Conclusion Sentence
+    let conclusion = "";
+    if (level === "CRITICAL") {
+        conclusion = "but the combination of the detected dictionary word and limited character variety led the trained model to classify it as CRITICAL risk.";
+    } else if (level === "HIGH") {
+        conclusion = "However, the combination of a recognizable word and predictable modification patterns led the trained model to classify it as HIGH risk.";
+    } else if (level === "MODERATE" && vulnerabilityType === "BRUTE-FORCE") {
+        conclusion = `Although a rule-based pattern was detected, the overall combination of extracted features and the decision path of the trained model resulted in the BRUTE-FORCE classification and a MODERATE risk rating.`;
+    } else {
+        conclusion = `Combined, these feature checks support the trained risk model's final rating of ${level} risk.`;
+    }
+
+    return `The system examined all 14 extracted password features. ${detectionSentence} ${charSentence} ${lengthSentence} ${conclusion}`;
 }
 
-function explainRisk(features, level, treeRoot) {
+function explainRisk(features, level, treeRoot, vulnerabilityType) {
     const contributions = [];
 
     contributions.push(`+${features.length} points from password length (${features.length} characters).`);
@@ -485,7 +532,7 @@ function explainRisk(features, level, treeRoot) {
 
     const score = calculateSecurityScore(features);
     const modelSteps = buildManualFeatureSteps(features);
-    const summary = buildRiskModelRationale(modelSteps, level);
+    const summary = buildRiskModelRationale(features, level, vulnerabilityType);
 
     return {
         risk_level: level,
@@ -586,37 +633,41 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
     AVOID_DICTIONARY_WORDS: (f, password) => {
         const passphrase = suggestPassphrase();
         const stacked = [];
-        if (f.has_leetspeak) stacked.push("letter-to-symbol swaps");
-        if (f.numeric_suffix) stacked.push("a number tacked on the end");
+        if (f.has_leetspeak) stacked.push("substituting letters with symbols");
+        if (f.numeric_suffix) stacked.push("adding a number at the end");
         const stackedNote = stacked.length > 0
-            ? ` Even with ${stacked.join(" and ")}, the underlying word is still the first thing a cracking tool checks.`
+            ? ` Even with ${stacked.join(" and ")}, automated guessing tools can still easily recognize the main word underneath.`
             : "";
 
         return pickVariant([
-            `'${password}' is built around a real word, which is the very first thing attackers try.${stackedNote} ` +
-            `A passphrase like "${passphrase}" - unrelated words strung together - is far harder to guess.`,
-            `Dictionary attacks check real words before anything else, and '${password}' is one.${stackedNote} ` +
-            `Try replacing it with something like "${passphrase}" instead - random, unrelated words beat a single word every time.`,
-            `The core of '${password}' matches a word cracking tools already have in their list.${stackedNote} ` +
-            `Consider a multi-word passphrase such as "${passphrase}" - length and unpredictability matter more than using a "real" word.`
+            `'${password}' contains a recognizable word that automated guessing tools usually check first.${stackedNote} ` +
+            `A passphrase like "${passphrase}" - made from unrelated words - creates a much less predictable password.`,
+           
+            `Dictionary-based guessing software checks common words, and '${password}' contains one.${stackedNote} ` +
+            `Consider replacing it with something like "${passphrase}" - combining unrelated words creates a stronger structure.`,
+           
+            `The main part of '${password}' matches a word found in common password lists.${stackedNote} ` +
+            `Consider a multi-word passphrase such as "${passphrase}" - using unrelated words creates a longer and harder-to-guess password.`
         ]);
     },
 
     AVOID_PREDICTABLE_PATTERNS: (f, password) => {
         const found = [];
-        if (f.has_leetspeak) found.push("letter-to-symbol swaps (like a→@)");
-        if (f.numeric_suffix) found.push("a number stuck at the end");
-        if (f.has_sequence) found.push("a sequence like 123 or abc");
-        if (f.has_repetition) found.push("repeated characters");
+        if (f.has_leetspeak) found.push("swapping letters for symbols (like a→@)");
+        if (f.numeric_suffix) found.push("adding a number at the end");
+        if (f.has_sequence) found.push("using a sequence like 123 or abc");
+        if (f.has_repetition) found.push("repeating characters");
         const whatWasFound = found.length > 0 ? found.join(", ") : "a common modification pattern";
 
         return pickVariant([
-            `'${password}' contains ${whatWasFound} - these are the first tricks cracking tools test right after plain words. ` +
-            `Try placing your symbols and numbers in the middle of the password instead of just at the start or end.`,
-            `We noticed ${whatWasFound} in '${password}'. Automated tools try these exact tweaks first, so they add less protection than they feel like they do. ` +
-            `Mixing changes into the middle of the password, not just the edges, makes it noticeably harder to predict.`,
-            `The pattern in '${password}' (${whatWasFound}) is one of the first things a password cracker checks after trying the plain word. ` +
-            `Breaking up the predictable part - rather than just appending to it - would make a bigger difference.`
+            `'${password}' contains ${whatWasFound}. Automated guessing tools check these exact tricks after looking for whole words. ` +
+            `Consider changing the arrangement of your numbers, symbols, and letters instead of placing them only at the beginning or end.`,
+           
+            `We noticed ${whatWasFound} in '${password}'. These are predictable changes that automated password-guessing tools test automatically. ` +
+            `Try mixing numbers and symbols into different parts of the password instead of putting them only at the ends.`,
+           
+            `The pattern in '${password}' (${whatWasFound}) is a common modification that password-cracking tools test right away. ` +
+            `Consider creating a completely random combination rather than just adding extra characters to a basic word.`
         ]);
     },
 
@@ -633,12 +684,14 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
             : "";
 
         return pickVariant([
-            `'${password}' only uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters.${missingNote} ` +
-            `Aim for at least ${target} types (uppercase, lowercase, numbers, symbols) to make guessing much harder.`,
+            `'${password}' uses ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"} of characters.${missingNote} ` +
+            `Consider using at least ${target} types (uppercase, lowercase, numbers, and symbols) to create more variety and make it harder to guess.`,
+           
             `Character variety in '${password}' is limited to ${f.character_class_count} type${f.character_class_count === 1 ? "" : "s"}.${missingNote} ` +
-            `Mixing in the missing types pushes the total combinations an attacker has to try up dramatically.`,
-            `With only ${f.character_class_count} character type${f.character_class_count === 1 ? "" : "s"} in use, '${password}' has less variety than it could.${missingNote} ` +
-            `Passwords that combine at least ${target} types are significantly more resistant to guessing.`
+            `Adding the missing character types creates many more possibilities, making automated guessing much harder.`,
+           
+            `With only ${f.character_class_count} character type${f.character_class_count === 1 ? "" : "s"} in use, '${password}' has limited variety.${missingNote} ` +
+            `Consider combining at least ${target} types to create a more varied and less predictable password.`
         ]);
     },
 
@@ -646,16 +699,18 @@ const RECOMMENDATION_LABEL_TEMPLATES = {
         const target = MANUAL_TREE_THRESHOLDS.length;
         const remaining = Math.max(0, target - f.length);
         const remainingNote = remaining > 0
-            ? ` That's ${remaining} more character${remaining === 1 ? "" : "s"} to reach a safer length.`
-            : ` It already meets the usual ${target}-character guideline, but there's no upper limit on how much extra length helps.`;
+            ? ` That's ${remaining} more character${remaining === 1 ? "" : "s"} to reach the ${target}-character recommendation used by the system.`
+            : ` It already meets the ${target}-character recommendation, but extra length still makes it exponentially stronger.`;
 
         return pickVariant([
             `'${password}' is ${f.length} character${f.length === 1 ? "" : "s"} long.${remainingNote} ` +
-            `Every extra character makes brute-force guessing exponentially harder.`,
+            `Adding more characters increases the time and effort required for automated tools to guess it.`,
+           
             `At ${f.length} character${f.length === 1 ? "" : "s"}, '${password}' has room to grow.${remainingNote} ` +
-            `Length adds more protection per character than almost any other change you can make.`,
-            `'${password}' currently sits at ${f.length} character${f.length === 1 ? "" : "s"}.${remainingNote} ` +
-            `Stretching it out - even by adding a short unrelated word or phrase - meaningfully raises how long it would take to crack.`
+            `Consider making it longer to increase the number of possible combinations.`,
+           
+            `'${password}' currently has ${f.length} character${f.length === 1 ? "" : "s"}.${remainingNote} ` +
+            `Consider extending it by adding an extra random word or phrase, avoiding simple or obvious additions.`
         ]);
     }
 };
@@ -694,21 +749,18 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
     const currentPassword = password;
 
     if (vulnerabilityType === "DICTIONARY") {
-        technicalBreakdown.attack_vector = `Attackers try common words first, and '${currentPassword}' matches one directly.`;
-        technicalBreakdown.remediation = `Replace it with a passphrase made of a few random, unrelated words.`;
+        technicalBreakdown.attack_vector = `Automated tools try common words first during dictionary guessing, and '${currentPassword}' contains a recognizable word found in standard password lists.`;
+        technicalBreakdown.remediation = `Consider replacing it with a passphrase made from a few unrelated words.`;
     } else if (vulnerabilityType === "RULE-BASED") {
-        technicalBreakdown.attack_vector = `'${currentPassword}' is a common word with a predictable tweak (numbers, symbols, or capitalization) - cracking tools test these tweaks automatically.`;
-        technicalBreakdown.remediation = `Break the predictable pattern - mix symbols and numbers into the middle of the password, not just the start or end.`;
+        technicalBreakdown.attack_vector = `'${currentPassword}' contains a familiar word with a predictable modification, such as numbers, symbols, or capitalization. Automated cracking tools test these exact patterns automatically.`;
+        technicalBreakdown.remediation = `Consider changing the predictable pattern by mixing symbols and numbers into different parts of the password, rather than placing them only at the start or end.`;
     } else if (vulnerabilityType === "BRUTE-FORCE") {
-        const isStrong = extractedFeatures.length >= 12 && extractedFeatures.character_class_count >= 3;
-        technicalBreakdown.attack_vector = isStrong
-            ? `'${currentPassword}' doesn't match a word or pattern, and it's long and varied enough to resist most guessing attempts.`
-            : `'${currentPassword}' doesn't match a word or pattern, but it's still short enough that a computer could eventually guess it through brute force.`;
-        technicalBreakdown.remediation = `Make it longer - each extra character makes brute-force guessing exponentially harder.`;
+        technicalBreakdown.attack_vector = `'${currentPassword}' does not match a recognizable word or common pattern. Automated tools must test combinations of characters to guess it.`;
+        technicalBreakdown.remediation = `Consider making it longer and using different types of characters to create a less predictable structure.`;
     }
 
     if (recommendationResult && recommendationResult.label) {
-        tips.push("Consider turning on Multi-Factor Authentication (MFA) wherever this password is used, as an extra layer of protection.");
+        tips.push("Consider enabling Multi-Factor Authentication (MFA) to add an extra verification step if someone discovers your password.");
     }
 
     if (recommendationResult && recommendationResult.label && RECOMMENDATION_LABEL_TEMPLATES[recommendationResult.label]) {
@@ -726,7 +778,7 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
                 "Additionally: " + RECOMMENDATION_LABEL_TEMPLATES[secondLabel](extractedFeatures, currentPassword)
             );
         } else {
-            tips.push("Consider using a password manager to generate and store unique, complex passwords for every account, so you never have to reuse or simplify one.");
+            tips.push("Consider using a password manager to create and store unique passwords for each account, helping you avoid reusing passwords.");
         }
     }
 
@@ -734,18 +786,19 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         const similarGuesses = generateSimilarGuessablePasswords(currentPassword, extractedFeatures);
         if (similarGuesses.core) {
             tips.push(
-                `Your password's structure is similar to how attackers generate guesses: taking a base like '${similarGuesses.core}' and trying '${similarGuesses.examples.join("', '")}'. ` +
-                `Wordlist-plus-rules cracking tools try exactly this kind of variation automatically.`
+                `Your password's structure is similar to common guessing patterns: starting with a base like '${similarGuesses.core}' and trying variations like '${similarGuesses.examples.join("', '")}'. ` +
+                `Automated cracking tools automatically test these exact variations.`
             );
         } else {
             tips.push(
-                `How guessing software works: Software can generate random combinations matching your password's exact pattern (${extractedFeatures.length} characters using its current mix). Examples: '${similarGuesses.examples.join("', '")}'.`
+                `How automated guessing software works: Software generates combinations that follow the same pattern as your password (${extractedFeatures.length} characters using its current mix). Examples: '${similarGuesses.examples.join("', ")}'.`
             );
         }
     }
 
     return { tips, technicalBreakdown };
 }
+
 
 const FEATURE_LABELS = {
     length: "Length",
@@ -858,10 +911,10 @@ function explainClassification(extractedFeatures, vulnerabilityType) {
 
     if (vulnerabilityType === "DICTIONARY") {
         classification_rationale =
-            `Classified as DICTIONARY primarily because a recognizable dictionary word was detected ` +
-            `(dictionary_present = 1) ${extractedFeatures.rule_pattern_present ? "with no strong enough rule-based obfuscation pattern to shift it into RULE-BASED" : "and no rule-based obfuscation pattern (leetspeak, numeric suffix, sequence, or repetition) was detected"}. ` +
-            `Length (${extractedFeatures.length}) and character class count (${extractedFeatures.character_class_count}) were not enough by themselves to outweigh the dictionary match, ` +
-            `since dictionary_present is the strongest single signal the trained model relies on.`;
+            `Classified as DICTIONARY because the system detected a recognizable dictionary word ` +
+            `(dictionary_present = 1) ${extractedFeatures.rule_pattern_present + "No common rule-based patterns, such as leetspeak, numbers at the beginning or end, sequences, or repeated characters, were detected"}. ` +
+            `Although the password is (${extractedFeatures.length}) long, it only uses (${extractedFeatures.character_class_count}) type of character. ` +
+            `The trained model gives important consideration to the presence of a dictionary word, which led to the DICTIONARY classification.`;
     } else if (vulnerabilityType === "RULE-BASED") {
         const patternsFound = [];
         if (extractedFeatures.has_leetspeak) patternsFound.push("leetspeak substitution");
@@ -870,16 +923,16 @@ function explainClassification(extractedFeatures, vulnerabilityType) {
         if (extractedFeatures.has_repetition) patternsFound.push("repeated characters");
 
         classification_rationale =
-            `Classified as RULE-BASED because a dictionary word was detected (dictionary_present = 1) ` +
-            `AND a predictable rule-based pattern was also present (rule_pattern_present = 1)` +
-            `${patternsFound.length > 0 ? `, specifically: ${patternsFound.join(", ")}` : ""}. ` +
-            `This combination - a real word plus a common human modification habit - is what separates RULE-BASED from a plain DICTIONARY match.`;
+            `Classified as RULE-BASED because the system detected a dictionary word (dictionary_present = 1) ` +
+            `together with predictable adjustments  (rule_pattern_present = 1)` +
+            `${patternsFound.length > 0 ? `. specifically: ${patternsFound.join(", ")}` : ""}. ` +
+            `This means the password is based on a recognizable word with common changes that password-cracking tools may also try, which led to the RULE-BASED classification.`;
     } else if (vulnerabilityType === "BRUTE-FORCE") {
         classification_rationale =
-            `Classified as BRUTE-FORCE because no dictionary word was detected (dictionary_present = 0), ` +
-            `meaning the password does not match a known word the model can key off of. ` +
-            `With length ${extractedFeatures.length} and ${extractedFeatures.character_class_count} character class${extractedFeatures.character_class_count === 1 ? "" : "es"} in use, ` +
-            `security here depends on the password's combinatorial search space rather than dictionary or rule-based predictability.`;
+            `Classified as BRUTE-FORCE because the system did not detect a recognizable dictionary word (dictionary_present = 0), ` +
+            `Instead, the password's classification is mainly associated with its length and combination of character types. ` +
+            `The password is  ${extractedFeatures.length} characters long and uses ${extractedFeatures.character_class_count} character type${extractedFeatures.character_class_count === 1 ? "" : "es"}, ` +
+            `which means the system evaluates its characteristics mainly in relation to the number of possible combinations that may need to be considered during brute-force guessing.`;
     } else {
         classification_rationale = `Classification result: ${vulnerabilityType}.`;
     }
@@ -1018,7 +1071,7 @@ app.post('/analyze', (req, res) => {
     }
 
     const classificationResult = classifyPassword(extractedFeatures);
-    const riskExplanation = explainRisk(extractedFeatures, currentRiskLevel, riskModel ? riskModel.root : null);
+    const riskExplanation = explainRisk(extractedFeatures, currentRiskLevel, riskModel ? riskModel.root : null, classificationResult.label);
 
     console.log("RAW PREDICTION (RISK):", riskClassifier ? riskClassifier.predict(modelFeatures) : "N/A");
     console.log("RISK:", currentRiskLevel);
