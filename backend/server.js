@@ -107,7 +107,7 @@ fs.createReadStream(datasetPath)
         console.error("❌ Warning: dataset.csv not found.");
     });
 
-// Expanded Leet Normalization (Kasama na ang '(' -> 'c', '3' -> 'e', etc.)
+// Expanded Leet Normalization
 function normalizeLeet(str) {
     return str.toLowerCase()
         .replace(/[@4]/g, 'a')
@@ -120,7 +120,7 @@ function normalizeLeet(str) {
         .replace(/8/g, 'b');
 }
 
-// Dynamic Sequence Detector (Gumagana sa pataas/pababa: abc, cba, 123, 321, xyz, zyx, etc.)
+// Dynamic Sequence Detector
 function checkSequence(str) {
     const s = str.toLowerCase();
     if (s.length < 3) return 0;
@@ -142,7 +142,7 @@ function checkSequence(str) {
     return 0;
 }
 
-// ===== 1. FEATURE EXTRACTION (FIXED) =====
+// ===== 1. FEATURE EXTRACTION (UPDATED FOR EXACT DICTIONARY REPETITIONS) =====
 function extractFeatures(password) {
     const originalPassword = password;
 
@@ -199,13 +199,17 @@ function extractFeatures(password) {
 
     // --- PRECISE LEETSPEAK DETECTION ---
     const strippedMiddle = originalPassword.replace(/^\d+/, '').replace(/\d+$/, '');
-
     const hasEmbeddedLeet = /([a-zA-Z][@$40531!\(\[\<+]|[a-zA-Z0-9][@$!\(\[\<+][a-zA-Z0-9]|[@$40531!\(\[\<+][a-zA-Z])/.test(strippedMiddle);
 
     const rawTokens = camelSplit.toLowerCase().split(/[^a-z]+/).filter(Boolean);
     const rawMatched = rawTokens.some(t => englishSet.has(t) || tagalogSet.has(t));
 
     const hasLeetspeak = dictionaryDetected && (hasEmbeddedLeet || (!rawMatched && /[@$40531!\(\[\<+]/.test(strippedMiddle))) ? 1 : 0;
+
+    // --- EXACT DICTIONARY CHECK ---
+    // Checks if the password consists strictly of exact dictionary words without numbers, symbols, or leetspeak
+    const allRawTokensExact = rawTokens.length > 0 && rawTokens.every(t => englishSet.has(t) || tagalogSet.has(t));
+    const isExactDictionary = allRawTokensExact && !/\d/.test(originalPassword) && !/[^A-Za-z0-9]/.test(originalPassword) && !hasLeetspeak;
 
     const extractedFeatures = {
         length: originalPassword.length,
@@ -220,7 +224,8 @@ function extractFeatures(password) {
         numeric_infix: numericInfix,
         has_sequence: checkSequence(originalPassword),
         has_repetition: /(.)\1|(.{2,})\2+/i.test(originalPassword) ? 1 : 0,
-        _matched_dictionary_word: dictionaryDetected ? matchedWords.join(", ") : ""
+        _matched_dictionary_word: dictionaryDetected ? matchedWords.join(", ") : "",
+        _is_exact_dictionary: isExactDictionary ? 1 : 0
     };
 
     extractedFeatures.character_class_count =
@@ -335,7 +340,12 @@ function classifyPassword(extractedFeatures) {
 
     let finalLabel = labelMap[prediction[0]];
 
-    if (extractedFeatures.dictionary_present === 1 && extractedFeatures.rule_pattern_present === 0) {
+    // Override for Exact Dictionary words:
+    // If it's a real dictionary word (or combination of real dictionary words), keep as DICTIONARY
+    // even if natural double letters (like 'll' in hello or 'ss' in password) triggered has_repetition.
+    if (extractedFeatures._is_exact_dictionary === 1) {
+        finalLabel = "DICTIONARY";
+    } else if (extractedFeatures.dictionary_present === 1 && extractedFeatures.rule_pattern_present === 0) {
         finalLabel = "DICTIONARY";
     }
 
@@ -448,7 +458,6 @@ function buildManualFeatureSteps(extractedFeatures) {
 }
 
 function buildRiskModelRationale(features, level, vulnerabilityType) {
-    // 1. Pattern Detection Sentence
     const detected = [];
     const notDetected = [];
 
@@ -476,7 +485,6 @@ function buildRiskModelRationale(features, level, vulnerabilityType) {
         detectionSentence = `${detected.join(", ")} was detected, while no ${notDetected.join(", ")} were found.`;
     }
 
-    // 2. Character Classes Sentence
     const presentClasses = [];
     const missingClasses = [];
 
@@ -497,14 +505,12 @@ function buildRiskModelRationale(features, level, vulnerabilityType) {
         charSentence = `and the password contains ${presentClasses.join(", ")}, giving it ${charCount} character types, ${charGuideline}`;
     }
 
-    // 3. Length Sentence
     const len = features.length;
     const lenGuideline = len >= 12 
         ? `meets the 12-character guideline.` 
         : `is below the system guideline of at least 12 characters.`;
     const lengthSentence = `Its length of ${len} characters ${lenGuideline}`;
 
-    // 4. Conclusion Sentence
     let conclusion = "";
     if (level === "CRITICAL") {
         conclusion = "but the combination of the detected dictionary word and limited character variety led the trained model to classify it as CRITICAL risk.";
@@ -759,9 +765,7 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         technicalBreakdown.remediation = `Consider making it longer and using different types of characters to create a less predictable structure.`;
     }
 
-    if (recommendationResult && recommendationResult.label) {
-        tips.push("Consider enabling Multi-Factor Authentication (MFA) to add an extra verification step if someone discovers your password.");
-    }
+    tips.push("Consider enabling Multi-Factor Authentication (MFA) to add an extra verification step if someone discovers your password.");
 
     if (recommendationResult && recommendationResult.label && RECOMMENDATION_LABEL_TEMPLATES[recommendationResult.label]) {
         tips.push(
@@ -780,25 +784,27 @@ function getStrategies(vulnerabilityType, extractedFeatures, password, treeRoot,
         } else {
             tips.push("Consider using a password manager to create and store unique passwords for each account, helping you avoid reusing passwords.");
         }
+    } else {
+        tips.push("Consider using a password manager to create and store unique passwords for each account, helping you avoid reusing passwords.");
     }
 
     if (recommendationResult && recommendationResult.label) {
         const similarGuesses = generateSimilarGuessablePasswords(currentPassword, extractedFeatures);
         if (similarGuesses.core) {
             tips.push(
-                `Your password's structure is similar to common guessing patterns: starting with a base like '${similarGuesses.core}' and trying variations like '${similarGuesses.examples.join("', '")}'. ` +
-                `Automated cracking tools automatically test these exact variations.`
+                `Your password's structure is similar to common guessing patterns: starting with a base like '${similarGuesses.core}' and trying variations like '${similarGuesses.examples.join("', '")}'. Automated cracking tools test these exact variations.`
             );
         } else {
             tips.push(
-                `How automated guessing software works: Software generates combinations that follow the same pattern as your password (${extractedFeatures.length} characters using its current mix). Examples: '${similarGuesses.examples.join("', ")}'.`
+                `Guessing software generates combinations that follow your password's structure (${extractedFeatures.length} characters using its current mix). Examples: '${similarGuesses.examples.join("', ")}'.`
             );
         }
+    } else {
+        tips.push("Guessing software can generate combinations based on password length and character variety.");
     }
 
     return { tips, technicalBreakdown };
 }
-
 
 const FEATURE_LABELS = {
     length: "Length",
@@ -910,11 +916,15 @@ function explainClassification(extractedFeatures, vulnerabilityType) {
     let classification_rationale;
 
     if (vulnerabilityType === "DICTIONARY") {
+        const ruleNote = extractedFeatures.rule_pattern_present
+            ? "and although natural character doublets were detected, the password consists entirely of standard dictionary word(s) without artificial rule-based modifications."
+            : "and no common rule-based patterns, such as leetspeak, numbers at the beginning or end, sequences, or repeated characters, were detected.";
+
         classification_rationale =
             `Classified as DICTIONARY because the system detected a recognizable dictionary word ` +
-            `(dictionary_present = 1) ${extractedFeatures.rule_pattern_present + "No common rule-based patterns, such as leetspeak, numbers at the beginning or end, sequences, or repeated characters, were detected"}. ` +
-            `Although the password is (${extractedFeatures.length}) long, it only uses (${extractedFeatures.character_class_count}) type of character. ` +
-            `The trained model gives important consideration to the presence of a dictionary word, which led to the DICTIONARY classification.`;
+            `(dictionary_present = 1) ${ruleNote} ` +
+            `Although the password is (${extractedFeatures.length}) character(s) long, it uses (${extractedFeatures.character_class_count}) type(s) of characters. ` +
+            `The trained model gives primary weight to the presence of a dictionary word, which led to the DICTIONARY classification.`;
     } else if (vulnerabilityType === "RULE-BASED") {
         const patternsFound = [];
         if (extractedFeatures.has_leetspeak) patternsFound.push("leetspeak substitution");
@@ -924,14 +934,14 @@ function explainClassification(extractedFeatures, vulnerabilityType) {
 
         classification_rationale =
             `Classified as RULE-BASED because the system detected a dictionary word (dictionary_present = 1) ` +
-            `together with predictable adjustments  (rule_pattern_present = 1)` +
-            `${patternsFound.length > 0 ? `. specifically: ${patternsFound.join(", ")}` : ""}. ` +
+            `together with predictable adjustments (rule_pattern_present = 1)` +
+            `${patternsFound.length > 0 ? `, specifically: ${patternsFound.join(", ")}` : ""}. ` +
             `This means the password is based on a recognizable word with common changes that password-cracking tools may also try, which led to the RULE-BASED classification.`;
     } else if (vulnerabilityType === "BRUTE-FORCE") {
         classification_rationale =
-            `Classified as BRUTE-FORCE because the system did not detect a recognizable dictionary word (dictionary_present = 0), ` +
+            `Classified as BRUTE-FORCE because the system did not detect a recognizable dictionary word (dictionary_present = 0). ` +
             `Instead, the password's classification is mainly associated with its length and combination of character types. ` +
-            `The password is  ${extractedFeatures.length} characters long and uses ${extractedFeatures.character_class_count} character type${extractedFeatures.character_class_count === 1 ? "" : "es"}, ` +
+            `The password is ${extractedFeatures.length} characters long and uses ${extractedFeatures.character_class_count} character type${extractedFeatures.character_class_count === 1 ? "" : "es"}, ` +
             `which means the system evaluates its characteristics mainly in relation to the number of possible combinations that may need to be considered during brute-force guessing.`;
     } else {
         classification_rationale = `Classification result: ${vulnerabilityType}.`;
